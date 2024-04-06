@@ -43,7 +43,7 @@ export class ClockComponent implements OnInit {
     this.hours = `${gHours % 12}`;  // into 12 hours format
     this.hours = gHours % 12 ? this.hours : '12';  // if 0 => 12
   
-    this.hours = (gHours % 12) < 10 ? this.hours : `0${this.hours}`;  // if single digit => add '0' infront
+    this.hours = (gHours % 12) == 0 ? this.hours : `0${this.hours}`;  // if single digit => add '0' infront
     
     const gMinutes = date.getMinutes();
     this.minutes = gMinutes < 10 ? `0${gMinutes}` : gMinutes.toString();
