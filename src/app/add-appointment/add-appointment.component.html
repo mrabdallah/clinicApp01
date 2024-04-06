@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>New Appointment</h2>
+<mat-dialog-content>
+
+
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="flex flex-col">
+
+    <mat-form-field appearance="outline" class="mt-8">
+      <mat-label>Name</mat-label>
+      <input type="text" matInput formControlName="name" [matAutocomplete]="auto">
+      <!-- <mat-icon matSuffix>sentiment_very_satisfied</mat-icon> -->
+      <mat-autocomplete #auto="matAutocomplete">
+        @for (option of filteredOptions; track option) {
+          <mat-option [value]="option">
+            {{ option }}
+          </mat-option>
+        }        
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Date</mat-label>
+      <input matInput [matDatepicker]="dp" formControlName="date">
+      @if (!profileForm.get('date')?.valid) {
+        <mat-hint>MMMM Do, YYYY</mat-hint>
+      }
+      <mat-datepicker-toggle matIconSuffix [for]="dp"></mat-datepicker-toggle>
+      <mat-datepicker #dp></mat-datepicker>
+    </mat-form-field>
+    
+    
+  
+    <div class="flex justify-center">
+      <button mat-raised-button color="primary" type="submit" [disabled]="!profileForm.valid" class="w-28">Confirm</button>
+    </div>
+  
+  </form>
+
+</mat-dialog-content>
+<!-- <mat-dialog-actions>
+  <button mat-button mat-dialog-close>No</button>
+  <button mat-button mat-dialog-close cdkFocusInitial>Ok</button>
+</mat-dialog-actions> -->
