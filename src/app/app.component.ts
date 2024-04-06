@@ -58,7 +58,6 @@ import { PatientScheduleCurrentEntryComponent } from './patient-schedule-current
     background-color: #C1E3FF;
     overflow-x: hidden;
     transition: 0.5s;
-    padding-top: 60px;
   }
   .open {
     width: 250px;
@@ -68,8 +67,6 @@ import { PatientScheduleCurrentEntryComponent } from './patient-schedule-current
     position: fixed;
     top: 50%;
     left: 50%;
-    //width: 2rem;
-    //height: 2rem;
     transform: translateX(-49.5vw);
   }
   .toggled{
@@ -82,6 +79,13 @@ import { PatientScheduleCurrentEntryComponent } from './patient-schedule-current
   }
   .prg-bar{
     width: 100%;
+  }
+  .layered-backgrounds{
+    background: radial-gradient(circle at 10% 20%, rgb(137, 210, 253) 0%, rgb(255, 241, 188) 90%);
+    height: 100dvh;
+    width: 100%;
+    position: absolute;
+    z-index: -4;
   }
   `,
   // styleUrl: './app.component.css'

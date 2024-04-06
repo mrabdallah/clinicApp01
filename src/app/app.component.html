@@ -3,8 +3,9 @@
 <main [class.sidebar-opend]="isOpen" class="flex flex-col	gap-y-2">
 
 
-  <div class="side-bar-container" [class.open]="isOpen">
-    <div class="close-side-bar-btn">
+  <div class="side-bar-container shadow-sm" [class.open]="isOpen">
+    <div class="layered-backgrounds"></div>
+    <div class="close-side-bar-btn pt-20">
       <span class="side-bar-close-btn-spacer"></span>
       <button color="primary"  mat-icon-button aria-label="Close or hide sidebar" (click)="toggleSidebar()">
         <mat-icon class="material-icons-outlined">close</mat-icon>
@@ -16,7 +17,7 @@
   
   <!-- side-bar button -->
   <div>
-    <button [class.toggled]="isOpen" class="side-bar-toggle-btn bg-pink-300 rounded-full flex items-center justify-center p-2 scale-150 shadow-md z-20" mat-icon-button aria-label="Expand or hide sidebar" (click)="toggleSidebar()">
+    <button [class.toggled]="isOpen" class="side-bar-toggle-btn rounded-full flex items-center justify-center p-2 scale-150 shadow-md z-20" mat-icon-button aria-label="Expand or hide sidebar" (click)="toggleSidebar()" style="background: hsl(198.67deg 97.57% 48.43% / 40%);">
       <mat-icon *ngIf="!isOpen">chevron_right</mat-icon>
       <!-- <mat-icon *ngIf="!isOpen" class="material-icons-outlined">chevron_right</mat-icon> -->
       <mat-icon *ngIf="isOpen">chevron_left</mat-icon>
@@ -27,7 +28,7 @@
 
   <!-- Add Appointment Button -->
   <div class="fixed right-10 bottom-10 z-10">
-    <button mat-icon-button aria-label="Add Appointment" class=" bg-pink-300 rounded-full flex items-center justify-center p-2 scale-150" (click)="openDialog('500ms', '500ms')">
+    <button mat-icon-button aria-label="Add Appointment" class="rounded-full flex items-center justify-center p-2 scale-150" (click)="openDialog('500ms', '500ms')" style="background: hsl(198.67deg 97.57% 48.43% / 40%);">
       <mat-icon>format_list_bulleted_add</mat-icon>
     </button>
   </div>
