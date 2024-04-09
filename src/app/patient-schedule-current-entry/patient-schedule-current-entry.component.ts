@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @Component({
   selector: 'patient-schedule-current-entry',
   standalone: true,
-  imports: [MatIconModule],
+  imports: [MatIconModule, MatExpansionModule],
   templateUrl: './patient-schedule-current-entry.component.html',
   styles: `
   .elems-container {
@@ -16,23 +17,45 @@ import { MatIconModule } from '@angular/material/icon';
     animation: AnimationName 9s ease infinite;
   }
 
-  @-webkit-keyframes AnimationName {
-      0%{background-position:0% 50%}
-      50%{background-position:100% 50%}
-      100%{background-position:0% 50%}
-  }
-  @-moz-keyframes AnimationName {
-      0%{background-position:0% 50%}
-      50%{background-position:100% 50%}
-      100%{background-position:0% 50%}
-  }
   @keyframes AnimationName {
       0%{background-position:0% 50%}
       50%{background-position:100% 50%}
       100%{background-position:0% 50%}
   }
+  
+  ::ng-deep .specific-class > .mat-expansion-indicator:after {
+    
+
+      color: red !important;
+    }
+
+
+  /*.actions-btns-container {
+    border-top-right-radius: 4rem;
+    border-bottom-right-radius: 4rem;
+    border-top-left-radius: 7rem;
+    border-bottom-left-radius: 7rem;
+  }*/
+  .object-contain{
+    max-height: 2.5rem;
+    object-fit: contain;
+  }
+  .icon-btn{
+    transform: scale(1.2);
+  }
+
+  /*.toggling:not(.scale-out-hor-right){
+    transition: 00.3s all ease;
+    transform: scaleX(1);
+  }*/
+
+  
   `
 })
 export class PatientScheduleCurrentEntryComponent {
-
+  panelOpenState = false;
+  isOpen = true;
+  toggle(){
+    this.isOpen = !this.isOpen;
+  }
 }

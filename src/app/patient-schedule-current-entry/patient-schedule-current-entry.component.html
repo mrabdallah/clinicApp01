@@ -1,4 +1,37 @@
 <div class="elems-container flex rounded-2xl shadow-xl m-2 p-2">
-  <!-- <mat-icon class="icon-display">account_circle</mat-icon> -->
   <p>patient-schedule-current-entry works!</p>
+  <!-- <img src="images/alert.gif" alt="Emergency"> -->
+  <div class="spacer grow"></div>
+  <div class="actions_nd_stats flex flex-col w-6072 gap-2">
+
+    <div class="actions-btns-container">
+
+      <!-- <mat-accordion> -->
+
+        <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false"
+          style="border-radius: 0.7rem;">
+          <!-- --------------------------- Flags -------------------------- -->
+          <mat-expansion-panel-header class="specific-class">
+            <img src="assets/images/alarm.gif" alt="Emergency" class="object-contain">
+            <div class="flex justify-center items-center">
+              <mat-icon class="icon-btn">where_to_vote</mat-icon>
+            </div>
+          </mat-expansion-panel-header>
+          <!-- --------------------------- Actions -------------------------- -->
+          <div class="flex gap-2">
+            <button mat-mini-fab aria-label="Example icon button with a home icon" class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"><!--style="background: hsl(198.67deg 97.57% 48.43% / 40%);"--> 
+              <mat-icon>call</mat-icon>
+            </button>
+            <button mat-mini-fab aria-label="Example icon button with a home icon" class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"><!--style="background: hsl(198.67deg 97.57% 48.43% / 40%);"--> 
+              <mat-icon>sms</mat-icon>
+            </button>
+          </div>
+        </mat-expansion-panel>
+      <!-- </mat-accordion> -->
+
+
+
+
+    </div>
+  </div>
 </div>
