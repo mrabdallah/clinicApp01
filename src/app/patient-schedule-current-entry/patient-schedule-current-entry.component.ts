@@ -9,12 +9,12 @@ import { MatExpansionModule } from '@angular/material/expansion';
   templateUrl: './patient-schedule-current-entry.component.html',
   styles: `
   .elems-container {
-    background: linear-gradient(270deg, #8EE0FB, #FF79E1, #F7E3AF);
+    background: linear-gradient(270deg, #8EE0FB, #FFB2E6, #F7E3AF);
     background-size: 600% 600%;
 
-    -webkit-animation: AnimationName 2s ease infinite;
-    -moz-animation: AnimationName 2s ease infinite;
-    animation: AnimationName 9s ease infinite;
+    -webkit-animation: AnimationName 5s ease infinite;
+    -moz-animation: AnimationName 5s ease infinite;
+    animation: AnimationName 5s ease infinite;
   }
 
   @keyframes AnimationName {

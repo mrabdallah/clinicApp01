@@ -89,6 +89,23 @@
             ],
             "scripts": []
           }
+        },
+        "deploy": {
+          "builder": "@angular/fire:deploy",
+          "options": {
+            "version": 2
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "clinic-manager:build:production",
+              "serveTarget": "clinic-manager:serve:production"
+            },
+            "development": {
+              "buildTarget": "clinic-manager:build:development",
+              "serveTarget": "clinic-manager:serve:development"
+            }
+          },
+          "defaultConfiguration": "production"
         }
       }
     }

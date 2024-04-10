@@ -3,19 +3,24 @@
 
 
   <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="flex flex-col">
-
-    <mat-form-field appearance="outline" class="mt-8">
-      <mat-label>Name</mat-label>
-      <input type="text" matInput formControlName="name" [matAutocomplete]="auto">
-      <!-- <mat-icon matSuffix>sentiment_very_satisfied</mat-icon> -->
-      <mat-autocomplete #auto="matAutocomplete">
-        @for (option of filteredOptions; track option) {
-          <mat-option [value]="option">
-            {{ option }}
-          </mat-option>
-        }        
-      </mat-autocomplete>
-    </mat-form-field>
+    <!-- -------------------------Patient Name------------------------- -->
+    <div class="patient-name flex items-center gap-3">
+      <mat-form-field appearance="outline" class="grow mt-8">
+        <mat-label>Name</mat-label>
+        <input type="text" matInput formControlName="name" [matAutocomplete]="auto">
+        <!-- <mat-icon matSuffix>sentiment_very_satisfied</mat-icon> -->
+        <mat-autocomplete #auto="matAutocomplete">
+          @for (option of filteredOptions; track option) {
+            <mat-option [value]="option">
+              {{ option }}
+            </mat-option>
+          }        
+        </mat-autocomplete>
+      </mat-form-field>
+      <button mat-mini-fab aria-label="Example icon button with a home icon" class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+        <mat-icon>person_add</mat-icon>
+      </button>
+    </div>
 
     <mat-form-field appearance="outline">
       <mat-label>Date</mat-label>

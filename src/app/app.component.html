@@ -57,6 +57,8 @@
   <app-clock></app-clock>
 
 
+
+  <!-- ------------------------------------------ Entries ------------------------------------------ -->
   <div cdkDropList class="rounded-2xl m-8 px-1 patient-schedule-entries bg-white" (cdkDropListDropped)="drop($event)">
     @for (movie of movies; track movie; let idx = $index) {
       <div class="patient-schedule-entry" cdkDrag>

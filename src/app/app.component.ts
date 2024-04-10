@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { Observable, catchError, map, of, tap } from 'rxjs';
@@ -22,7 +22,11 @@ import { SideBarComponent } from './side-bar/side-bar.component';
 import { ClockComponent } from './clock/clock.component';
 import { PatientScheduleEntryComponent } from './patient-schedule-entry/patient-schedule-entry.component';
 import { PatientScheduleCurrentEntryComponent } from './patient-schedule-current-entry/patient-schedule-current-entry.component';
-
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore'
+import { Firestore, collection } from '@angular/fire/firestore';
+import { FIREBASE_OPTIONS } from '@angular/fire/compat';
+// import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -37,7 +41,10 @@ import { PatientScheduleCurrentEntryComponent } from './patient-schedule-current
     ClockComponent,
     PatientScheduleEntryComponent,
     PatientScheduleCurrentEntryComponent,
+    // AngularFireModule.initializeApp(environment.firebaseConfig),
+    AngularFirestoreModule,
   ],
+  // providers: [{ provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig }],
   templateUrl: './app.component.html',
   styles: `
   main {
@@ -91,7 +98,9 @@ import { PatientScheduleCurrentEntryComponent } from './patient-schedule-current
   // styleUrl: './app.component.css'
 })
 export class AppComponent {
+  firestore: Firestore = inject(Firestore);
   title = 'clinic-manager';
+  patients: any;
 
   movies = [
     'Episode I - The Phantom Menace',
@@ -115,6 +124,15 @@ export class AppComponent {
   // }
 
   constructor(public dialog: MatDialog) {
+    this.patients = collection(this.firestore, 'patients');
+    console.log(this.patients);
+
+    // this.fireStore.collection('patients').get().subscribe(
+    //   (v) => {
+    //     this.patients = v;
+    //     console.log(v);
+    //   }
+    // );
   }
 
 

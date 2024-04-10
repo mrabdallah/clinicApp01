@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "clinicapp-edaa7": {
+      "hosting": {
+        "clinic-manager": [
+          "clinicapp-edaa7"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "clinicapp-edaa7"
+  }
+}
