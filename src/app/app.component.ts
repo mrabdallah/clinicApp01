@@ -22,11 +22,7 @@ import { SideBarComponent } from './side-bar/side-bar.component';
 import { ClockComponent } from './clock/clock.component';
 import { PatientScheduleEntryComponent } from './patient-schedule-entry/patient-schedule-entry.component';
 import { PatientScheduleCurrentEntryComponent } from './patient-schedule-current-entry/patient-schedule-current-entry.component';
-import { AngularFireModule } from '@angular/fire/compat';
-import { AngularFirestoreModule } from '@angular/fire/compat/firestore'
-import { Firestore, collection } from '@angular/fire/firestore';
-import { FIREBASE_OPTIONS } from '@angular/fire/compat';
-// import { environment } from '../environments/environment';
+import { DatabaseService } from './database.service';
 
 @Component({
   selector: 'app-root',
@@ -41,8 +37,7 @@ import { FIREBASE_OPTIONS } from '@angular/fire/compat';
     ClockComponent,
     PatientScheduleEntryComponent,
     PatientScheduleCurrentEntryComponent,
-    // AngularFireModule.initializeApp(environment.firebaseConfig),
-    AngularFirestoreModule,
+    // AngularFirestoreModule,
   ],
   // providers: [{ provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig }],
   templateUrl: './app.component.html',
@@ -98,10 +93,9 @@ import { FIREBASE_OPTIONS } from '@angular/fire/compat';
   // styleUrl: './app.component.css'
 })
 export class AppComponent {
-  firestore: Firestore = inject(Firestore);
   title = 'clinic-manager';
-  patients: any;
-
+  private databaseService = inject(DatabaseService);
+  patients: any[] = [];
   movies = [
     'Episode I - The Phantom Menace',
     'Episode II - Attack of the Clones',
@@ -124,8 +118,8 @@ export class AppComponent {
   // }
 
   constructor(public dialog: MatDialog) {
-    this.patients = collection(this.firestore, 'patients');
-    console.log(this.patients);
+    // this.patients = collection(this.firestore, 'patients');
+    // console.log(this.patients)
 
     // this.fireStore.collection('patients').get().subscribe(
     //   (v) => {
@@ -135,6 +129,15 @@ export class AppComponent {
     // );
   }
 
+  ngOnInit() {
+    this.databaseService.fetchPatients().then(
+      () => {
+        this.patients = this.databaseService.patients;
+      }
+    );
+  }
+
+  
 
   openDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(AddAppointmentComponent, {
