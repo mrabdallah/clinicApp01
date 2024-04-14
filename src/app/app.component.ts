@@ -17,6 +17,7 @@ import {
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
 
+
 import { AddAppointmentComponent } from './add-appointment/add-appointment.component';
 import { SideBarComponent } from './side-bar/side-bar.component';
 import { ClockComponent } from './clock/clock.component';
@@ -28,6 +29,9 @@ import { DatabaseService } from './database.service';
   selector: 'app-root',
   standalone: true,
   imports: [
+    CdkDropList,
+    CdkDrag,
+    CdkDragPlaceholder,
     RouterOutlet,
     CommonModule,
     MatIconModule,
@@ -37,9 +41,7 @@ import { DatabaseService } from './database.service';
     ClockComponent,
     PatientScheduleEntryComponent,
     PatientScheduleCurrentEntryComponent,
-    // AngularFirestoreModule,
   ],
-  // providers: [{ provide: FIREBASE_OPTIONS, useValue: environment.firebaseConfig }],
   templateUrl: './app.component.html',
   styles: `
   main {
@@ -89,6 +91,31 @@ import { DatabaseService } from './database.service';
     position: absolute;
     z-index: -4;
   }
+  .patient-schedule-entry-container {
+    box-sizing: border-box;
+    cursor: move;
+  }
+  .cdk-drag-preview {
+    box-sizing: border-box;
+    border-radius: 4px;
+    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+                0 8px 10px 1px rgba(0, 0, 0, 0.14),
+                0 3px 14px 2px rgba(0, 0, 0, 0.12);
+  }
+
+  .cdk-drag-animating {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  }
+  .patient-schedule-entries.cdk-drop-list-dragging .patient-schedule-entry-container:not(.cdk-drag-placeholder) {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  .patient-schedule-entry-placeholder {
+    background: #ccc;
+    border: dotted 3px #999;
+    min-height: 60px;
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  }
   `,
   // styleUrl: './app.component.css'
 })
@@ -113,10 +140,6 @@ export class AppComponent {
   secondPeriodValue = 70;
   today = `${new Date().getHours}:${new Date().getMinutes}`;
 
-  // constructor(private firestore: AngularFirestore, public dialog: MatDialog) {
-  //   this.roots$ = of([]);
-  // }
-
   constructor(public dialog: MatDialog) {
     // this.patients = collection(this.firestore, 'patients');
     // console.log(this.patients)
@@ -137,7 +160,7 @@ export class AppComponent {
     );
   }
 
-  
+
 
   openDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(AddAppointmentComponent, {

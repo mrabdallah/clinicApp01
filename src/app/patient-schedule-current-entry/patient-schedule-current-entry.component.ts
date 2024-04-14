@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 
@@ -24,18 +24,9 @@ import { MatExpansionModule } from '@angular/material/expansion';
   }
   
   ::ng-deep .specific-class > .mat-expansion-indicator:after {
-    
-
       color: red !important;
     }
 
-
-  /*.actions-btns-container {
-    border-top-right-radius: 4rem;
-    border-bottom-right-radius: 4rem;
-    border-top-left-radius: 7rem;
-    border-bottom-left-radius: 7rem;
-  }*/
   .object-contain{
     max-height: 2.5rem;
     object-fit: contain;
@@ -43,16 +34,10 @@ import { MatExpansionModule } from '@angular/material/expansion';
   .icon-btn{
     transform: scale(1.2);
   }
-
-  /*.toggling:not(.scale-out-hor-right){
-    transition: 00.3s all ease;
-    transform: scaleX(1);
-  }*/
-
-  
   `
 })
 export class PatientScheduleCurrentEntryComponent {
+  @Input() patient: any;
   panelOpenState = false;
   isOpen = true;
   toggle(){

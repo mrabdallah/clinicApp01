@@ -59,31 +59,28 @@
 
 
   <!-- ------------------------------------------ Entries ------------------------------------------ -->
-  <div cdkDropList class="rounded-2xl m-8 px-1 patient-schedule-entries bg-white" (cdkDropListDropped)="drop($event)">
+  <div cdkDropList (cdkDropListDropped)="drop($event)" class="rounded-2xl m-8 px-1 bg-white patient-schedule-entries">
     
     
   
     @if (patients.length > 0) {
     
-      @for (patient of patients; track patient) {
-        <li>{{ patient.firstName }} {{ patient.id }}</li>
+      @for (patient of patients; track patient; let idx = $index) {
+        <div class="patient-schedule-entry-container" cdkDrag>
+          <div class="patient-schedule-entry-placeholder bg-red-300" *cdkDragPlaceholder></div>
+          
+          @if (idx > 0) {
+            <patient-schedule-entry [patient]="patient"></patient-schedule-entry>
+          } @else {
+            <patient-schedule-current-entry [patient]="patient"></patient-schedule-current-entry>
+          }
+        </div>
       }
     } @else {
       <p>nothing</p>
     }
 
 
-    <!-- @for (movie of movies; track movie; let idx = $index) {
-      <div class="patient-schedule-entry" cdkDrag>
-        <div class="patient-schedule-entry-placeholder" *cdkDragPlaceholder></div>
-        
-        @if (idx > 0) {
-          <patient-schedule-entry></patient-schedule-entry>
-        } @else {
-          <patient-schedule-current-entry></patient-schedule-current-entry>
-        }
-      </div>
-    } -->
 
   </div>
 

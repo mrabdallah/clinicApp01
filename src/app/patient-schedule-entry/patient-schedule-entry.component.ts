@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
@@ -9,5 +9,6 @@ import { MatIconModule } from '@angular/material/icon';
   styles: ``
 })
 export class PatientScheduleEntryComponent {
+  @Input() patient: any;
 
 }
