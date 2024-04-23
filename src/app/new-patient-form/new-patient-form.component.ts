@@ -1,8 +1,7 @@
-import { Component, OnDestroy, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import {
-  // MatDialog,
   MatDialogRef,
   MatDialogActions,
   MatDialogClose,
@@ -28,7 +27,10 @@ import { Store, select } from '@ngrx/store';
 import { State } from '../ngrx_store/reducers/index'; // Import your state interface
 import { TemporaryDataSrvService } from '../temporary-data-srv.service'; // Import the data service
 import { DatabaseService } from '../database.service';
-import { Subscription, map } from 'rxjs';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+
+
+
 
 export const MY_FORMATS = {
   parse: {
@@ -44,7 +46,7 @@ export const MY_FORMATS = {
 
 
 @Component({
-  selector: 'app-add-appointment',
+  selector: 'new-patient-form',
   standalone: true,
   providers: [
     // Moment can be provided globally to your app by adding `provideMomentDateAdapter`
@@ -57,6 +59,7 @@ export const MY_FORMATS = {
     MatIcon,
     MatIconModule,
     MatButtonModule,
+    MatCheckboxModule,
     MatDialogActions,
     // FormGroup,
     MatFormFieldModule,
@@ -71,81 +74,59 @@ export const MY_FORMATS = {
     MatDialogContent,
     ReactiveFormsModule,
   ],
-  templateUrl: './add-appointment.component.html',
+  templateUrl: './new-patient-form.component.html',
   styles: ``
 })
-export class AddAppointmentComponent implements OnDestroy{
-  private databaseService = inject(DatabaseService);
-  private allPatientsSubscription?: Subscription;
+export class NewPatientFormComponent {
+  databaseService: DatabaseService = inject(DatabaseService);
 
-  constructor(public dialogRef: MatDialogRef<AddAppointmentComponent>,
+  constructor(public dialogRef: MatDialogRef<NewPatientFormComponent>,
     private store: Store<State>,
     private formBuilder: FormBuilder,
     private temporaryDataSrvService: TemporaryDataSrvService
     ) { }
 
-  options: string[] = [];
-  filteredOptions: string[] = [];
-  filterCtrl = new FormControl('');
-
-  ngOnInit() {
-
-    this.allPatientsSubscription = this.databaseService.getRealTimeData()
-    // .pipe(map((p)=> {
-    //   return p;
-    // }))
-    .subscribe((arr) => {
-      let tmpArr:string[] = [];
-      arr.forEach((p) => {
-        tmpArr.push(`${p.firstName} ${p.lastName}`);
+    profileForm = this.formBuilder.group({
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      address: ['', Validators.required],
+      primaryContact: ['', Validators.required],
+      emergencyContact: [''],
+      reasonForVisit: ['', Validators.required],
+      allergies: [''],
+      pastMedicalHistory: [''],
+      familyMedicalHistory: [''],
+      socialHistory: [''],
+      preferredAppointmentDaysAndTimes: [''],
+      optInForDataSharing: [false],
+      dateOfBirth: new FormControl(moment().format('DD/MM/YYYY')),
+      // address: this.formBuilder.group({
+      //   street: [''],
+      //   city: [''],
+      //   state: [''],
+      //   zip: [''],
+      // }),
+    });
+  
+    onSubmit() {
+      // TODO: Use EventEmitter with form value
+      this.temporaryDataSrvService.setData(false);
+      // console.log(`\x1B[34m${JSON.stringify(this.profileForm.value)}\x1B[0m`);
+      this.dialogRef.close();
+      this.databaseService.setNewPatient({
+        firstName: this.profileForm.value.firstName,
+        lastName: this.profileForm.value.lastName,
+        address: this.profileForm.value.address,
+        primaryContact: this.profileForm.value.primaryContact,
+        emergencyContact: this.profileForm.value.emergencyContact,
+        reasonForVisit: this.profileForm.value.reasonForVisit,
+        allergies: this.profileForm.value.allergies,
+        pastMedicalHistory: this.profileForm.value.pastMedicalHistory,
+        familyMedicalHistory: this.profileForm.value.familyMedicalHistory,
+        socialHistory: this.profileForm.value.socialHistory,
+        preferredAppointmentDaysAndTimes: this.profileForm.value.preferredAppointmentDaysAndTimes,
+        optInForDataSharing: this.profileForm.value.optInForDataSharing,
+        dateOfBirth: this.profileForm.value.dateOfBirth,
       });
-      this.options = [...tmpArr];
-    });
-
-
-    this.filteredOptions = this.options.slice(); // Initialize filtered options
-    (this.profileForm.get('name') as FormControl).valueChanges.subscribe(value => {
-      this.filteredOptions = this.options.filter(option =>
-        option.toLowerCase().includes(value!.toLowerCase())
-      );
-    });
-  }
-
-  onSelectionChange(event: any) {
-    if (event.option.selected) {
-      this.filterCtrl.setValue(event.option.value); // Update form control value on selection
     }
-  }
-
-  ngOnDestroy(): void {
-   this.allPatientsSubscription?.unsubscribe() ;
-  }
-
-  /**
-   *     firstName: ['', Validators.required],
-    lastName: [''],
-   */
-
-  profileForm = this.formBuilder.group({
-    name: ['', Validators.required],
-    date: new FormControl(moment().format('DD/MM/YYYY')),
-    address: this.formBuilder.group({
-      street: [''],
-      city: [''],
-      state: [''],
-      zip: [''],
-    }),
-  });
-
-  onSubmit() {
-    this.databaseService.createNewAppointment();
-    this.dialogRef.close();
-  }
-
-  openNewPatientFormDialog() {
-    this.dialogRef.close();
-    // fire ngrx action
-    // this.store.dispatch(login());
-    this.temporaryDataSrvService.setData(true);
-  }
 }

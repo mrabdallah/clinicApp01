@@ -11,13 +11,15 @@
         <!-- <mat-icon matSuffix>sentiment_very_satisfied</mat-icon> -->
         <mat-autocomplete #auto="matAutocomplete">
           @for (option of filteredOptions; track option) {
-            <mat-option [value]="option">
-              {{ option }}
-            </mat-option>
-          }        
+          <mat-option [value]="option">
+            {{ option }}
+          </mat-option>
+          }
         </mat-autocomplete>
       </mat-form-field>
-      <button mat-mini-fab aria-label="Example icon button with a home icon" class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+      <button mat-mini-fab aria-label="Example icon button with a home icon"
+        class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"
+        type="button" (click)="openNewPatientFormDialog()">
         <mat-icon>person_add</mat-icon>
       </button>
     </div>
@@ -26,18 +28,19 @@
       <mat-label>Date</mat-label>
       <input matInput [matDatepicker]="dp" formControlName="date">
       @if (!profileForm.get('date')?.valid) {
-        <mat-hint>MMMM Do, YYYY</mat-hint>
+      <mat-hint>MMMM Do, YYYY</mat-hint>
       }
       <mat-datepicker-toggle matIconSuffix [for]="dp"></mat-datepicker-toggle>
       <mat-datepicker #dp></mat-datepicker>
     </mat-form-field>
-    
-    
-  
+
+
+
     <div class="flex justify-center">
-      <button mat-raised-button color="primary" type="submit" [disabled]="!profileForm.valid" class="w-28">Confirm</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="!profileForm.valid"
+        class="w-28">Confirm</button>
     </div>
-  
+
   </form>
 
 </mat-dialog-content>

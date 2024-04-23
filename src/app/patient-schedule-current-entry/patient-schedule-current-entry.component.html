@@ -1,22 +1,22 @@
 <div class="elems-container flex rounded-2xl shadow-xl m-2 p-2">
-  <p>{{patient?.firstName}}</p>
+  <p>{{appointment?.patient?.firstName}}</p>
   <!-- <img src="images/alert.gif" alt="Emergency"> -->
   <div class="spacer grow"></div>
   <div class="actions_nd_stats flex flex-col w-6072 gap-2">
 
-    <div class="actions-btns-container">
-
+    <div class="flex">
       <!-- <mat-accordion> -->
 
         <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false"
           style="border-radius: 0.7rem;">
-          <!-- --------------------------- Flags -------------------------- -->
+          <!-- --------------------------- Flags & Main Actions -------------------------- -->
           <mat-expansion-panel-header class="specific-class">
-            <img src="assets/images/alarm.gif" alt="Emergency" class="object-contain">
+            <img src="assets/images/alarm.gif" alt="Emergency" class="object-containss">
             <div class="flex justify-center items-center gap-2">
               <mat-icon class="icon-btn">where_to_vote</mat-icon>
               <mat-icon class="icon-btn mr-3">paid</mat-icon>
             </div>
+            
           </mat-expansion-panel-header>
           <!-- --------------------------- Actions -------------------------- -->
           <div class="flex gap-2 border-t-2 border-r-blue-300 pt-4">
@@ -29,7 +29,27 @@
           </div>
         </mat-expansion-panel>
       <!-- </mat-accordion> -->
+      <div class="pl-6">
 
+
+        @switch (appointment?.state?.toLowerCase()) {
+          @case ('waiting') {
+            <button mat-fab color="primary" aria-label="Patient is waiting to enter for examinationg"  (click)="setStateToExamining()">
+              <mat-icon>login</mat-icon>
+            </button>
+          }
+          @case ('examining') {
+            <button mat-fab color="primary" aria-label="Patient exited and done examination" (click)="setStateToDone()">
+              <mat-icon>logout</mat-icon>
+            </button>
+          }
+          @default {
+            
+          }
+        }
+
+        
+      </div>
 
 
 

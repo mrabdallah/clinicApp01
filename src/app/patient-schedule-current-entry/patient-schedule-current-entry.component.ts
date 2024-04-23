@@ -1,11 +1,19 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatButtonModule } from '@angular/material/button';
+import { Appointment } from '../types';
+import { DatabaseService } from '../database.service';
+// import { MatIconButtonModule } from '@angular/material';
+// import '@material/web/button/filled-button.js';
+
 
 @Component({
   selector: 'patient-schedule-current-entry',
   standalone: true,
-  imports: [MatIconModule, MatExpansionModule],
+  imports: [MatIconModule,
+    MatButtonModule,
+     MatExpansionModule],
   templateUrl: './patient-schedule-current-entry.component.html',
   styles: `
   .elems-container {
@@ -27,8 +35,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
       color: red !important;
     }
 
-  .object-contain{
-    max-height: 2.5rem;
+  .object-containss{
+    max-height: 3.5rem;
     object-fit: contain;
   }
   .icon-btn{
@@ -37,9 +45,20 @@ import { MatExpansionModule } from '@angular/material/expansion';
   `
 })
 export class PatientScheduleCurrentEntryComponent {
-  @Input() patient: any;
+  @Input() appointment?: Appointment;
+  private databaseService = inject(DatabaseService);
+
   panelOpenState = false;
   isOpen = true;
+
+  setStateToExamining(){
+    this.databaseService.updateAppointmentState(this.appointment!.firestorePath, 'examining');
+  }
+
+  setStateToDone(){
+    this.databaseService.updateAppointmentState(this.appointment!.firestorePath, 'done');
+  }
+
   toggle(){
     this.isOpen = !this.isOpen;
   }

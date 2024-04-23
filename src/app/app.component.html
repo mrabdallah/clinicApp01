@@ -5,19 +5,22 @@
 
   <div class="side-bar-container shadow-sm" [class.open]="isOpen">
     <div class="layered-backgrounds"></div>
-    <div class="close-side-bar-btn pt-20">
+    <div class="border-b border-blue-100 close-side-bar-btn pt-20">
       <span class="side-bar-close-btn-spacer"></span>
-      <button color="primary"  mat-icon-button aria-label="Close or hide sidebar" (click)="toggleSidebar()">
+      <button color="primary" mat-icon-button aria-label="Close or hide sidebar" (click)="toggleSidebar()">
         <mat-icon class="material-icons-outlined">close</mat-icon>
       </button>
     </div>
     <app-side-bar></app-side-bar>
   </div>
 
-  
+
   <!-- side-bar button -->
   <div>
-    <button [class.toggled]="isOpen" class="side-bar-toggle-btn rounded-full flex items-center justify-center p-2 scale-150 shadow-md z-20" mat-icon-button aria-label="Expand or hide sidebar" (click)="toggleSidebar()" style="background: hsl(198.67deg 97.57% 48.43% / 40%);">
+    <button [class.toggled]="isOpen"
+      class="side-bar-toggle-btn rounded-full flex items-center justify-center p-2 scale-150 shadow-md z-20"
+      mat-icon-button aria-label="Expand or hide sidebar" (click)="toggleSidebar()"
+      style="background: hsl(198.67deg 97.57% 48.43% / 40%);">
       <mat-icon *ngIf="!isOpen">chevron_right</mat-icon>
       <!-- <mat-icon *ngIf="!isOpen" class="material-icons-outlined">chevron_right</mat-icon> -->
       <mat-icon *ngIf="isOpen">chevron_left</mat-icon>
@@ -28,13 +31,16 @@
 
   <!-- Add Appointment Button -->
   <div class="fixed right-10 bottom-10 z-10">
-    <button mat-icon-button aria-label="Add Appointment" class="rounded-full flex items-center justify-center p-2 scale-150" (click)="openDialog('500ms', '500ms')" style="background: hsl(198.67deg 97.57% 48.43% / 40%);">
+    <button mat-icon-button aria-label="Add Appointment"
+      class="rounded-full flex items-center justify-center p-2 scale-150"
+      (click)="openNewAppointmentDialog('500ms', '500ms')" style="background: hsl(198.67deg 97.57% 48.43% / 40%);">
       <mat-icon>format_list_bulleted_add</mat-icon>
     </button>
   </div>
 
   <!-- -------------------- progress-container -------------------- -->
-  <div class="text-base my-4 mx-12 p-4 rounded-2xl flex" style="background: linear-gradient(90deg, hsl(180deg 28% 86% / 90%), hsl(190deg 31.03% 88.63%));">
+  <div class="text-base my-4 mx-12 p-4 rounded-2xl flex"
+    style="background: linear-gradient(90deg, hsl(180deg 28% 86% / 90%), hsl(190deg 31.03% 88.63%));">
     <div class="w-full self-center">
       <div class="flex justify-between">
         <p>12:00 PM</p>
@@ -59,28 +65,39 @@
 
 
   <!-- ------------------------------------------ Entries ------------------------------------------ -->
-  <div cdkDropList (cdkDropListDropped)="drop($event)" class="rounded-2xl m-8 px-1 bg-white patient-schedule-entries">
-    
-    
-  
+  <div cdkDropList (cdkDropListDropped)="drop($event)" class="rounded-2xl xs:mx-2 lg:mx-40 my-4 px-1 bg-white patient-schedule-entries">
+
     @if (patients.length > 0) {
-    
-      @for (patient of patients; track patient; let idx = $index) {
+
+      <!-- @for (patient of patients; track patient; let idx = $index) {
+      <div class="patient-schedule-entry-container" cdkDrag>
+        <div class="patient-schedule-entry-placeholder" *cdkDragPlaceholder></div>
+
+        @if (idx > 0) {
+        <patient-schedule-entry [patient]="patient"></patient-schedule-entry>
+        } @else {
+        <patient-schedule-current-entry [patient]="patient"></patient-schedule-current-entry>
+        }
+      </div>
+      } -->
+
+      @for (appointment of todaySchedule; track appointment; let idx = $index) {
         <div class="patient-schedule-entry-container" cdkDrag>
-          <div class="patient-schedule-entry-placeholder bg-red-300" *cdkDragPlaceholder></div>
-          
+          <div class="patient-schedule-entry-placeholder" *cdkDragPlaceholder></div>
+    
           @if (idx > 0) {
-            <patient-schedule-entry [patient]="patient"></patient-schedule-entry>
+          <patient-schedule-entry [patient]="'patient'"></patient-schedule-entry>
           } @else {
-            <patient-schedule-current-entry [patient]="patient"></patient-schedule-current-entry>
+          <patient-schedule-current-entry [appointment]="appointment"></patient-schedule-current-entry>
           }
         </div>
-      }
+        }
+
+
+
     } @else {
-      <p>nothing</p>
+    <p>-</p>
     }
-
-
 
   </div>
 

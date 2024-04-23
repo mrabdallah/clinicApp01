@@ -1,12 +1,13 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, TemplateRef, ViewContainerRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { Observable, catchError, map, of, tap } from 'rxjs';
+import { Observable, Subscription, catchError, map, of, tap } from 'rxjs';
 import {
   MatDialog
 } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { TemporaryDataSrvService } from './temporary-data-srv.service'; // Import the data service
 
 import {
   CdkDrag,
@@ -17,18 +18,20 @@ import {
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
 
-
 import { AddAppointmentComponent } from './add-appointment/add-appointment.component';
 import { SideBarComponent } from './side-bar/side-bar.component';
 import { ClockComponent } from './clock/clock.component';
 import { PatientScheduleEntryComponent } from './patient-schedule-entry/patient-schedule-entry.component';
 import { PatientScheduleCurrentEntryComponent } from './patient-schedule-current-entry/patient-schedule-current-entry.component';
 import { DatabaseService } from './database.service';
+import { NewPatientFormComponent } from './new-patient-form/new-patient-form.component';
+import { Appointment } from './types';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
+    NewPatientFormComponent,////////////////////////////////////////////////////////////////////
     CdkDropList,
     CdkDrag,
     CdkDragPlaceholder,
@@ -47,9 +50,11 @@ import { DatabaseService } from './database.service';
   main {
     transition: 0.5s;
   }
-  .sidebar-opend{
+
+  /*.sidebar-opend{
     margin-left: 250px;
-  }
+  }*/
+
   .side-bar-container {
     transform: translate(0px, 15mm);
     transform: translateY(0mm);
@@ -120,49 +125,60 @@ import { DatabaseService } from './database.service';
   // styleUrl: './app.component.css'
 })
 export class AppComponent {
+  newPatientFormDialogOpened: boolean =false;
+
   title = 'clinic-manager';
   private databaseService = inject(DatabaseService);
+  todaySchedule: Appointment[] = []
   patients: any[] = [];
-  movies = [
-    'Episode I - The Phantom Menace',
-    'Episode II - Attack of the Clones',
-    'Episode III - Revenge of the Sith',
-    'Episode IV - A New Hope',
-    'Episode V - The Empire Strikes Back',
-    'Episode VI - Return of the Jedi',
-    'Episode VII - The Force Awakens',
-    'Episode VIII - The Last Jedi',
-    'Episode IX - The Rise of Skywalker',
-  ];
+  // movies = [
+  //   'Episode I - The Phantom Menace',
+  //   'Episode II - Attack of the Clones',
+  //   'Episode III - Revenge of the Sith',
+  //   'Episode IV - A New Hope',
+  //   'Episode V - The Empire Strikes Back',
+  //   'Episode VI - Return of the Jedi',
+  //   'Episode VII - The Force Awakens',
+  //   'Episode VIII - The Last Jedi',
+  //   'Episode IX - The Rise of Skywalker',
+  // ];
+  // private todaySchedule$: Observable<any[]>;
+  private todayScheduleSubscription: Subscription;
 
   isOpen = true;
   firstPeriodValue = 100;
   secondPeriodValue = 70;
   today = `${new Date().getHours}:${new Date().getMinutes}`;
 
-  constructor(public dialog: MatDialog) {
-    // this.patients = collection(this.firestore, 'patients');
-    // console.log(this.patients)
+  constructor(
+    public dialog: MatDialog,
+    // private newPatientModalService: NewPatientModalService
+    private temporaryDataSrvService: TemporaryDataSrvService
+  ) {
 
-    // this.fireStore.collection('patients').get().subscribe(
-    //   (v) => {
-    //     this.patients = v;
-    //     console.log(v);
-    //   }
-    // );
+    this.todayScheduleSubscription = this.databaseService.getTodayScheduleRealTimeData().subscribe((arr) => {
+      this.todaySchedule = [...arr];
+    });
   }
+
+  
 
   ngOnInit() {
-    this.databaseService.fetchPatients().then(
+    this.databaseService.fetchPatientsOneTimeSnapshot().then(
       () => {
-        this.patients = this.databaseService.patients;
+        this.patients = this.databaseService.patientsOnTimeSnapshot;
       }
     );
+
+    this.temporaryDataSrvService.getData().subscribe(dialogState => {
+      //this.newPatientFormDialogOpened = dialogState;
+      if(dialogState) {
+        this.openNewPatientFormDialog('500ms', '500ms');
+      }
+    });
   }
 
-
-
-  openDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
+  openNewAppointmentDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(AddAppointmentComponent, {
       width: '50vw',
       enterAnimationDuration,
@@ -171,17 +187,19 @@ export class AppComponent {
     });
   }
 
-  drop(event: CdkDragDrop<string[]>) {
-    moveItemInArray(this.movies, event.previousIndex, event.currentIndex);
+  openNewPatientFormDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(NewPatientFormComponent, {
+      width: '75vw',
+      enterAnimationDuration,
+      exitAnimationDuration,
+      data: { testdatakey: 'testdatavalue' }
+    });
   }
 
-  // ngOnInit() {
-  //  this.roots$ = this.firestore.collection<Atom>('atoms').valueChanges().pipe(
-  //    map(atoms => atoms.map(
-  //     atom => ({...atom, dateCreated: atom?.dateCreated?.toDate()})
-  //    ))
-  //  );
-  // }
+  drop(event: CdkDragDrop<string[]>) {
+    moveItemInArray(this.patients, event.previousIndex, event.currentIndex);
+    // console.log(`\x1B[35m prev: ${event.previousIndex} curr: ${event.currentIndex} \x1B[0m`)
+  }
 
   toggleSidebar() {
     this.isOpen = !this.isOpen;
