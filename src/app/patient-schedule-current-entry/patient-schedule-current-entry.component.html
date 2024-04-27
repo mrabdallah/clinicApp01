@@ -1,30 +1,51 @@
 <div class="elems-container flex rounded-2xl shadow-xl m-2 p-2">
-  <p>{{appointment?.patient?.firstName}}</p>
-  <!-- <img src="images/alert.gif" alt="Emergency"> -->
-  <div class="spacer grow"></div>
-  <div class="actions_nd_stats flex flex-col w-6072 gap-2">
+  <div class="w-1/5">
+    <p>{{appointment?.patient?.firstName}} {{appointment?.patient?.lastName}}</p> 
+  </div>
+  <div class="spacer grow-[2]"></div>
 
-    <div class="flex">
+  <div class="actions_nd_stats flex justify-end  w-1/2 gap-2">
       <!-- <mat-accordion> -->
 
         <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false"
           style="border-radius: 0.7rem;">
           <!-- --------------------------- Flags & Main Actions -------------------------- -->
           <mat-expansion-panel-header class="specific-class">
-            <img src="assets/images/alarm.gif" alt="Emergency" class="object-containss">
+            @if (appointment != null && appointment.isUrgent) {
+              <img src="assets/images/alarm.gif" alt="Emergency" class="object-containss">
+            }
+
             <div class="flex justify-center items-center gap-2">
-              <mat-icon class="icon-btn">where_to_vote</mat-icon>
-              <mat-icon class="icon-btn mr-3">paid</mat-icon>
+              @if (appointment != null && appointment.patientInClinic) {
+                <mat-icon class="icon-btn">where_to_vote</mat-icon>
+              }
+              @if (appointment != null && appointment.paid) {
+                <mat-icon class="icon-btn mr-3">paid</mat-icon>
+              }
             </div>
             
           </mat-expansion-panel-header>
           <!-- --------------------------- Actions -------------------------- -->
           <div class="flex gap-2 border-t-2 border-r-blue-300 pt-4">
-            <button mat-mini-fab aria-label="Example icon button with a home icon" class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"><!--style="background: hsl(198.67deg 97.57% 48.43% / 40%);"--> 
+            <button mat-mini-fab aria-label="Call Patient"
+              class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
               <mat-icon>call</mat-icon>
             </button>
-            <button mat-mini-fab aria-label="Example icon button with a home icon" class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"><!--style="background: hsl(198.67deg 97.57% 48.43% / 40%);"--> 
+            <button
+              mat-mini-fab aria-label="Send SMS to Patient" class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
               <mat-icon>sms</mat-icon>
+            </button>
+            <button mat-mini-fab aria-label="Patient on site toggle" (click)="toggleOnSite()"
+              class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+              <mat-icon>where_to_vote</mat-icon>
+            </button>
+            <button mat-mini-fab aria-label="Patient paid on site"  (click)="togglePaid()"
+              class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+              <mat-icon>paid</mat-icon>
+            </button>
+            <button mat-mini-fab aria-label="Patient paid on site" (click)="toggleUrgent()"
+              class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+              <mat-icon>emergency</mat-icon>
             </button>
           </div>
         </mat-expansion-panel>
@@ -34,7 +55,10 @@
 
         @switch (appointment?.state?.toLowerCase()) {
           @case ('waiting') {
-            <button mat-fab color="primary" aria-label="Patient is waiting to enter for examinationg"  (click)="setStateToExamining()">
+            <button mat-fab color="primary" 
+              aria-label="Patient is waiting to enter for examinationg"
+              (click)="setStateToExamining()"
+              class="scale-down-on-small">
               <mat-icon>login</mat-icon>
             </button>
           }
@@ -53,6 +77,5 @@
 
 
 
-    </div>
   </div>
 </div>

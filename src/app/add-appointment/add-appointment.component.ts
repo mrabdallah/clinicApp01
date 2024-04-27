@@ -29,6 +29,9 @@ import { State } from '../ngrx_store/reducers/index'; // Import your state inter
 import { TemporaryDataSrvService } from '../temporary-data-srv.service'; // Import the data service
 import { DatabaseService } from '../database.service';
 import { Subscription, map } from 'rxjs';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+
+
 
 export const MY_FORMATS = {
   parse: {
@@ -62,7 +65,7 @@ export const MY_FORMATS = {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    
+    MatCheckboxModule,
     MatDatepickerModule,
 
     MatDialogClose,
@@ -84,62 +87,93 @@ export class AddAppointmentComponent implements OnDestroy{
     private temporaryDataSrvService: TemporaryDataSrvService
     ) { }
 
-  options: string[] = [];
-  filteredOptions: string[] = [];
+  options: any[] = [];
+  filteredOptions: any[] = [];
   filterCtrl = new FormControl('');
 
   ngOnInit() {
 
     this.allPatientsSubscription = this.databaseService.getRealTimeData()
-    // .pipe(map((p)=> {
-    //   return p;
-    // }))
     .subscribe((arr) => {
-      let tmpArr:string[] = [];
+      let tmpArr:any[] = [];
       arr.forEach((p) => {
-        tmpArr.push(`${p.firstName} ${p.lastName}`);
+        tmpArr.push({
+          firstName: p.firstName,
+          lastName: p.lastName,
+          id: p.id,
+          primaryContact: p.primaryContact,
+      });
       });
       this.options = [...tmpArr];
     });
 
 
     this.filteredOptions = this.options.slice(); // Initialize filtered options
-    (this.profileForm.get('name') as FormControl).valueChanges.subscribe(value => {
+    (this.profileForm.get('patientID') as FormControl).valueChanges.subscribe(value => {
       this.filteredOptions = this.options.filter(option =>
-        option.toLowerCase().includes(value!.toLowerCase())
+        `${option.firstName} ${option.lastName}`.toLowerCase().includes(value!.toLowerCase())
       );
     });
   }
 
-  onSelectionChange(event: any) {
-    if (event.option.selected) {
-      this.filterCtrl.setValue(event.option.value); // Update form control value on selection
+  getFullNameForDisplay(selection:any):string{
+    let selectionIndex:number = this.options.findIndex( elem => elem.id === selection);
+    if (selectionIndex >= 0 ) {
+      return `${this.options[selectionIndex]?.firstName} ${this.options[selectionIndex]?.lastName}`;
+    } else {
+      return '';
     }
+  }
+
+  onSelectionChange(event: any) {
+    // if (event.option.selected) {
+    //   console.log(' if    event.option.value');
+    //   console.log(event.option.value);
+      
+
+    // }
   }
 
   ngOnDestroy(): void {
    this.allPatientsSubscription?.unsubscribe() ;
   }
 
-  /**
-   *     firstName: ['', Validators.required],
-    lastName: [''],
-   */
-
   profileForm = this.formBuilder.group({
-    name: ['', Validators.required],
+    patientID: ['', Validators.required],
     date: new FormControl(moment().format('DD/MM/YYYY')),
-    address: this.formBuilder.group({
-      street: [''],
-      city: [''],
-      state: [''],
-      zip: [''],
-    }),
+    reasonForVisit: ['', Validators.required],
+    isUrgent: [false],
+    // address: this.formBuilder.group({
+    //   street: [''],
+    //   city: [''],
+    //   state: [''],
+    //   zip: [''],
+    // }),
   });
 
+  getPatientObject(id?:string){
+    if (id){
+      let patientIndex:number = this.options.findIndex( elem => elem.id === id);
+      return this.options[patientIndex];
+    }
+  }
+
   onSubmit() {
-    this.databaseService.createNewAppointment();
     this.dialogRef.close();
+    // console.log(`this.profileForm.value.name: ${this.profileForm.value.name}`);
+    let patient = this.getPatientObject(this.profileForm.value.patientID!);
+    // console.log(`firstName: ${patient.firstName}`)
+    this.databaseService.createNewAppointment({
+      patient: {
+        id: this.profileForm.value.patientID,
+        firstName: patient.firstName,
+        lastName: patient.lastName,
+        primaryContact: patient.primaryContact,
+      },
+      reasonForVisit: this.profileForm.value.reasonForVisit,
+      isUrgent: this.profileForm.value.isUrgent,
+      date: moment(this.profileForm.value.date, 'DD/MM/YYYY').toDate(),
+    });
   }
 
   openNewPatientFormDialog() {

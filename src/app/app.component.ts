@@ -129,7 +129,7 @@ export class AppComponent {
 
   title = 'clinic-manager';
   private databaseService = inject(DatabaseService);
-  todaySchedule: Appointment[] = []
+  todaySchedule: Appointment[] = [];
   patients: any[] = [];
   // movies = [
   //   'Episode I - The Phantom Menace',
@@ -145,7 +145,7 @@ export class AppComponent {
   // private todaySchedule$: Observable<any[]>;
   private todayScheduleSubscription: Subscription;
 
-  isOpen = true;
+  isOpen = false;
   firstPeriodValue = 100;
   secondPeriodValue = 70;
   today = `${new Date().getHours}:${new Date().getMinutes}`;
@@ -157,7 +157,8 @@ export class AppComponent {
   ) {
 
     this.todayScheduleSubscription = this.databaseService.getTodayScheduleRealTimeData().subscribe((arr) => {
-      this.todaySchedule = [...arr];
+        // .pipe(map((appointment) => appointment.state !== "done")).subscribe((arr) => {
+      this.todaySchedule = [...arr.filter((appointment) => appointment.state.toLowerCase() !== "done")];
     });
   }
 
@@ -197,7 +198,7 @@ export class AppComponent {
   }
 
   drop(event: CdkDragDrop<string[]>) {
-    moveItemInArray(this.patients, event.previousIndex, event.currentIndex);
+    moveItemInArray(this.todaySchedule, event.previousIndex, event.currentIndex);
     // console.log(`\x1B[35m prev: ${event.previousIndex} curr: ${event.currentIndex} \x1B[0m`)
   }
 

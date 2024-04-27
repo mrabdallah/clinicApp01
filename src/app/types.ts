@@ -1,17 +1,18 @@
-// const APPOINTMENT_STATUS = {
-//   WAITING: 'Waiting',
-//   EXAMINING: 'Examining',
-//   DONE: 'Done',
-// } as const;
+export interface Patient {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
 
-export type Appointment = {
-  firestorePath: string;
-  appointmentID: string;
-  dateTime: any;
-  patient: {
-    firstName: string;
-    lastName: string;
-    patientID: string;
-  };
-  state: string; //'Waiting' | 'Examining' | 'Done'
-};
+export interface Appointment {
+  firestorePath?: string;
+  id: string;
+  dateTime: Date; // Use Date instead of any
+  patient: Patient; // Reference Patient interface
+  state: 'waiting' | 'examining' | 'done';
+  isUrgent: false;
+  patientInClinic: false;
+  paid: false;
+}
+
+

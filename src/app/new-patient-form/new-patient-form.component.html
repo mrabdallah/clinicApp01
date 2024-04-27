@@ -3,62 +3,21 @@
 
 
   <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="flex flex-col">
-    <!-- -------------------------Patient Name------------------------- -->
     <div class="patient-name flex items-center gap-3">
+      <!-- --------------------First Name---------------- -->
       <mat-form-field appearance="outline" class="grow mt-8">
         <mat-label>First Name</mat-label>
         <input type="text" matInput formControlName="firstName">        
       </mat-form-field>
 
+      <!-- --------------------Last Name---------------- -->
       <mat-form-field appearance="outline" class="grow mt-8">
         <mat-label>Last Name</mat-label>
         <input type="text" matInput formControlName="lastName">        
       </mat-form-field>
     </div>
 
-      <mat-form-field appearance="outline" class="grow mt-8">
-        <mat-label>Address</mat-label>
-        <input type="text" matInput formControlName="address">        
-      </mat-form-field>
-
-    <div class="flex">
-      <mat-form-field appearance="outline" class="grow mt-8">
-        <mat-label>Primary Contact Number</mat-label>
-        <input type="text" matInput formControlName="primaryContact">
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="grow mt-8">
-        <mat-label>Emergency Contact Number</mat-label>
-        <input type="text" matInput formControlName="emergencyContact">
-      </mat-form-field>
-    </div>
-
-    <div class="flex">
-      <mat-form-field appearance="outline" class="grow mt-8">
-        <mat-label>Reason For Visit</mat-label>
-        <input type="text" matInput formControlName="reasonForVisit">
-      </mat-form-field>
-    </div>
-
-    <div class="flex">
-      <mat-form-field appearance="outline" class="grow mt-8">
-        <mat-label>Allergies</mat-label>
-        <input type="text" matInput formControlName="allergies">
-      </mat-form-field>
-    </div>
-    <div class="flex">
-      <mat-form-field appearance="outline" class="grow mt-8">
-        <mat-label>Past Medical History (significant illnesses, surgeries)</mat-label>
-        <input type="text" matInput formControlName="pastMedicalHistory">
-      </mat-form-field>
-    </div>
-
-    <div class="flex">
-      <mat-form-field appearance="outline" class="grow mt-8">
-        <mat-label>Family Medical History</mat-label>
-        <input type="text" matInput formControlName="familyMedicalHistory">
-      </mat-form-field>
-    </div>
-
+    <!-- --------------------Date of birth---------------- -->
     <mat-form-field appearance="outline">
       <mat-label>Date of birth</mat-label>
       <input matInput [matDatepicker]="dp" formControlName="dateOfBirth">
@@ -69,7 +28,50 @@
       <mat-datepicker #dp></mat-datepicker>
     </mat-form-field>
 
+      <!-- --------------------Address---------------- -->
+      <mat-form-field appearance="outline" class="grow mt-8">
+        <mat-label>Address</mat-label>
+        <input type="text" matInput formControlName="address">        
+      </mat-form-field>
+
     <div class="flex">
+      <!-- --------------------Primary Contact Number---------------- -->
+      <mat-form-field appearance="outline" class="grow mt-8">
+        <mat-label>Primary Contact Number</mat-label>
+        <input type="text" matInput formControlName="primaryContact">
+      </mat-form-field>
+      <!-- --------------------Emergency Contact Number---------------- -->
+      <mat-form-field appearance="outline" class="grow mt-8">
+        <mat-label>Emergency Contact Number</mat-label>
+        <input type="text" matInput formControlName="emergencyContact">
+      </mat-form-field>
+    </div>
+
+    <div class="flex">
+      <!-- --------------------Allergies---------------- -->
+      <mat-form-field appearance="outline" class="grow mt-8">
+        <mat-label>Allergies</mat-label>
+        <input type="text" matInput formControlName="allergies">
+      </mat-form-field>
+    </div>
+    <div class="flex">
+      <!-- --------------------Past Medical History---------------- -->
+      <mat-form-field appearance="outline" class="grow mt-8">
+        <mat-label>Past Medical History (significant illnesses, surgeries)</mat-label>
+        <input type="text" matInput formControlName="pastMedicalHistory">
+      </mat-form-field>
+    </div>
+
+    <div class="flex">
+      <!-- --------------------Family Medical History---------------- -->
+      <mat-form-field appearance="outline" class="grow mt-8">
+        <mat-label>Family Medical History</mat-label>
+        <input type="text" matInput formControlName="familyMedicalHistory">
+      </mat-form-field>
+    </div>
+
+    <div class="flex">
+      <!-- --------------------Social History---------------- -->
       <mat-form-field appearance="outline" class="grow mt-8">
         <mat-label>Social History (smoking, alcohol use, etc.)</mat-label>
         <input type="text" matInput formControlName="socialHistory">
@@ -84,9 +86,7 @@
     </div>
     
     <div class="flex">
-
       <mat-checkbox formControlName="optInForDataSharing" labelPosition="before" color="`red`">Opt In for Data Sharing</mat-checkbox>
-
     </div>
 
 

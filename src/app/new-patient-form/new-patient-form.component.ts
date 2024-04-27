@@ -92,7 +92,6 @@ export class NewPatientFormComponent {
       address: ['', Validators.required],
       primaryContact: ['', Validators.required],
       emergencyContact: [''],
-      reasonForVisit: ['', Validators.required],
       allergies: [''],
       pastMedicalHistory: [''],
       familyMedicalHistory: [''],
@@ -113,20 +112,20 @@ export class NewPatientFormComponent {
       this.temporaryDataSrvService.setData(false);
       // console.log(`\x1B[34m${JSON.stringify(this.profileForm.value)}\x1B[0m`);
       this.dialogRef.close();
-      this.databaseService.setNewPatient({
+      this.databaseService.addNewPatient({
         firstName: this.profileForm.value.firstName,
         lastName: this.profileForm.value.lastName,
         address: this.profileForm.value.address,
         primaryContact: this.profileForm.value.primaryContact,
         emergencyContact: this.profileForm.value.emergencyContact,
-        reasonForVisit: this.profileForm.value.reasonForVisit,
         allergies: this.profileForm.value.allergies,
         pastMedicalHistory: this.profileForm.value.pastMedicalHistory,
         familyMedicalHistory: this.profileForm.value.familyMedicalHistory,
         socialHistory: this.profileForm.value.socialHistory,
         preferredAppointmentDaysAndTimes: this.profileForm.value.preferredAppointmentDaysAndTimes,
         optInForDataSharing: this.profileForm.value.optInForDataSharing,
-        dateOfBirth: this.profileForm.value.dateOfBirth,
+        dateOfBirth: moment(this.profileForm.value.dateOfBirth, 'DD/MM/YYYY').toDate(),
+        //(patient.dateOfBirth as Moment).toDate()
       });
     }
 }

@@ -13,7 +13,8 @@ import { DatabaseService } from '../database.service';
   standalone: true,
   imports: [MatIconModule,
     MatButtonModule,
-     MatExpansionModule],
+    MatExpansionModule
+  ],
   templateUrl: './patient-schedule-current-entry.component.html',
   styles: `
   .elems-container {
@@ -42,6 +43,12 @@ import { DatabaseService } from '../database.service';
   .icon-btn{
     transform: scale(1.2);
   }
+
+  @media screen and (max-width: 600px){
+    .scale-down-on-small{
+      transform: scale(0.7);
+    }
+  }
   `
 })
 export class PatientScheduleCurrentEntryComponent {
@@ -52,14 +59,26 @@ export class PatientScheduleCurrentEntryComponent {
   isOpen = true;
 
   setStateToExamining(){
-    this.databaseService.updateAppointmentState(this.appointment!.firestorePath, 'examining');
+    this.databaseService.updateAppointmentState(this.appointment!.firestorePath!, 'examining');
   }
 
   setStateToDone(){
-    this.databaseService.updateAppointmentState(this.appointment!.firestorePath, 'done');
+    this.databaseService.updateAppointmentState(this.appointment!.firestorePath!, 'done');
   }
 
   toggle(){
     this.isOpen = !this.isOpen;
+  }
+
+  toggleOnSite(){
+    this.databaseService.toggleOnSite(this.appointment!.firestorePath!, !this.appointment!.patientInClinic!);
+  }
+
+  togglePaid(){
+    this.databaseService.togglePaid(this.appointment!.firestorePath!, !this.appointment!.paid!);
+  }
+
+  toggleUrgent(){
+    this.databaseService.toggleUrgent(this.appointment!.firestorePath!, !this.appointment!.isUrgent!);
   }
 }

@@ -7,12 +7,13 @@
     <div class="patient-name flex items-center gap-3">
       <mat-form-field appearance="outline" class="grow mt-8">
         <mat-label>Name</mat-label>
-        <input type="text" matInput formControlName="name" [matAutocomplete]="auto">
+        <input type="text" matInput formControlName="patientID" [matAutocomplete]="auto">
         <!-- <mat-icon matSuffix>sentiment_very_satisfied</mat-icon> -->
-        <mat-autocomplete #auto="matAutocomplete">
+        <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onSelectionChange($event)"
+          [displayWith]="getFullNameForDisplay.bind(this)">
           @for (option of filteredOptions; track option) {
-          <mat-option [value]="option">
-            {{ option }}
+          <mat-option [value]="option.id">
+            {{ option.firstName }} {{ option.lastName }}
           </mat-option>
           }
         </mat-autocomplete>
@@ -33,6 +34,17 @@
       <mat-datepicker-toggle matIconSuffix [for]="dp"></mat-datepicker-toggle>
       <mat-datepicker #dp></mat-datepicker>
     </mat-form-field>
+
+
+    <mat-form-field appearance="outline" class="grow mt-8">
+      <mat-label>Reason For Visit</mat-label>
+      <input type="text" matInput formControlName="reasonForVisit">
+    </mat-form-field>
+
+
+    <div class="flex">
+      <mat-checkbox formControlName="isUrgent" labelPosition="before" color="`red`">Is Urgent?</mat-checkbox>
+    </div>
 
 
 

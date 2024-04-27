@@ -1,4 +1,52 @@
 <div class="rounded-2xl flex drop-shadow m-2 p-2" style="background-color: hsl(185.45deg 31.43% 93.14%);">
   <!-- <mat-icon class="icon-display">account_circle</mat-icon> -->
-  <p>{{patient?.firstName}}</p>
+  <div class="w-1/5">
+    <p>{{appointment?.patient?.firstName}} {{appointment?.patient?.lastName}}</p> 
+  </div>
+
+  <div class="spacer grow-[2]"></div>
+
+  <div class="actions_nd_stats flex justify-end w-1/3 gap-2">
+    <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false"
+      style="border-radius: 0.7rem;">
+      <!-- --------------------------- Flags & Main Actions -------------------------- -->
+      <mat-expansion-panel-header class="specific-class">
+        @if (appointment != null && appointment.isUrgent) {
+          <img src="assets/images/alarm.gif" alt="Emergency" class="object-containss">
+        }
+
+        <div class="flex justify-center items-center gap-2">
+          @if (appointment != null && appointment.patientInClinic) {
+            <mat-icon class="icon-btn">where_to_vote</mat-icon>
+          }
+          @if (appointment != null && appointment.paid) {
+            <mat-icon class="icon-btn mr-3">paid</mat-icon>
+          }
+        </div>
+        
+      </mat-expansion-panel-header>
+      <!-- --------------------------- Actions -------------------------- -->
+      <div class="flex gap-2 border-t-2 border-r-blue-300 pt-4">
+        <button mat-mini-fab aria-label="Call Patient" class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+          <mat-icon>call</mat-icon>
+        </button>
+        <button mat-mini-fab aria-label="Send SMS to Patient" class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+          <mat-icon>sms</mat-icon>
+        </button>
+        <button mat-mini-fab aria-label="Patient on site toggle"  (click)="toggleOnSite()"
+          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+          <mat-icon>where_to_vote</mat-icon>
+        </button>
+        <button mat-mini-fab aria-label="Patient paid on site" (click)="togglePaid()"
+          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+          <mat-icon>paid</mat-icon>
+        </button>
+        <button mat-mini-fab aria-label="Emergency Toggle" (click)="toggleUrgent()"
+          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+          <mat-icon>emergency</mat-icon>
+        </button>
+      </div>
+    </mat-expansion-panel>
+  </div>
+  
 </div>

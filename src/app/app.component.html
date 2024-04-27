@@ -37,6 +37,8 @@
       <mat-icon>format_list_bulleted_add</mat-icon>
     </button>
   </div>
+  
+  <app-clock></app-clock>
 
   <!-- -------------------- progress-container -------------------- -->
   <div class="text-base my-4 mx-12 p-4 rounded-2xl flex"
@@ -60,14 +62,12 @@
     </div>
   </div>
 
-  <app-clock></app-clock>
-
-
 
   <!-- ------------------------------------------ Entries ------------------------------------------ -->
-  <div cdkDropList (cdkDropListDropped)="drop($event)" class="rounded-2xl xs:mx-2 lg:mx-40 my-4 px-1 bg-white patient-schedule-entries">
+  <div cdkDropList (cdkDropListDropped)="drop($event)"
+    class="rounded-2xl xs:mx-2 lg:mx-80 my-4 px-1 bg-white patient-schedule-entries">
 
-    @if (patients.length > 0) {
+    @if (todaySchedule.length > 0) {
 
       <!-- @for (patient of patients; track patient; let idx = $index) {
       <div class="patient-schedule-entry-container" cdkDrag>
@@ -86,17 +86,14 @@
           <div class="patient-schedule-entry-placeholder" *cdkDragPlaceholder></div>
     
           @if (idx > 0) {
-          <patient-schedule-entry [patient]="'patient'"></patient-schedule-entry>
+            <patient-schedule-entry [appointment]="appointment"></patient-schedule-entry>
           } @else {
-          <patient-schedule-current-entry [appointment]="appointment"></patient-schedule-current-entry>
+            <patient-schedule-current-entry [appointment]="appointment"></patient-schedule-current-entry>
           }
         </div>
-        }
-
-
-
+      }
     } @else {
-    <p>-</p>
+      <p>-</p>
     }
 
   </div>
