@@ -61,7 +61,7 @@ import { Appointment } from './types';
     height: 100%;
     width: 0;
     position: fixed;
-    z-index: 1;
+    z-index: 19;
     top: 0;
     left: 0;
     background-color: #C1E3FF;
@@ -81,14 +81,6 @@ import { Appointment } from './types';
   .toggled{
     transform: translateX(calc(-50vw + 263px));
   }
-  .second-period{
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
-  .prg-bar{
-    width: 100%;
-  }
   .layered-backgrounds{
     background: radial-gradient(circle at 10% 20%, rgb(137, 210, 253) 0%, rgb(255, 241, 188) 90%);
     height: 100dvh;
@@ -96,111 +88,18 @@ import { Appointment } from './types';
     position: absolute;
     z-index: -4;
   }
-  .patient-schedule-entry-container {
-    box-sizing: border-box;
-    cursor: move;
-  }
-  .cdk-drag-preview {
-    box-sizing: border-box;
-    border-radius: 4px;
-    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
-                0 8px 10px 1px rgba(0, 0, 0, 0.14),
-                0 3px 14px 2px rgba(0, 0, 0, 0.12);
-  }
-
-  .cdk-drag-animating {
-    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-  }
-  .patient-schedule-entries.cdk-drop-list-dragging .patient-schedule-entry-container:not(.cdk-drag-placeholder) {
-    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-  }
-
-  .patient-schedule-entry-placeholder {
-    background: #ccc;
-    border: dotted 3px #999;
-    min-height: 60px;
-    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
-  }
   `,
   // styleUrl: './app.component.css'
 })
 export class AppComponent {
-  newPatientFormDialogOpened: boolean =false;
 
   title = 'clinic-manager';
-  private databaseService = inject(DatabaseService);
-  todaySchedule: Appointment[] = [];
-  patients: any[] = [];
-  // movies = [
-  //   'Episode I - The Phantom Menace',
-  //   'Episode II - Attack of the Clones',
-  //   'Episode III - Revenge of the Sith',
-  //   'Episode IV - A New Hope',
-  //   'Episode V - The Empire Strikes Back',
-  //   'Episode VI - Return of the Jedi',
-  //   'Episode VII - The Force Awakens',
-  //   'Episode VIII - The Last Jedi',
-  //   'Episode IX - The Rise of Skywalker',
-  // ];
   // private todaySchedule$: Observable<any[]>;
-  private todayScheduleSubscription: Subscription;
 
   isOpen = false;
-  firstPeriodValue = 100;
-  secondPeriodValue = 70;
-  today = `${new Date().getHours}:${new Date().getMinutes}`;
-
-  constructor(
-    public dialog: MatDialog,
-    // private newPatientModalService: NewPatientModalService
-    private temporaryDataSrvService: TemporaryDataSrvService
-  ) {
-
-    this.todayScheduleSubscription = this.databaseService.getTodayScheduleRealTimeData().subscribe((arr) => {
-        // .pipe(map((appointment) => appointment.state !== "done")).subscribe((arr) => {
-      this.todaySchedule = [...arr.filter((appointment) => appointment.state.toLowerCase() !== "done")];
-    });
-  }
-
   
 
-  ngOnInit() {
-    this.databaseService.fetchPatientsOneTimeSnapshot().then(
-      () => {
-        this.patients = this.databaseService.patientsOnTimeSnapshot;
-      }
-    );
-
-    this.temporaryDataSrvService.getData().subscribe(dialogState => {
-      //this.newPatientFormDialogOpened = dialogState;
-      if(dialogState) {
-        this.openNewPatientFormDialog('500ms', '500ms');
-      }
-    });
-  }
-
-  openNewAppointmentDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
-    this.dialog.open(AddAppointmentComponent, {
-      width: '50vw',
-      enterAnimationDuration,
-      exitAnimationDuration,
-      data: { testdatakey: 'testdatavalue' }
-    });
-  }
-
-  openNewPatientFormDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
-    this.dialog.open(NewPatientFormComponent, {
-      width: '75vw',
-      enterAnimationDuration,
-      exitAnimationDuration,
-      data: { testdatakey: 'testdatavalue' }
-    });
-  }
-
-  drop(event: CdkDragDrop<string[]>) {
-    moveItemInArray(this.todaySchedule, event.previousIndex, event.currentIndex);
-    // console.log(`\x1B[35m prev: ${event.previousIndex} curr: ${event.currentIndex} \x1B[0m`)
-  }
+ 
 
   toggleSidebar() {
     this.isOpen = !this.isOpen;

@@ -143,6 +143,9 @@ export class AddAppointmentComponent implements OnDestroy{
     date: new FormControl(moment().format('DD/MM/YYYY')),
     reasonForVisit: ['', Validators.required],
     isUrgent: [false],
+    paid: [false],
+    patientInClinic: [false],
+
     // address: this.formBuilder.group({
     //   street: [''],
     //   city: [''],
@@ -160,20 +163,30 @@ export class AddAppointmentComponent implements OnDestroy{
 
   onSubmit() {
     this.dialogRef.close();
-    // console.log(`this.profileForm.value.name: ${this.profileForm.value.name}`);
     let patient = this.getPatientObject(this.profileForm.value.patientID!);
-    // console.log(`firstName: ${patient.firstName}`)
     this.databaseService.createNewAppointment({
       patient: {
-        id: this.profileForm.value.patientID,
+        id: this.profileForm.value.patientID!,
         firstName: patient.firstName,
         lastName: patient.lastName,
         primaryContact: patient.primaryContact,
+        dateOfBirth: patient.dateOfBirth,
       },
-      reasonForVisit: this.profileForm.value.reasonForVisit,
-      isUrgent: this.profileForm.value.isUrgent,
-      date: moment(this.profileForm.value.date, 'DD/MM/YYYY').toDate(),
-    });
+      reasonForVisit: this.profileForm.value.reasonForVisit ?? '',
+      isUrgent: typeof this.profileForm.value.isUrgent === 'boolean' ? this.profileForm.value.isUrgent : false,
+      dateTime: moment(this.profileForm.value.date, 'DD/MM/YYYY').toDate(),
+      state: 'waiting',
+      paid: typeof(this.profileForm.value.paid) === 'boolean' ? this.profileForm.value.paid : false,
+      patientInClinic: typeof(this.profileForm.value.patientInClinic) === 'boolean' ? this.profileForm.value.patientInClinic : false,
+    },
+    (():string => {
+      const targetDate = moment(this.profileForm.value.date, 'DD/MM/YYYY').toDate();
+      const targetDateModified = `${targetDate.getDate()}_`
+        + `${targetDate.getMonth() + 1}_`
+        + `${targetDate.getFullYear()}`;
+      return targetDateModified;
+    })(),
+    );
   }
 
   openNewPatientFormDialog() {

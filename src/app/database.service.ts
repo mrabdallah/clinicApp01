@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+ import { Injectable, inject } from '@angular/core';
 import {
   addDoc,
   Firestore,
@@ -12,12 +12,14 @@ import {
   updateDoc,
   setDoc,
   QueryDocumentSnapshot,
-  DocumentData
+  DocumentData,
+  DocumentReference,
+  docData
 } from '@angular/fire/firestore';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore'
 import { Moment } from 'moment';
-import { Observable } from 'rxjs';
-import { Appointment } from './types';
+import { Observable, map } from 'rxjs';
+import { Appointment, Patient } from './types';
 
 // interface DynamicDictionary {
 //   [key: string]: any; // Key is a string, value can be any type
@@ -68,7 +70,6 @@ export class DatabaseService {
     });
 
 
-
     /* ******************************* Fetching today appointments ******************************* */
     // console.info('Fetching today appointments');
     // console.log()
@@ -78,28 +79,34 @@ export class DatabaseService {
     today.setHours(0, 0, 0, 0); // Set time to 12 AM
     const todayScheduleCollectionRef = query(collection(this.firestore, `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/` +
       `${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}` +
-      `/appointments/`), where("date", ">=", Timestamp.fromDate(today)));
+      `/appointments/`), where("dateTime", ">=", Timestamp.fromDate(today)));
     this.todaySchedule$ = new Observable(observer => {
       const unsubscribe = onSnapshot(todayScheduleCollectionRef, (snapshot) => {
-        // console.log('fetching appointments');
-        const todayScheduleQuerySnapshot = snapshot.docs.map(doc => {
-
-          return {
-            firestorePath: doc.ref.path,
-            id: doc.id,
-            dateTime: doc.data()['dateTime'],
-            patient: {
-              firstName: doc.data()['firstName'],
-              lastName: doc.data()['lastName'],
-              id: doc.data()['patientID'],
-            },
-            state: doc.data()['state'],
-            isUrgent: doc.data()['isUrgent'],
-            patientInClinic: doc.data()['patientInClinic'],
-            paid: doc.data()['paid']
-          };
-        });
-        observer.next(todayScheduleQuerySnapshot);
+        console.log('fetching appointments');
+        if (snapshot.empty) {
+          console.log('empty!!!!!!');
+        } else{
+          const todayScheduleQuerySnapshot = snapshot.docs.map(doc => {
+            return {
+              firestorePath: doc.ref.path,
+              id: doc.id,
+              dateTime: doc.data()['dateTime'].toDate(),
+              patient: {
+                firstName: doc.data()['firstName'],
+                lastName: doc.data()['lastName'],
+                id: doc.data()['patientID'],
+                primaryContact: doc.data()['primaryContact'],
+                dateOfBirth: doc.data()['dateOfBirth']?.toDate(),
+              },
+              state: doc.data()['state'],
+              isUrgent: doc.data()['isUrgent'],
+              reasonForVisit: doc.data()['reasonForVisit'],
+              patientInClinic: doc.data()['patientInClinic'],
+              paid: doc.data()['paid'],
+            };
+          });
+          observer.next(todayScheduleQuerySnapshot);
+        }
       }, (error) => {
         observer.error(error);
       });
@@ -108,22 +115,51 @@ export class DatabaseService {
     });
   }
 
-  async createNewAppointment(appointment: any) {
+  getPatient(patientID:string): Observable<Patient | null>{
+    const patientDocRef = doc(this.firestore, `/patients/${patientID}`);
+    return docData(patientDocRef).pipe(
+      map((data:DocumentData | undefined) => {
+        if (data) {
+          return {
+            id: patientID,
+            firstName: data['firstName'],
+            lastName: data['lastName'],
+            primaryContact: data['primaryContact'],
+            address: data['address'],
+            allergies: data['allergies'],
+            dateOfBirth: data['dateOfBirth'].toDate(),
+            emergencyContact: data['emergencyContact'],
+            familyMedicalHistory: data['familyMedicalHistory'],
+            optInForDataSharing: data['optInForDataSharing'],
+            pastMedicalHistory: data['pastMedicalHistory'],
+            preferredAppointmentDaysAndTimes: data['preferredAppointmentDaysAndTimes'],
+            socialHistory: data['socialHistory'],
+          } as Patient;
+        } else {
+          // handle document not found case (throw error, return null, etc.)
+          return null;
+        }
+      })
+    );
+  }
+
+  async createNewAppointment(appointment: Appointment, targetDate: string) {
     const today = new Date();
     try {
       await addDoc(collection(this.firestore,
         `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/` +  // TODO: Change the 'E8WUcagWkeNQXKXGP6Uq' to use a variable
-        `${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}` +
+        `${targetDate}` +
         `/appointments/`), {
           patientID: appointment.patient.id,
           firstName: appointment.patient.firstName,
           lastName: appointment.patient.lastName,
           primaryContact: appointment.patient.primaryContact,
           reasonForVisit: appointment.reasonForVisit,
-          date: appointment.date,
+          dateTime: appointment.dateTime,
           state: 'waiting',
           isUrgent: appointment.isUrgent,
-
+          patientInClinic: appointment.patientInClinic,
+          paid: appointment.paid,
       });
     } catch (error) {
       console.error('Error Setting New Patients:', error);

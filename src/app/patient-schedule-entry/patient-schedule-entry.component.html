@@ -1,6 +1,6 @@
 <div class="rounded-2xl flex drop-shadow m-2 p-2" style="background-color: hsl(185.45deg 31.43% 93.14%);">
-  <!-- <mat-icon class="icon-display">account_circle</mat-icon> -->
-  <div class="w-1/5">
+  <div class="cont-elevation flex gap-7 items-center w-1/2 py-4 px-5" (click)="navigateToPatientDetails()">
+    <mat-icon class="icon-display" style="transform: scale(2);">account_circle</mat-icon>
     <p>{{appointment?.patient?.firstName}} {{appointment?.patient?.lastName}}</p> 
   </div>
 

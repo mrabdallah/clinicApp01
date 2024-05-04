@@ -13,6 +13,7 @@ export class ClockComponent implements OnInit {
   public seconds!: string;
   public ampm!: string;
   public day!: string;
+  public date?: string;
   private daysArray = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   // private date = new Date();
 
@@ -25,6 +26,7 @@ export class ClockComponent implements OnInit {
       // this.updateDate(Math.floor(delta / 1000));
       this.updateDate(new Date());
       this.day = this.daysArray[new Date().getDay()];
+      this.date = `${new Date().getDate()} ${new Date().toLocaleString('default', { month: 'long' })} ${new Date().getFullYear()}`;
     }, 1000); // update about every second
 
 

@@ -1,5 +1,5 @@
 import { ApplicationConfig, importProvidersFrom, isDevMode } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 import { routes } from './app.routes';
@@ -16,7 +16,7 @@ import { reducers, metaReducers } from './ngrx_store/reducers/index'; // Import 
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
+    provideRouter(routes,  withComponentInputBinding()),
     provideAnimationsAsync(),
     importProvidersFrom(
       [

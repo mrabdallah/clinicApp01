@@ -4,6 +4,7 @@ import { Appointment } from '../types';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { DatabaseService } from '../database.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'patient-schedule-entry',
@@ -19,10 +20,17 @@ import { DatabaseService } from '../database.service';
       max-height: 3.5rem;
       object-fit: contain;
     }
+    .cont-elevation{
+      
+      box-shadow: 0 0 9px 2px #9E9E9E;
+      border-radius: 15px;
+    }
   `
 })
 export class PatientScheduleEntryComponent {
   @Input() appointment?: Appointment;
+  private router = inject(Router);
+  
   panelOpenState = false;
   private databaseService = inject(DatabaseService);
 
@@ -37,5 +45,10 @@ export class PatientScheduleEntryComponent {
 
   toggleUrgent(){
     this.databaseService.toggleUrgent(this.appointment!.firestorePath!, !this.appointment!.isUrgent!);
+  }
+
+  navigateToPatientDetails() {
+    this.router.navigate([`patient/${this.appointment?.patient.id}`]);
+    console.log('navigated');
   }
 }

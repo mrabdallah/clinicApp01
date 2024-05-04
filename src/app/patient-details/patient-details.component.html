@@ -1,0 +1,61 @@
+<div class="">
+  <button 
+    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-[rgba(0,_0,_0,_0.24)_0px_3px_8px]"
+    (click)="goBack()">
+    Go  ddd Back
+  </button>
+
+  
+  
+
+
+  
+
+
+  <mat-tab-group>
+
+    
+
+    <mat-tab label="Main">
+      <ng-template matTabContent>
+        Main Informations
+      </ng-template>
+    </mat-tab>
+    <mat-tab label="Visits">
+      <ng-template matTabContent>
+        reasons
+        </ng-template>
+       
+
+    </mat-tab>
+    <mat-tab label="Descriptions">
+      Descriptions ddd
+    </mat-tab>
+
+    <mat-tab label="More Info">
+      More Informations
+    </mat-tab>
+  </mat-tab-group>
+
+
+
+
+
+
+
+  <div></div>
+  patient:
+  {{ (patient$ | async)?.firstName }}
+  {{ (patient$ | async)?.lastName }}
+  {{ (patient$ | async)?.primaryContact }}
+  {{ (patient$ | async)?.address }}
+  {{ (patient$ | async)?.allergies }}
+  {{ (patient$ | async)?.dateOfBirth }}
+  {{ (patient$ | async)?.emergencyContact }}
+  {{ (patient$ | async)?.familyMedicalHistory }}
+  {{ (patient$ | async)?.optInForDataSharing }}
+  {{ (patient$ | async)?.pastMedicalHistory }}
+  {{ (patient$ | async)?.preferredAppointmentDaysAndTimes }}
+  {{ (patient$ | async)?.socialHistory }}
+
+</div>
