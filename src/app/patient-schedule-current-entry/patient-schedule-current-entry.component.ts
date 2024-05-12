@@ -52,18 +52,18 @@ import { DatabaseService } from '../database.service';
   `
 })
 export class PatientScheduleCurrentEntryComponent {
-  @Input() appointment?: Appointment;
+  @Input({required: true}) appointment!: Appointment;
   private databaseService = inject(DatabaseService);
 
   panelOpenState = false;
   isOpen = true;
 
   setStateToExamining(){
-    this.databaseService.updateAppointmentState(this.appointment!.firestorePath!, 'examining');
+    this.databaseService.updateAppointmentState(this.appointment.patient.id, 'examining');
   }
 
   setStateToDone(){
-    this.databaseService.updateAppointmentState(this.appointment!.firestorePath!, 'done');
+    this.databaseService.updateAppointmentState(this.appointment.patient.id, 'done');
   }
 
   toggle(){
@@ -71,14 +71,14 @@ export class PatientScheduleCurrentEntryComponent {
   }
 
   toggleOnSite(){
-    this.databaseService.toggleOnSite(this.appointment!.firestorePath!, !this.appointment!.patientInClinic!);
+    this.databaseService.toggleOnSite(this.appointment.patient.id, !this.appointment!.patientInClinic!);
   }
 
   togglePaid(){
-    this.databaseService.togglePaid(this.appointment!.firestorePath!, !this.appointment!.paid!);
+    this.databaseService.togglePaid(this.appointment.patient.id, !this.appointment!.paid!);
   }
 
   toggleUrgent(){
-    this.databaseService.toggleUrgent(this.appointment!.firestorePath!, !this.appointment!.isUrgent!);
+    this.databaseService.toggleUrgent(this.appointment.patient.id, !this.appointment!.isUrgent!);
   }
 }

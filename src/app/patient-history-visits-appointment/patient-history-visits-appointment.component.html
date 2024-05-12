@@ -1,0 +1,21 @@
+@if (layoutDirection != null && layoutDirection === 'right') {
+  <div class="flex">
+    <div style="width: 49%"></div>
+    <div class="circle-div w-1 bg-slate-500">
+        <div class="dottt"></div>
+    </div>
+    <div class="flex px-3" style="width: 49%">
+      appointment N
+    </div>
+  </div>
+} @else {
+  <div class="flex">
+    <div class="flex justify-end p-3" style="width: 49%">
+      appointment N
+    </div>
+    <div class="circle-div w-1 bg-slate-500">
+        <div class="dottt"></div>
+    </div>
+    <div style="width: 49%"></div>
+  </div>
+}

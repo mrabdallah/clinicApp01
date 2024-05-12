@@ -1,6 +1,6 @@
 <div class="elems-container flex rounded-2xl shadow-xl m-2 p-2">
   <div class="w-1/5">
-    <p>{{appointment?.patient?.firstName}} {{appointment?.patient?.lastName}}</p> 
+    <p>{{appointment.patient.firstName}} {{appointment.patient.lastName}}</p> 
   </div>
   <div class="spacer grow-[2]"></div>
 
@@ -53,7 +53,7 @@
       <div class="pl-6">
 
 
-        @switch (appointment?.state?.toLowerCase()) {
+        @switch (appointment.state.toLowerCase()) {
           @case ('waiting') {
             <button mat-fab color="primary" 
               aria-label="Patient is waiting to enter for examinationg"

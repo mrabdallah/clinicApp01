@@ -3,15 +3,15 @@ export interface Patient {
   id: string;
   firstName: string;
   lastName: string;
-  primaryContact: string;
+  primaryContact?: string;
+  emergencyContact?: string;
   gender?: 'female' | 'male';
   address?: string;
   work?: string;
   maritalStatus?: string
   allergies?: string;
-  dateOfBirth: Date;
+  dateOfBirth?: Date;
   email?: string;
-  emergencyContact?: string;
   familyMedicalHistory?: string;
   optInForDataSharing?: boolean;
   pastMedicalHistory?: string;
@@ -22,16 +22,20 @@ export interface Patient {
 
 
 export interface Appointment {
-  firestorePath?: string;
-  id?: string;
+  // firestorePath?: string;
+  // id?: string;
   dateTime: Date; // Use Date instead of any
-  patient: Patient; // Reference Patient interface
   state: 'waiting' | 'examining' | 'done';
   isUrgent: boolean;
   patientInClinic: boolean;
   reasonForVisit: string;
   paid: boolean;
-  order?: number;
+  // order: number;
+  patient: Patient;
 }
 
-
+export interface DaySchedule {
+  firestorePath: string;
+  id: string;
+  appointments: Appointment[];
+}

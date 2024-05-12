@@ -28,7 +28,7 @@ import { Store, select } from '@ngrx/store';
 import { State } from '../ngrx_store/reducers/index'; // Import your state interface
 import { TemporaryDataSrvService } from '../temporary-data-srv.service'; // Import the data service
 import { DatabaseService } from '../database.service';
-import { Subscription, map } from 'rxjs';
+import { Subscription, first, map } from 'rxjs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
 
@@ -79,7 +79,7 @@ export const MY_FORMATS = {
 })
 export class AddAppointmentComponent implements OnDestroy{
   private databaseService = inject(DatabaseService);
-  private allPatientsSubscription?: Subscription;
+  private allPatientsObservableSubscription?: Subscription;
 
   constructor(public dialogRef: MatDialogRef<AddAppointmentComponent>,
     private store: Store<State>,
@@ -92,8 +92,7 @@ export class AddAppointmentComponent implements OnDestroy{
   filterCtrl = new FormControl('');
 
   ngOnInit() {
-
-    this.allPatientsSubscription = this.databaseService.getRealTimeData()
+    this.allPatientsObservableSubscription = this.databaseService.getAllPatientsRealTimeSnapshot()
     .subscribe((arr) => {
       let tmpArr:any[] = [];
       arr.forEach((p) => {
@@ -135,7 +134,7 @@ export class AddAppointmentComponent implements OnDestroy{
   }
 
   ngOnDestroy(): void {
-   this.allPatientsSubscription?.unsubscribe() ;
+   this.allPatientsObservableSubscription?.unsubscribe() ;
   }
 
   profileForm = this.formBuilder.group({
@@ -154,7 +153,7 @@ export class AddAppointmentComponent implements OnDestroy{
     // }),
   });
 
-  getPatientObject(id?:string){
+  getPatientFullData(id?:string){
     if (id){
       let patientIndex:number = this.options.findIndex( elem => elem.id === id);
       return this.options[patientIndex];
@@ -163,29 +162,33 @@ export class AddAppointmentComponent implements OnDestroy{
 
   onSubmit() {
     this.dialogRef.close();
-    let patient = this.getPatientObject(this.profileForm.value.patientID!);
-    this.databaseService.createNewAppointment({
-      patient: {
-        id: this.profileForm.value.patientID!,
-        firstName: patient.firstName,
-        lastName: patient.lastName,
-        primaryContact: patient.primaryContact,
-        dateOfBirth: patient.dateOfBirth,
-      },
-      reasonForVisit: this.profileForm.value.reasonForVisit ?? '',
-      isUrgent: typeof this.profileForm.value.isUrgent === 'boolean' ? this.profileForm.value.isUrgent : false,
-      dateTime: moment(this.profileForm.value.date, 'DD/MM/YYYY').toDate(),
-      state: 'waiting',
-      paid: typeof(this.profileForm.value.paid) === 'boolean' ? this.profileForm.value.paid : false,
-      patientInClinic: typeof(this.profileForm.value.patientInClinic) === 'boolean' ? this.profileForm.value.patientInClinic : false,
-    },
-    (():string => {
+    let patientDataObject = this.getPatientFullData(this.profileForm.value.patientID!);
+    let targetDateString: string = (():string => {
       const targetDate = moment(this.profileForm.value.date, 'DD/MM/YYYY').toDate();
       const targetDateModified = `${targetDate.getDate()}_`
         + `${targetDate.getMonth() + 1}_`
         + `${targetDate.getFullYear()}`;
       return targetDateModified;
-    })(),
+    })();
+
+    this.databaseService.updateSchedule(
+      targetDateString,
+      // targetDate,
+      {
+        dateTime: moment(this.profileForm.value.date, 'DD/MM/YYYY').toDate(),
+        state: 'waiting',
+        isUrgent: typeof this.profileForm.value.isUrgent === 'boolean' ? this.profileForm.value.isUrgent : false,
+        patientInClinic: typeof(this.profileForm.value.patientInClinic) === 'boolean' ? this.profileForm.value.patientInClinic : false,
+        reasonForVisit: this.profileForm.value.reasonForVisit ?? '',
+        paid: typeof(this.profileForm.value.paid) === 'boolean' ? this.profileForm.value.paid : false,
+        patient: {
+            id: this.profileForm.value.patientID!,
+            firstName: patientDataObject.firstName,
+            lastName: patientDataObject.lastName,
+            // primaryContact: patientDataObject.primaryContact,
+            // dateOfBirth: patientDataObject.dateOfBirth,
+        },
+      },
     );
   }
 

@@ -87,9 +87,9 @@ import { Appointment } from '../types';
 export class HomeComponent {
   newPatientFormDialogOpened: boolean =false;
   private databaseService = inject(DatabaseService);
-  todaySchedule: Appointment[] = [];
+  public todaySchedule$: Observable<Appointment[]> = of([]);
   patients: any[] = [];
-  private todayScheduleSubscription: Subscription;
+  // private todayScheduleSubscription: Subscription;
   firstPeriodValue = 100;
   secondPeriodValue = 70;
   today = `${new Date().getHours}:${new Date().getMinutes}`;
@@ -98,15 +98,21 @@ export class HomeComponent {
     public dialog: MatDialog,
     // private newPatientModalService: NewPatientModalService
     private temporaryDataSrvService: TemporaryDataSrvService
-  ) {
+  ) {}
 
-    this.todayScheduleSubscription = this.databaseService.getTodayScheduleRealTimeData().subscribe((arr) => {
-        // .pipe(map((appointment) => appointment.state !== "done")).subscribe((arr) => {
-      this.todaySchedule = [...arr.filter((appointment) => appointment.state.toLowerCase() !== "done")];
-    });
-  }
+    // this.todayScheduleSubscription = this.databaseService.getTodayScheduleRealTimeData().subscribe((arr: Appointment[]) => {
+    //   // for (let appointment of arr) {
+    //   //   appointment.
+    //   // }
+    //   // Sort the array in ascending order by "bar" property
+      
+    //   let sorted: Appointment[] = arr.sort((a: Appointment, b: Appointment) => a.order - b.order);
+
+    //   this.todaySchedule = [...arr.filter((appointment) => appointment.state.toLowerCase() !== "done")];
+    // });
 
   ngOnInit() {
+    this.todaySchedule$ = this.databaseService.fetchTodaySchedule();
     this.databaseService.fetchPatientsOneTimeSnapshot().then(
       () => {
         this.patients = this.databaseService.patientsOnTimeSnapshot;
@@ -139,8 +145,10 @@ export class HomeComponent {
     });
   }
 
-  drop(event: CdkDragDrop<string[]>) {
-    moveItemInArray(this.todaySchedule, event.previousIndex, event.currentIndex);
-    // console.log(`\x1B[35m prev: ${event.previousIndex} curr: ${event.currentIndex} \x1B[0m`)
+  drop(event: CdkDragDrop<Appointment[]>) {
+    // moveItemInArray(this.todaySchedule, event.previousIndex, event.currentIndex);
+    moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+    // listSubject.next(event.container.data); // Update the observable with the reordered list
+
   }
 }

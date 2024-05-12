@@ -41,21 +41,9 @@
     <div cdkDropList (cdkDropListDropped)="drop($event)"
       class="rounded-2xl xs:mx-2 lg:mx-80 my-4 px-1 bg-white patient-schedule-entries">
 
-      @if (todaySchedule.length > 0) {
 
-        <!-- @for (patient of patients; track patient; let idx = $index) {
-        <div class="patient-schedule-entry-container" cdkDrag>
-          <div class="patient-schedule-entry-placeholder" *cdkDragPlaceholder></div>
 
-          @if (idx > 0) {
-          <patient-schedule-entry [patient]="patient"></patient-schedule-entry>
-          } @else {
-          <patient-schedule-current-entry [patient]="patient"></patient-schedule-current-entry>
-          }
-        </div>
-        } -->
-
-        @for (appointment of todaySchedule; track appointment; let idx = $index) {
+        @for (appointment of (todaySchedule$ | async); track appointment; let idx = $index) {
           <div class="patient-schedule-entry-container" cdkDrag>
             <div class="patient-schedule-entry-placeholder" *cdkDragPlaceholder></div>
       
@@ -66,9 +54,7 @@
             }
           </div>
         }
-      } @else {
-        <p>-</p>
-      }
+
 
     </div>
   </div>

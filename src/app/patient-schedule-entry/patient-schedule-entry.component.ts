@@ -28,7 +28,7 @@ import { Router } from '@angular/router';
   `
 })
 export class PatientScheduleEntryComponent {
-  @Input() appointment?: Appointment;
+  @Input({required: true}) appointment!: Appointment;
   private router = inject(Router);
   
   panelOpenState = false;
@@ -36,15 +36,15 @@ export class PatientScheduleEntryComponent {
 
 
   toggleOnSite(){
-    this.databaseService.toggleOnSite(this.appointment!.firestorePath!, !this.appointment!.patientInClinic!);
+    this.databaseService.toggleOnSite(this.appointment.patient.id, !this.appointment!.patientInClinic!);
   }
 
   togglePaid(){
-    this.databaseService.togglePaid(this.appointment!.firestorePath!, !this.appointment!.paid!);
+    this.databaseService.togglePaid(this.appointment.patient.id, !this.appointment!.paid!);
   }
 
   toggleUrgent(){
-    this.databaseService.toggleUrgent(this.appointment!.firestorePath!, !this.appointment!.isUrgent!);
+    this.databaseService.toggleUrgent(this.appointment.patient.id, !this.appointment!.isUrgent!);
   }
 
   navigateToPatientDetails() {
