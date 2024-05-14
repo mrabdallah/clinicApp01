@@ -1,7 +1,7 @@
 import { Component, inject, TemplateRef, ViewContainerRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { Observable, Subscription, catchError, map, of, tap } from 'rxjs';
+import { Observable, Subscription, catchError, map, of, take, tap } from 'rxjs';
 import {
   MatDialog
 } from '@angular/material/dialog';
@@ -26,6 +26,7 @@ import { PatientScheduleCurrentEntryComponent } from '../patient-schedule-curren
 import { DatabaseService } from '../database.service';
 import { NewPatientFormComponent } from '../new-patient-form/new-patient-form.component';
 import { Appointment } from '../types';
+import { LoggerService } from '../logger.service';
 
 @Component({
   selector: 'app-home',
@@ -85,11 +86,13 @@ import { Appointment } from '../types';
   `
 })
 export class HomeComponent {
+  loggerService: LoggerService = inject(LoggerService);
   newPatientFormDialogOpened: boolean =false;
   private databaseService = inject(DatabaseService);
   public todaySchedule$: Observable<Appointment[]> = of([]);
+  public todaySchedule: Appointment[] = [];
   patients: any[] = [];
-  // private todayScheduleSubscription: Subscription;
+  private todayScheduleSubscription: Subscription;
   firstPeriodValue = 100;
   secondPeriodValue = 70;
   today = `${new Date().getHours}:${new Date().getMinutes}`;
@@ -98,8 +101,13 @@ export class HomeComponent {
     public dialog: MatDialog,
     // private newPatientModalService: NewPatientModalService
     private temporaryDataSrvService: TemporaryDataSrvService
-  ) {}
+  ) {
+    this.todayScheduleSubscription = this.databaseService.fetchTodaySchedule().subscribe((schedule: Appointment[]) => {
+      this.todaySchedule = schedule;
+    });
+  }
 
+    
     // this.todayScheduleSubscription = this.databaseService.getTodayScheduleRealTimeData().subscribe((arr: Appointment[]) => {
     //   // for (let appointment of arr) {
     //   //   appointment.
@@ -112,7 +120,7 @@ export class HomeComponent {
     // });
 
   ngOnInit() {
-    this.todaySchedule$ = this.databaseService.fetchTodaySchedule();
+    // this.todaySchedule$ = this.databaseService.fetchTodaySchedule();
     this.databaseService.fetchPatientsOneTimeSnapshot().then(
       () => {
         this.patients = this.databaseService.patientsOnTimeSnapshot;
@@ -146,9 +154,13 @@ export class HomeComponent {
   }
 
   drop(event: CdkDragDrop<Appointment[]>) {
-    // moveItemInArray(this.todaySchedule, event.previousIndex, event.currentIndex);
-    moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-    // listSubject.next(event.container.data); // Update the observable with the reordered list
+    let today = new Date();
+    // TODO: Change the 'E8WUcagWkeNQXKXGP6Uq' to use a variable
+    let scheduleFirestorePath:string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
 
+    moveItemInArray(this.todaySchedule, event.previousIndex, event.currentIndex);
+    // this.loggerService.log(this.todaySchedule);
+
+    this.databaseService.moveAppointmentInSchedule(scheduleFirestorePath, this.todaySchedule);
   }
 }

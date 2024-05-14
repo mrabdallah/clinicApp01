@@ -17,7 +17,8 @@ import {
   docData,
   orderBy,
   getDoc,
-  runTransaction
+  runTransaction,
+  Transaction
 } from '@angular/fire/firestore';
 import { Moment } from 'moment';
 import { Observable, Subscription, defer, from, map, of } from 'rxjs';
@@ -38,42 +39,24 @@ export class DatabaseService {
   // private todayAppointmentsDocRealTimeSnapshot$: Observable<Appointments> = of([]);
 
   constructor(){
-    this.fetchAllPatientsRealTimeSnapshot();
+    // this.fetchAllPatientsRealTimeSnapshot();
   }
 
-  getTodayAppointmentsDocRealTimeSnapshot(targetDate: string): Observable<DaySchedule> {
-    return new Observable<DaySchedule>((subscriber) => {
-      const unsubscribe = onSnapshot(
-        // TODO: change the path to be dynamic dependin on target clinic ID and doctor ID
-        doc(this.firestore, `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${targetDate}`),
-        () => {}
-      );
-      return unsubscribe;
-    });
-  }
+  // getTodayAppointmentsDocRealTimeSnapshot(targetDate: string): Observable<DaySchedule> {
+  //   return new Observable<DaySchedule>((subscriber) => {
+  //     const unsubscribe = onSnapshot(
+  //       // TODO: change the path to be dynamic dependin on target clinic ID and doctor ID
+  //       doc(this.firestore, `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${targetDate}`),
+  //       () => {}
+  //     );
+  //     return unsubscribe;
+  //   });
+  // }
 
-  async getTodayAppointmentsDocOneTimeSnapshotFromPromise(): Promise<DaySchedule|null>{
-    const docRef = doc(this.firestore, "cities", "SF");
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      console.log("Document data:", docSnap.data());
-      return docSnap.data() as DaySchedule;
-    } else {
-      // docSnap.data() will be undefined in this case
-      console.log("No such document!");
-      return null;
-    }
-  }
-
-  getTodayAppointmentsDocOneTimeSnapshot(targetDate: string): Observable<DaySchedule|null> {
-    return defer(() => this.getTodayAppointmentsDocOneTimeSnapshotFromPromise()    );
-  }
-  
-
-  fetchAllPatientsRealTimeSnapshot(){
+  fetchAllPatientsRealTimeSnapshot(): Observable<Patient[]>{
     const allPatientsCollectionRef = query(collection(this.firestore, "patients"));
-    this.allPatients$ = new Observable(observer => {
+    // this.allPatients$ = 
+    return new Observable(observer => {
       const unsubscribe = onSnapshot(allPatientsCollectionRef, (snapshot) => {
         const patientsQuerySnapshot = snapshot.docs.map(doc => {
           return {
@@ -125,7 +108,7 @@ export class DatabaseService {
               reasonForVisit: appointment.reasonForVisit,
               paid: appointment.paid,
               patient: appointment.patient as Patient,
-            });
+            } as Appointment);
           }
           observer.next(todayScheduleAppointmentsArray);
         }
@@ -166,53 +149,98 @@ export class DatabaseService {
   }
 
 
-  async createNewAppointment(appointment: Appointment, targetDate: string, precedence: number) {
+  async createNewAppointment(appointment: Appointment, targetDate: string) {
     try {
-      await addDoc(collection(this.firestore,
+      let appointmentDocRef = doc(
+        this.firestore,
         `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/` +  // TODO: Change the 'E8WUcagWkeNQXKXGP6Uq' to use a variable
-        `${targetDate}` +
-        `/appointments/`), {
-          patientID: appointment.patient.id,
-          firstName: appointment.patient.firstName,
-          lastName: appointment.patient.lastName,
-          primaryContact: appointment.patient.primaryContact,
-          reasonForVisit: appointment.reasonForVisit,
-          dateTime: appointment.dateTime,
-          state: 'waiting',
-          isUrgent: appointment.isUrgent,
-          patientInClinic: appointment.patientInClinic,
-          paid: appointment.paid,
+        `${targetDate}`
+      );
+      await runTransaction(this.firestore, async (transaction) => {
+        const tt = await transaction.get(appointmentDocRef);
+        if (!tt.exists()) {
+          // TODO: create a new one
+          transaction.set(appointmentDocRef, 
+            {
+              appointments: [
+                {
+                  patient: {
+                    id: appointment.patient.id,
+                    firstName: appointment.patient.firstName,
+                    lastName: appointment.patient.lastName,
+                    // primaryContact: appointment.patient.primaryContact,
+                  },
+                  reasonForVisit: appointment.reasonForVisit,
+                  dateTime: appointment.dateTime,
+                  state: 'waiting',
+                  isUrgent: appointment.isUrgent,
+                  patientInClinic: appointment.patientInClinic,
+                  paid: appointment.paid,
+                }
+              ]
+            }
+          );
+        } else {
+          const fdsf = tt.data()['appointments'];
+          transaction.update(
+            appointmentDocRef,
+            {
+              appointments: [
+                ...fdsf,
+                {
+                  patient: {
+                    id: appointment.patient.id,
+                    firstName: appointment.patient.firstName,
+                    lastName: appointment.patient.lastName,
+                    // primaryContact: appointment.patient.primaryContact,
+                  },
+                  reasonForVisit: appointment.reasonForVisit,
+                  dateTime: appointment.dateTime,
+                  state: 'waiting',
+                  isUrgent: appointment.isUrgent,
+                  patientInClinic: appointment.patientInClinic,
+                  paid: appointment.paid,
+                }
+              ],
+            }
+          );
+        }
       });
+      this.loggerService.log('Transaction successfully committed!');
     } catch (error) {
-      console.error('Error Setting New Patients:', error);
+      console.error('Error Setting New Appointment:', error);
       // Handle errors gracefully, e.g., display an error message to the user
     }
   }
 
-  async updateSchedule(targetDateString: string, appointment: Appointment) {
-    try {
+  async moveAppointmentInSchedule(scheduleFirestorePath: string, previousAppointments: Appointment[]) {
       // TODO: Change the 'E8WUcagWkeNQXKXGP6Uq' to use a variable
-      const targetDayScheduleDocRef = doc(this.firestore, `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${targetDateString}`);
+      const targetDayScheduleDocRef = doc(this.firestore, scheduleFirestorePath);
+      try {
   
       await runTransaction(this.firestore, async (transaction) => {
         const targetDayScheduleDoc = await transaction.get(targetDayScheduleDocRef);
         if (!targetDayScheduleDoc.exists()) {
-          throw "Document does not exist!"; // TODO: create a new one
+          throw "Document does not exist!"; // TODO: create a new one???
         }
-        const newSchedule = [
-          ...targetDayScheduleDoc.data()['appointments'],
-          {
-            dateTime: appointment.dateTime,
-            state: appointment.state,
-            isUrgent: appointment.isUrgent,
-            patientInClinic: appointment.patientInClinic,
-            reasonForVisit: appointment.reasonForVisit,
-            paid: appointment.paid,
-            patient: appointment.patient,
-          },
-        ];
+        const upstreamSchedule: Appointment[] = targetDayScheduleDoc.data()['appointments'].slice();
+
+        upstreamSchedule.splice(0, previousAppointments.length, ...previousAppointments);
+
+        // const newSchedule = [
+        //   ...previousAppointments,
+        //   {
+        //     dateTime: appointment.dateTime,
+        //     state: appointment.state,
+        //     isUrgent: appointment.isUrgent,
+        //     patientInClinic: appointment.patientInClinic,
+        //     reasonForVisit: appointment.reasonForVisit,
+        //     paid: appointment.paid,
+        //     patient: appointment.patient,
+        //   },
+        // ];
   
-        transaction.update(targetDayScheduleDocRef, { appointments: newSchedule });
+        transaction.update(targetDayScheduleDocRef, { appointments: upstreamSchedule });
       });
       this.loggerService.log('Transaction successfully committed!');
     } catch (error) {
@@ -239,28 +267,71 @@ export class DatabaseService {
     } catch(error){}
   }
 
-  async toggleUrgent(appointmentPath: string, newState: boolean){
+  async toggleUrgent(patientID: string, schedulePath: string, newState: boolean) {
+    const scheduleDocRef = doc(this.firestore, schedulePath);
     try{
-      const docRef = doc(this.firestore, appointmentPath);
-      await updateDoc(docRef, {
-        isUrgent: newState
+      await runTransaction(this.firestore, async (transaction) => {
+        const targetSchedule = await transaction.get(scheduleDocRef);
+        if (!targetSchedule.exists()){
+          throw "Document does not exist!";
+        }
+        let idx: number|undefined = this._findAppointmentIndexUsingPatientID(targetSchedule.data()['appointments'], patientID);
+        if (idx === undefined) {
+          throw "Appointment does not exist!"
+        }
+        const upstreamSchedule: Appointment[] = targetSchedule.data()['appointments'];
+        upstreamSchedule[idx] = {
+          ...targetSchedule.data()['appointments'][idx],
+          isUrgent: newState,
+        }
+        transaction.update(scheduleDocRef, { appointments: upstreamSchedule });
+        return;
       });
+      // await updateDoc(scheduleDocRef, {
+      //   isUrgent: newState
+      // });
     } catch(error){}
   }
 
-  // async updateAppointmentState(collectionPath:string, appointmentID: string, newState:string){
-  async updateAppointmentState(collectionPath: string, newState: string) {
-    const docRef = doc(this.firestore, collectionPath);
-    await updateDoc(docRef, {
-      state: newState
-    });
+
+  _findAppointmentIndexUsingPatientID(appointments: Appointment[], patientID: string): number | undefined {
+    return appointments.findIndex((appointment) => appointment.patient.id === patientID);
   }
 
-  // Function to access the real-time data stream
-  getAllPatientsRealTimeSnapshot(): Observable<any[]> {
-    return this.allPatients$;
+  async updateAppointmentState(docPath: string, newState: string) {
+    const scheduleDocRef = doc(this.firestore, docPath);
+
+    try {
+      const newDayScheduleState = await runTransaction(this.firestore, async (transaction) => {
+        const scheduleDoc = await transaction.get(scheduleDocRef);
+        if (!scheduleDoc.exists()) {
+          throw "Document does not exist!";
+        }
+
+        let idx: number | undefined = this._findAppointmentIndexUsingPatientID(scheduleDoc.data()['appointments'], '');
+        if (idx !== undefined){
+          let appointments: Appointment[] = scheduleDoc.data()['appointments'];
+          let targetAppointment: Appointment = {
+            ...appointments[idx],
+            state: (newState as "waiting"| "examining" | "done"),
+          };
+          appointments[idx] = targetAppointment;
+          
+          transaction.update(scheduleDocRef, { appointments: appointments });
+          return appointments;
+        } else{
+          // TODO: Create a new doc maybe
+          return Promise.reject("Appointment doesn't exist");
+        }
+      });
+      this.loggerService.log('Appointment State Updated');
+    } catch (error) {
+      this.loggerService.logError('Error in update appointment state Transaction', error);
+    }
   }
 
+
+  
   // Function to access the real-time data stream
   // getTodayScheduleRealTimeData(): Observable<Appointment[]> {
   //   return this.todaySchedule$;

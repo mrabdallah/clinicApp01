@@ -28,8 +28,9 @@ import { Store, select } from '@ngrx/store';
 import { State } from '../ngrx_store/reducers/index'; // Import your state interface
 import { TemporaryDataSrvService } from '../temporary-data-srv.service'; // Import the data service
 import { DatabaseService } from '../database.service';
-import { Subscription, first, map } from 'rxjs';
+import { Observable, Subscription, first, map, of } from 'rxjs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { Patient } from '../types';
 
 
 
@@ -80,19 +81,22 @@ export const MY_FORMATS = {
 export class AddAppointmentComponent implements OnDestroy{
   private databaseService = inject(DatabaseService);
   private allPatientsObservableSubscription?: Subscription;
+  public allPatients$: Observable<Patient[]> = of([]);
 
   constructor(public dialogRef: MatDialogRef<AddAppointmentComponent>,
     private store: Store<State>,
     private formBuilder: FormBuilder,
     private temporaryDataSrvService: TemporaryDataSrvService
-    ) { }
+    ) {
+      this.allPatients$ = this.databaseService.fetchAllPatientsRealTimeSnapshot();
+    }
 
   options: any[] = [];
   filteredOptions: any[] = [];
   filterCtrl = new FormControl('');
 
   ngOnInit() {
-    this.allPatientsObservableSubscription = this.databaseService.getAllPatientsRealTimeSnapshot()
+    this.allPatientsObservableSubscription = this.allPatients$
     .subscribe((arr) => {
       let tmpArr:any[] = [];
       arr.forEach((p) => {
@@ -171,9 +175,7 @@ export class AddAppointmentComponent implements OnDestroy{
       return targetDateModified;
     })();
 
-    this.databaseService.updateSchedule(
-      targetDateString,
-      // targetDate,
+    this.databaseService.createNewAppointment(
       {
         dateTime: moment(this.profileForm.value.date, 'DD/MM/YYYY').toDate(),
         state: 'waiting',
@@ -189,6 +191,7 @@ export class AddAppointmentComponent implements OnDestroy{
             // dateOfBirth: patientDataObject.dateOfBirth,
         },
       },
+      targetDateString,
     );
   }
 

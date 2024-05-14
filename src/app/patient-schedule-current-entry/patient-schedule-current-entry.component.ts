@@ -59,7 +59,11 @@ export class PatientScheduleCurrentEntryComponent {
   isOpen = true;
 
   setStateToExamining(){
-    this.databaseService.updateAppointmentState(this.appointment.patient.id, 'examining');
+    let today = new Date();
+    this.databaseService.updateAppointmentState(
+      `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`,
+      'examining',
+    );
   }
 
   setStateToDone(){
@@ -79,6 +83,6 @@ export class PatientScheduleCurrentEntryComponent {
   }
 
   toggleUrgent(){
-    this.databaseService.toggleUrgent(this.appointment.patient.id, !this.appointment!.isUrgent!);
+    // this.databaseService.toggleUrgent(this.appointment.patient.id, !this.appointment!.isUrgent!);
   }
 }
