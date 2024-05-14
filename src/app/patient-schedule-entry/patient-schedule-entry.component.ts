@@ -30,31 +30,60 @@ import { LoggerService } from '../logger.service';
 })
 export class PatientScheduleEntryComponent {
   @Input({required: true}) appointment!: Appointment;
-  private router = inject(Router);
-  private logger = inject(LoggerService);
-  
   panelOpenState = false;
+  private router = inject(Router);
+  private loggerService = inject(LoggerService);
   private databaseService = inject(DatabaseService);
+  updateOnSiteIsInProgress = false;
+  updatePaidIsInProgress = false;
+  updateUrgencyInProgress = false;
 
 
-  toggleOnSite(){
-    this.databaseService.toggleOnSite(this.appointment.patient.id, !this.appointment.patientInClinic!);
-  }
 
-  togglePaid(){
-    this.databaseService.togglePaid(this.appointment.patient.id, !this.appointment.paid!);
-  }
-
-  toggleUrgent(){
+  async toggleOnSite(){
+    this.updateOnSiteIsInProgress = true;
     let today = new Date();
     let scheduleFirestorePath:string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
-    this.databaseService.toggleUrgent(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.isUrgent);
-    this.logger.log(this.appointment.patient.id);
-    this.logger.log(this.appointment);
+    try {
+      await this.databaseService.toggleOnSite(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.patientInClinic).then();      
+    } catch (error) {
+      this.loggerService.logError('Error Updating appoinment state', error);
+
+    } finally{
+    this.updateOnSiteIsInProgress = false; // Enable button after operation (regardless of success/failure)
+
+    }
+
+  }
+
+  async togglePaid(){
+    this.updatePaidIsInProgress = true;
+    let today = new Date();
+    let scheduleFirestorePath:string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+    try {
+       await this.databaseService.togglePaid(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.paid);
+    } catch (error) {
+      this.loggerService.logError('Error Updating appoinment state', error);
+    } finally {
+      this.updatePaidIsInProgress = false;
+    }
+  }
+
+  async toggleUrgent(){
+    this.updateUrgencyInProgress = true;
+    let today = new Date();
+    let scheduleFirestorePath:string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+    try {
+      await this.databaseService.toggleUrgent(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.isUrgent);
+    } catch (error) {
+      this.loggerService.logError('Error Updating appoinment state', error);
+    } finally {
+      this.updateUrgencyInProgress = false;
+    }
   }
 
   navigateToPatientDetails() {
     this.router.navigate([`patient/${this.appointment.patient.id}`]);
-    console.log('navigated');
+    // console.log('navigated');
   }
 }

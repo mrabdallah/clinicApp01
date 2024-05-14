@@ -1,0 +1,6 @@
+- Detect and mark late patients
+- Make visual signs on late patients
+- Count/calculate late count on late patienst
+- Make automatic moves on late patients
+- Add Validation on preventing duplicate appointments on the same day for the same patient (make that optional)
+- Make a button to delete an appointment

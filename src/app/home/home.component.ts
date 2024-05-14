@@ -102,22 +102,11 @@ export class HomeComponent {
     // private newPatientModalService: NewPatientModalService
     private temporaryDataSrvService: TemporaryDataSrvService
   ) {
-    this.todayScheduleSubscription = this.databaseService.fetchTodaySchedule().subscribe((schedule: Appointment[]) => {
-      this.todaySchedule = schedule;
+    this.todayScheduleSubscription = this.databaseService.fetchTodaySchedule()
+    .subscribe((schedule: Appointment[]) => {
+      this.todaySchedule = [...schedule.filter((appointment:Appointment) => appointment.state.toLowerCase() !== "done")];
     });
   }
-
-    
-    // this.todayScheduleSubscription = this.databaseService.getTodayScheduleRealTimeData().subscribe((arr: Appointment[]) => {
-    //   // for (let appointment of arr) {
-    //   //   appointment.
-    //   // }
-    //   // Sort the array in ascending order by "bar" property
-      
-    //   let sorted: Appointment[] = arr.sort((a: Appointment, b: Appointment) => a.order - b.order);
-
-    //   this.todaySchedule = [...arr.filter((appointment) => appointment.state.toLowerCase() !== "done")];
-    // });
 
   ngOnInit() {
     // this.todaySchedule$ = this.databaseService.fetchTodaySchedule();

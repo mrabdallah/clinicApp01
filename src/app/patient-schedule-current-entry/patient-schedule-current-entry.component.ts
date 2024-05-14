@@ -4,6 +4,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { Appointment } from '../types';
 import { DatabaseService } from '../database.service';
+import { LoggerService } from '../logger.service';
 // import { MatIconButtonModule } from '@angular/material';
 // import '@material/web/button/filled-button.js';
 
@@ -53,36 +54,84 @@ import { DatabaseService } from '../database.service';
 })
 export class PatientScheduleCurrentEntryComponent {
   @Input({required: true}) appointment!: Appointment;
-  private databaseService = inject(DatabaseService);
-
   panelOpenState = false;
-  isOpen = true;
+  private databaseService = inject(DatabaseService);
+  private loggerService = inject(LoggerService);
+  updateAppointmentState = false;
+  updateOnSiteIsInProgress = false;
+  updatePaidIsInProgress = false;
+  updateUrgencyInProgress = false;
 
-  setStateToExamining(){
+  async setStateToExamining(){
+    this.updateAppointmentState = true;
     let today = new Date();
-    this.databaseService.updateAppointmentState(
-      `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`,
-      'examining',
-    );
+    let scheduleFirestorePath:string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+    try {
+      await this.databaseService.updateAppointmentState(
+        this.appointment.patient.id,
+        scheduleFirestorePath,
+        'examining',
+      );
+    } catch (error) {
+      this.loggerService.logError('Error Updating appoinment state', error);
+    } finally {
+      this.updateAppointmentState = false;
+    }
   }
 
-  setStateToDone(){
-    this.databaseService.updateAppointmentState(this.appointment.patient.id, 'done');
+  async setStateToDone(){
+    this.updateAppointmentState = true;
+    let today = new Date();
+    let scheduleFirestorePath:string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+    try {
+      await this.databaseService.updateAppointmentState(
+        this.appointment.patient.id,
+        scheduleFirestorePath,
+        'done',
+      );
+    } catch (error) {
+      this.loggerService.logError('Error Updating appoinment state', error);
+    } finally {
+      this.updateAppointmentState = false;
+    }
   }
 
-  toggle(){
-    this.isOpen = !this.isOpen;
+  async toggleOnSite(){
+    this.updateOnSiteIsInProgress = true;
+    let today = new Date();
+    let scheduleFirestorePath:string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+    try {
+      await this.databaseService.toggleOnSite(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.patientInClinic);
+    } catch (error) {
+      this.loggerService.logError('Error Updating appoinment state', error);
+    } finally {
+      this.updateOnSiteIsInProgress = false;
+    }
   }
 
-  toggleOnSite(){
-    this.databaseService.toggleOnSite(this.appointment.patient.id, !this.appointment!.patientInClinic!);
+  async togglePaid(){
+    this.updatePaidIsInProgress = true;
+    let today = new Date();
+    let scheduleFirestorePath:string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+    try {
+      await this.databaseService.togglePaid(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.paid);
+    } catch (error) {
+      this.loggerService.logError('Error Updating appoinment state', error);
+    } finally {
+      this.updatePaidIsInProgress = false;
+    }
   }
 
-  togglePaid(){
-    this.databaseService.togglePaid(this.appointment.patient.id, !this.appointment!.paid!);
-  }
-
-  toggleUrgent(){
-    // this.databaseService.toggleUrgent(this.appointment.patient.id, !this.appointment!.isUrgent!);
+  async toggleUrgent(){
+    this.updateUrgencyInProgress = true;
+    let today = new Date();
+    let scheduleFirestorePath:string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+    try {
+      await this.databaseService.toggleUrgent(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.isUrgent);
+    } catch (error) {
+      this.loggerService.logError('Error Updating appoinment state', error);
+    } finally {
+      this.updateUrgencyInProgress = false;
+    }
   }
 }

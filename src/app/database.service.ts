@@ -249,22 +249,50 @@ export class DatabaseService {
     }
   }
 
-  async toggleOnSite(appointmentPath: string, newState: boolean){
+  async toggleOnSite(patientID: string, schedulePath: string, newState: boolean){
+    const scheduleDocRef = doc(this.firestore, schedulePath);
     try{
-      const docRef = doc(this.firestore, appointmentPath);
-      await updateDoc(docRef, {
-        patientInClinic: newState
+      await runTransaction(this.firestore, async (transaction) => {
+        const targetSchedule = await transaction.get(scheduleDocRef);
+        if (!targetSchedule.exists()){throw "Document does not exist!";}
+        let idx: number|undefined = this._findAppointmentIndexUsingPatientID(targetSchedule.data()['appointments'], patientID);
+        if (idx === undefined) {throw "Appointment does not exist!"}
+        const upstreamSchedule: Appointment[] = targetSchedule.data()['appointments'];
+        upstreamSchedule[idx] = {
+          ...targetSchedule.data()['appointments'][idx],
+          patientInClinic: newState,
+        }
+        transaction.update(scheduleDocRef, { appointments: upstreamSchedule });
+        return;
       });
-    } catch(error){}
+    } catch(error){
+      this.loggerService.logError('Error Updating appoinment state', error);
+    }
   }
 
-  async togglePaid(appointmentPath: string, newState: boolean){
+  async togglePaid(patientID: string, schedulePath: string, newState: boolean){
+    const scheduleDocRef = doc(this.firestore, schedulePath);
     try{
-      const docRef = doc(this.firestore, appointmentPath);
-      await updateDoc(docRef, {
-        paid: newState
+      await runTransaction(this.firestore, async (transaction) => {
+        const targetSchedule = await transaction.get(scheduleDocRef);
+        if (!targetSchedule.exists()){
+          throw "Document does not exist!";
+        }
+        let idx: number|undefined = this._findAppointmentIndexUsingPatientID(targetSchedule.data()['appointments'], patientID);
+        if (idx === undefined) {
+          throw "Appointment does not exist!"
+        }
+        const upstreamSchedule: Appointment[] = targetSchedule.data()['appointments'];
+        upstreamSchedule[idx] = {
+          ...targetSchedule.data()['appointments'][idx],
+          paid: newState,
+        }
+        transaction.update(scheduleDocRef, { appointments: upstreamSchedule });
+        return;
       });
-    } catch(error){}
+    } catch(error){
+      this.loggerService.logError('Error Updating appoinment state', error);
+    }
   }
 
   async toggleUrgent(patientID: string, schedulePath: string, newState: boolean) {
@@ -287,9 +315,6 @@ export class DatabaseService {
         transaction.update(scheduleDocRef, { appointments: upstreamSchedule });
         return;
       });
-      // await updateDoc(scheduleDocRef, {
-      //   isUrgent: newState
-      // });
     } catch(error){}
   }
 
@@ -298,19 +323,15 @@ export class DatabaseService {
     return appointments.findIndex((appointment) => appointment.patient.id === patientID);
   }
 
-  async updateAppointmentState(docPath: string, newState: string) {
-    const scheduleDocRef = doc(this.firestore, docPath);
-
+  async updateAppointmentState(patientID: string, schedulePath: string, newState: string) {
+    const scheduleDocRef = doc(this.firestore, schedulePath);
     try {
-      const newDayScheduleState = await runTransaction(this.firestore, async (transaction) => {
-        const scheduleDoc = await transaction.get(scheduleDocRef);
-        if (!scheduleDoc.exists()) {
-          throw "Document does not exist!";
-        }
-
-        let idx: number | undefined = this._findAppointmentIndexUsingPatientID(scheduleDoc.data()['appointments'], '');
-        if (idx !== undefined){
-          let appointments: Appointment[] = scheduleDoc.data()['appointments'];
+      await runTransaction(this.firestore, async (transaction) => {
+        const targetSchedule = await transaction.get(scheduleDocRef);
+        if (!targetSchedule.exists()) {throw "Document does not exist!";}
+        let idx: number | undefined = this._findAppointmentIndexUsingPatientID(targetSchedule.data()['appointments'], patientID);
+        if (idx === undefined) {return Promise.reject("Appointment doesn't exist");}
+        let appointments: Appointment[] = targetSchedule.data()['appointments'];
           let targetAppointment: Appointment = {
             ...appointments[idx],
             state: (newState as "waiting"| "examining" | "done"),
@@ -318,11 +339,7 @@ export class DatabaseService {
           appointments[idx] = targetAppointment;
           
           transaction.update(scheduleDocRef, { appointments: appointments });
-          return appointments;
-        } else{
-          // TODO: Create a new doc maybe
-          return Promise.reject("Appointment doesn't exist");
-        }
+          return;
       });
       this.loggerService.log('Appointment State Updated');
     } catch (error) {

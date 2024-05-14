@@ -34,15 +34,18 @@
           <mat-icon>sms</mat-icon>
         </button>
         <button mat-mini-fab aria-label="Patient on site toggle"  (click)="toggleOnSite()"
-          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"
+          [disabled]="updateOnSiteIsInProgress">
           <mat-icon>where_to_vote</mat-icon>
         </button>
         <button mat-mini-fab aria-label="Patient paid on site" (click)="togglePaid()"
-          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"
+          [disabled]="updatePaidIsInProgress">
           <mat-icon>paid</mat-icon>
         </button>
         <button mat-mini-fab aria-label="Emergency Toggle" (click)="toggleUrgent()"
-          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"
+          [disabled]="updateUrgencyInProgress">
           <mat-icon>emergency</mat-icon>
         </button>
       </div>
