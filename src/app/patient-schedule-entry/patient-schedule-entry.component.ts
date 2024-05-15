@@ -22,9 +22,11 @@ import { LoggerService } from '../logger.service';
       object-fit: contain;
     }
     .cont-elevation{
-      
       box-shadow: 0 0 9px 2px #9E9E9E;
       border-radius: 15px;
+    }
+    .visible-tgl{
+      display: none;
     }
   `
 })

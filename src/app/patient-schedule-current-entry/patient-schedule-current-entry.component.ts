@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { Appointment } from '../types';
 import { DatabaseService } from '../database.service';
 import { LoggerService } from '../logger.service';
+import { Router } from '@angular/router';
 // import { MatIconButtonModule } from '@angular/material';
 // import '@material/web/button/filled-button.js';
 
@@ -44,7 +45,13 @@ import { LoggerService } from '../logger.service';
   .icon-btn{
     transform: scale(1.2);
   }
-
+  .cont-elevation{
+      box-shadow: 0 0 9px 2px #9E9E9E;
+      border-radius: 15px;
+    }
+  .visible-tgl{
+    display: none;
+  }
   @media screen and (max-width: 600px){
     .scale-down-on-small{
       transform: scale(0.7);
@@ -54,9 +61,10 @@ import { LoggerService } from '../logger.service';
 })
 export class PatientScheduleCurrentEntryComponent {
   @Input({required: true}) appointment!: Appointment;
-  panelOpenState = false;
   private databaseService = inject(DatabaseService);
   private loggerService = inject(LoggerService);
+  private router = inject(Router);
+  panelOpenState = false;
   updateAppointmentState = false;
   updateOnSiteIsInProgress = false;
   updatePaidIsInProgress = false;
@@ -133,5 +141,10 @@ export class PatientScheduleCurrentEntryComponent {
     } finally {
       this.updateUrgencyInProgress = false;
     }
+  }
+
+  navigateToPatientDetails() {
+    this.router.navigate([`patient/${this.appointment.patient.id}`]);
+    // console.log('navigated');
   }
 }

@@ -1,7 +1,14 @@
 <div class="elems-container flex rounded-2xl shadow-xl m-2 p-2">
-  <div class="w-1/5">
-    <p>{{appointment.patient.firstName}} {{appointment.patient.lastName}}</p> 
+
+  <div class="flex flex-col gap-5 w-1/2">
+    <div class="cont-elevation flex gap-7 items-center py-4 px-5 cursor-pointer" (click)="navigateToPatientDetails()">
+      <mat-icon class="icon-display" style="transform: scale(2);">account_circle</mat-icon>
+      <p>{{appointment.patient.firstName}} {{appointment.patient.lastName}}</p> 
+    </div>
+    <div [class.visible-tgl]="!panelOpenState">Reason for Visit:  &nbsp; &nbsp;{{appointment.reasonForVisit}}</div>
   </div>
+    
+
   <div class="spacer grow-[2]"></div>
 
   <div class="actions_nd_stats flex justify-end  w-1/2 gap-2">
