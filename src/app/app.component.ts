@@ -25,7 +25,6 @@ import { PatientScheduleEntryComponent } from './patient-schedule-entry/patient-
 import { PatientScheduleCurrentEntryComponent } from './patient-schedule-current-entry/patient-schedule-current-entry.component';
 import { DatabaseService } from './database.service';
 import { NewPatientFormComponent } from './new-patient-form/new-patient-form.component';
-import { Appointment } from './types';
 
 @Component({
   selector: 'app-root',

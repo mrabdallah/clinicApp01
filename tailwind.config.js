@@ -7,6 +7,9 @@ module.exports = {
     extend: {},
   },
   plugins: [],
+  corePlugins: {
+    preflight: false, // Disables all preflight styles
+  },
   // purge: 
   // {enabled: true,
   //   content: [
@@ -14,4 +17,3 @@ module.exports = {
   //   ],
   //   safelist: ['mat-expansion-panel', 'mat-expansion-indicator'],},
 }
-

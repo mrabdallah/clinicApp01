@@ -15,15 +15,21 @@
       style="border-radius: 0.7rem;">
       <!-- --------------------------- Flags & Main Actions -------------------------- -->
       <mat-expansion-panel-header class="specific-class">
-        @if (appointment != null && appointment.isUrgent) {
+        @if (appointment.latenessCtr > 0) {
+          browse_gallery
+          acute
+          warning z
+        }
+
+        @if (appointment.isUrgent) {
           <img src="assets/images/alarm.gif" alt="Emergency" class="object-containss">
         }
 
         <div class="flex justify-center items-center gap-2">
-          @if (appointment != null && appointment.patientInClinic) {
+          @if (appointment.patientInClinic) {
             <mat-icon class="icon-btn">where_to_vote</mat-icon>
           }
-          @if (appointment != null && appointment.paid) {
+          @if (appointment.paid) {
             <mat-icon class="icon-btn mr-3">paid</mat-icon>
           }
         </div>
@@ -50,7 +56,8 @@
         <button mat-mini-fab aria-label="Emergency Toggle" (click)="toggleUrgent()"
           class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"
           [disabled]="updateUrgencyInProgress">
-          <mat-icon>emergency</mat-icon>
+          <!-- <mat-icon>f119</mat-icon> -->
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M200-160v-80h64l79-263q8-26 29.5-41.5T420-560h120q26 0 47.5 15.5T617-503l79 263h64v80H200Zm148-80h264l-72-240H420l-72 240Zm92-400v-200h80v200h-80Zm238 99-57-57 142-141 56 56-141 142Zm42 181v-80h200v80H720ZM282-541 141-683l56-56 142 141-57 57ZM40-360v-80h200v80H40Zm440 120Z"/></svg>
         </button>
       </div>
     </mat-expansion-panel>

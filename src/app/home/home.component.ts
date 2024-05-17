@@ -83,6 +83,7 @@ import { LoggerService } from '../logger.service';
     min-height: 60px;
     transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
   }
+
   `
 })
 export class HomeComponent {
@@ -91,6 +92,7 @@ export class HomeComponent {
   private databaseService = inject(DatabaseService);
   public todaySchedule$: Observable<Appointment[]> = of([]);
   public todaySchedule: Appointment[] = [];
+  public todayScheduleFiltered: Appointment[] = [];
   patients: any[] = [];
   private todayScheduleSubscription: Subscription;
   firstPeriodValue = 100;
@@ -104,7 +106,8 @@ export class HomeComponent {
   ) {
     this.todayScheduleSubscription = this.databaseService.fetchTodaySchedule()
     .subscribe((schedule: Appointment[]) => {
-      this.todaySchedule = [...schedule.filter((appointment:Appointment) => appointment.state.toLowerCase() !== "done")];
+      this.todaySchedule = [...schedule];
+      this.todayScheduleFiltered = [...schedule.filter((appointment:Appointment) => appointment.state.toLowerCase() !== "done")];
     });
   }
 
@@ -147,9 +150,17 @@ export class HomeComponent {
     // TODO: Change the 'E8WUcagWkeNQXKXGP6Uq' to use a variable
     let scheduleFirestorePath:string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
 
-    moveItemInArray(this.todaySchedule, event.previousIndex, event.currentIndex);
-    // this.loggerService.log(this.todaySchedule);
+    moveItemInArray(this.todayScheduleFiltered, event.previousIndex, event.currentIndex);
 
-    this.databaseService.moveAppointmentInSchedule(scheduleFirestorePath, this.todaySchedule);
+    this.databaseService.moveAppointmentInSchedule(scheduleFirestorePath, 
+      (()=>{
+        this.todaySchedule.splice(
+          this.todaySchedule.length - this.todayScheduleFiltered.length,
+          this.todayScheduleFiltered.length,
+          ...this.todayScheduleFiltered,
+        );
+        return this.todaySchedule
+      })()
+    );
   }
 }

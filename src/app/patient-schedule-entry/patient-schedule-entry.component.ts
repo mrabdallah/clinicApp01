@@ -28,6 +28,9 @@ import { LoggerService } from '../logger.service';
     .visible-tgl{
       display: none;
     }
+    ::ng-deep .specific-class > .mat-expansion-indicator:after {
+      color: red;
+    }
   `
 })
 export class PatientScheduleEntryComponent {
@@ -86,6 +89,5 @@ export class PatientScheduleEntryComponent {
 
   navigateToPatientDetails() {
     this.router.navigate([`patient/${this.appointment.patient.id}`]);
-    // console.log('navigated');
   }
 }

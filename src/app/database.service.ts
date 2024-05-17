@@ -107,6 +107,7 @@ export class DatabaseService {
               patientInClinic: appointment.patientInClinic,
               reasonForVisit: appointment.reasonForVisit,
               paid: appointment.paid,
+              latenessCtr: appointment.latenessCtr,
               patient: appointment.patient as Patient,
             } as Appointment);
           }
@@ -176,6 +177,7 @@ export class DatabaseService {
                   isUrgent: appointment.isUrgent,
                   patientInClinic: appointment.patientInClinic,
                   paid: appointment.paid,
+                  latenessCtr: appointment.latenessCtr,
                 }
               ]
             }
@@ -197,6 +199,7 @@ export class DatabaseService {
                   reasonForVisit: appointment.reasonForVisit,
                   dateTime: appointment.dateTime,
                   state: 'waiting',
+                  latenessCtr: appointment.latenessCtr,
                   isUrgent: appointment.isUrgent,
                   patientInClinic: appointment.patientInClinic,
                   paid: appointment.paid,

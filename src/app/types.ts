@@ -30,7 +30,7 @@ export interface Appointment {
   patientInClinic: boolean;
   reasonForVisit: string;
   paid: boolean;
-  // order: number;
+  latenessCtr: number;
   patient: Patient;
 }
 

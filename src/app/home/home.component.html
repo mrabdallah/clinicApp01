@@ -43,7 +43,7 @@
 
 
 
-        @for (appointment of todaySchedule; track appointment.patient.id; let idx = $index) {
+        @for (appointment of todayScheduleFiltered; track appointment.patient.id; let idx = $index) {
           <div class="patient-schedule-entry-container" cdkDrag>
             <div class="patient-schedule-entry-placeholder" *cdkDragPlaceholder></div>
       

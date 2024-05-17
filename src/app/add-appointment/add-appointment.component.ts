@@ -183,6 +183,7 @@ export class AddAppointmentComponent implements OnDestroy{
         patientInClinic: typeof(this.profileForm.value.patientInClinic) === 'boolean' ? this.profileForm.value.patientInClinic : false,
         reasonForVisit: this.profileForm.value.reasonForVisit ?? '',
         paid: typeof(this.profileForm.value.paid) === 'boolean' ? this.profileForm.value.paid : false,
+        latenessCtr: 0,
         patient: {
             id: this.profileForm.value.patientID!,
             firstName: patientDataObject.firstName,

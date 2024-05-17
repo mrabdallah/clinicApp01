@@ -52,6 +52,7 @@ import { Router } from '@angular/router';
   .visible-tgl{
     display: none;
   }
+
   @media screen and (max-width: 600px){
     .scale-down-on-small{
       transform: scale(0.7);
