@@ -127,6 +127,25 @@ export class HomeComponent {
     });
   }
 
+  onAppointmentDone(){
+    const today = new Date();
+    let tmpC = 0;
+    let firestorePath = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+    this.databaseService.moveAndIncreaseLatenessCounter(firestorePath);
+
+    // for (let appointment of this.todaySchedule) {
+    //   this.loggerService.log(tmpC);
+    //   if (appointment.state === 'waiting'){
+    //     if(appointment.patientInClinic){
+    //       return;
+    //     } else {
+    //       this.databaseService.moveAndIncreaseLatenessCounter(firestorePath, appointment.patient.id);
+    //       console.log(`Found one: ${appointment.patient.firstName}`);
+    //     }
+    //   }
+    // }
+  }
+
   openNewAppointmentDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(AddAppointmentComponent, {
       width: '50vw',

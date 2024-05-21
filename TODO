@@ -6,3 +6,4 @@
 - Make automatic moves on late patients
 - Add Validation on preventing duplicate appointments on the same day for the same patient (make that optional)
 - Make a button to delete an appointment
+- reset lateness counter if the patient is arrived on clinic

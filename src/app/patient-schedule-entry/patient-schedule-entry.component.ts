@@ -31,6 +31,26 @@ import { LoggerService } from '../logger.service';
     ::ng-deep .specific-class > .mat-expansion-indicator:after {
       color: red;
     }
+    .lateness-container{
+      position: relative;
+      margin-right: 15px;
+    }
+    .lateness-counter {
+      position: absolute;
+      z-index: 99;
+      transform: translate(15px, -7px);
+      border-radius: 50%;
+      background: red;
+      height: 18px;
+      width: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .material-icons.calendar-clock{color: red;}
+    ::ng-deep.mat-content{
+      overflow: visible;
+    }
   `
 })
 export class PatientScheduleEntryComponent {

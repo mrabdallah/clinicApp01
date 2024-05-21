@@ -1,7 +1,7 @@
 <div class="elems-container flex rounded-2xl shadow-xl m-2 p-2">
 
   <div class="flex flex-col gap-5 w-1/2">
-    <div class="cont-elevation flex gap-7 items-center py-4 px-5 cursor-pointer" (click)="navigateToPatientDetails()">
+    <div class="cont-elevation flex gap-7 items-center px-5 cursor-pointer" (click)="navigateToPatientDetails()">
       <mat-icon class="icon-display" style="transform: scale(2);">account_circle</mat-icon>
       <p>{{appointment.patient.firstName}} {{appointment.patient.lastName}}</p> 
     </div>
@@ -11,7 +11,7 @@
 
   <div class="spacer grow-[2]"></div>
 
-  <div class="actions_nd_stats flex justify-end  w-1/2 gap-2">
+  <div class="actions_nd_stats flex items-start justify-end  w-1/2 gap-2">
       <!-- <mat-accordion> -->
 
         <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false"
@@ -55,7 +55,8 @@
             <button mat-mini-fab aria-label="Patient paid on site" (click)="toggleUrgent()"
               class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"
               [disabled]="updateUrgencyInProgress">
-              <mat-icon>emergency</mat-icon>
+              <!-- <mat-icon>emergency</mat-icon> -->
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M200-160v-80h64l79-263q8-26 29.5-41.5T420-560h120q26 0 47.5 15.5T617-503l79 263h64v80H200Zm148-80h264l-72-240H420l-72 240Zm92-400v-200h80v200h-80Zm238 99-57-57 142-141 56 56-141 142Zm42 181v-80h200v80H720ZM282-541 141-683l56-56 142 141-57 57ZM40-360v-80h200v80H40Zm440 120Z"/></svg>
             </button>
           </div>
         </mat-expansion-panel>
