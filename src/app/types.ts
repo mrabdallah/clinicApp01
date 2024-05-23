@@ -32,6 +32,8 @@ export interface Appointment {
   paid: boolean;
   latenessCtr: number;
   patient: Patient;
+  expectedTime?: Date;
+  timeTakenInSeconds?: number;
 }
 
 export interface DaySchedule {

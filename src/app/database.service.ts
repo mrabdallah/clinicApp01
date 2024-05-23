@@ -21,7 +21,7 @@ import {
   Transaction
 } from '@angular/fire/firestore';
 import { Moment } from 'moment';
-import { Observable, Subscription, defer, from, map, of, scheduled } from 'rxjs';
+import { Observable, Subscription, defer, from, map, of, scheduled, throwError } from 'rxjs';
 import { Appointment, DaySchedule, Patient } from './types';
 import { LoggerService } from './logger.service';
 
@@ -52,6 +52,24 @@ export class DatabaseService {
   //     return unsubscribe;
   //   });
   // }
+
+
+  //this.databaseService.setAppointmentTimeTaken(this.appointment.patient.id, scheduleFirestorePath, this.milliseconds / 1000);
+  async setAppointmentTimeTaken(patientID: string, scheduleFirestorePath: string, timeTakenInSeconds: number) {
+    let scheduleRef = doc(this.firestore, scheduleFirestorePath);
+    //await updateDoc(scheduleRef, {timeTakenInSeconds: timeTakenInSeconds });
+    try {
+      await runTransaction(this.firestore, async (transaction) => {
+        const scheduleDoc = await transaction.get(scheduleRef);
+        if (!scheduleDoc.exists()) { throw 'Document Does not exist'; }
+        let appointmentsUpstream: Appointment[] = scheduleDoc.data()['appointments'];
+        let targetAppiontmentIndex: number = appointmentsUpstream.findIndex((appointment) => appointment.patient.id === patientID);
+        appointmentsUpstream[targetAppiontmentIndex].timeTakenInSeconds = timeTakenInSeconds;
+        transaction.update(scheduleRef, { appointments: appointmentsUpstream });
+      });
+    } catch (error) { }
+  }
+
 
   fetchAllPatientsRealTimeSnapshot(): Observable<Patient[]> {
     const allPatientsCollectionRef = query(collection(this.firestore, "patients"));
@@ -227,7 +245,7 @@ export class DatabaseService {
         let upstreamAppointments: Appointment[] = [...targetScheduleDoc.data()['appointments']];
         let targetAppontmentIndex: number = upstreamAppointments.findIndex((appointment) => appointment.patient.id === patientID);
         let patientIDsToMoveDown: string[] = [];
-        let firstOnsitePatientId: string;
+        let firstOnsitePatientId: string | undefined;
 
         //upstreamAppointments[targetAppontmentIndex].latenessCtr += 1;
         //patientIDsToMoveDown.push(upstreamAppointments[targetAppontmentIndex].patient.id);
@@ -248,14 +266,12 @@ export class DatabaseService {
           }
         }
 
+        if (firstOnsitePatientId === undefined) { return; }
+
         for (let j = 0; j < patientIDsToMoveDown.length; j++) {
-          console.log(`j: ${j}`);
           let onSitePatientAppointmentIndex = upstreamAppointments.findIndex((appointment) => appointment.patient.id === firstOnsitePatientId);
-          console.log(`onSitePatientAppointmentIndex: ${onSitePatientAppointmentIndex}`);
           let appIndex: number = upstreamAppointments.findIndex((appointment) => appointment.patient.id === patientIDsToMoveDown[j]);
-          console.log(`appIndex: ${appIndex}`);
           let app: Appointment = upstreamAppointments.splice(appIndex, 1)[0];
-          console.log(`app.latenessCtr + j + onSitePatientAppointmentIndex: ${app.latenessCtr + j + onSitePatientAppointmentIndex}`);
           upstreamAppointments.splice(
             app.latenessCtr + j + onSitePatientAppointmentIndex - 1,
             0,
@@ -267,10 +283,6 @@ export class DatabaseService {
 
         let newSchedule: Appointment[] = upstreamAppointments.filter(appointment => appointment !== undefined);
 
-
-        console.log('newSchedule:');
-        console.log(newSchedule);
-
         transaction.update(targetScheduleRef, { appointments: newSchedule });
         return;
       });
@@ -281,9 +293,31 @@ export class DatabaseService {
     }
   }
 
+
+  async resetLatenessCounter(patientID: string, targetScheduleFirestorePath: string) {
+    const targetScheduleRef = doc(this.firestore, targetScheduleFirestorePath);
+    try {
+      await runTransaction(this.firestore, async (transaction) => {
+        const targetScheduleDoc = await transaction.get(targetScheduleRef);
+        if (!targetScheduleDoc.exists()) { throw "Appointment Document doesn't exist!"; }
+        let upstreamScheduleCopy: Appointment[] = targetScheduleDoc.data()['appointments'];
+
+        let targetAppointmentIndex: number = upstreamScheduleCopy.findIndex((appointment) => appointment.patient.id === patientID);
+        upstreamScheduleCopy[targetAppointmentIndex].latenessCtr = 0;
+
+        transaction.update(targetScheduleRef, { appointments: upstreamScheduleCopy });
+        return;
+      });
+      this.loggerService.log('Transaction successfully committed!');
+    } catch (error) {
+      this.loggerService.logError('error onappointmentdone: ', error);
+    }
+  }
+
+
+
   // async moveAndIncreaseLatenessCounter(targetScheduleFirestorePath: string, targetAppointmentPatientID: string){
   async moveAndIncreaseLatenessCounter(targetScheduleFirestorePath: string) {
-    console.log('yes it has been called');
     const targetScheduleRef = doc(this.firestore, targetScheduleFirestorePath);
     try {
       await runTransaction(this.firestore, async (transaction) => {
@@ -447,22 +481,38 @@ export class DatabaseService {
     return appointments.findIndex((appointment) => appointment.patient.id === patientID);
   }
 
-  async updateAppointmentState(patientID: string, schedulePath: string, newState: string) {
+  async updateAppointmentState(patientID: string, schedulePath: string, newState: string, timeTakenInSeconds?: number) {
     const scheduleDocRef = doc(this.firestore, schedulePath);
     try {
       await runTransaction(this.firestore, async (transaction) => {
-        const targetSchedule = await transaction.get(scheduleDocRef);
-        if (!targetSchedule.exists()) { throw "Document does not exist!"; }
-        let idx: number | undefined = this._findAppointmentIndexUsingPatientID(targetSchedule.data()['appointments'], patientID);
-        if (idx === undefined) { return Promise.reject("Appointment doesn't exist"); }
-        let appointments: Appointment[] = targetSchedule.data()['appointments'];
-        let targetAppointment: Appointment = {
-          ...appointments[idx],
-          state: (newState as "waiting" | "examining" | "done"),
-        };
-        appointments[idx] = targetAppointment;
+        const targetScheduleDoc = await transaction.get(scheduleDocRef);
+        if (!targetScheduleDoc.exists()) { throw "Document does not exist!"; }
+        let appointments: Appointment[] = targetScheduleDoc.data()['appointments'];
+        let targetAppointmentIndex: number | undefined = appointments.findIndex((appointment) => appointment.patient.id === patientID);
+        if (targetAppointmentIndex === undefined) { return Promise.reject("Appointment doesn't exist"); }
+        // let targetAppointment: Appointment = {
+        //   ...appointments[idx],
+        //   state: (newState as "waiting" | "examining" | "done"),
+        // };
+        appointments[targetAppointmentIndex].state = (newState as 'waiting' | 'examining' | 'done');
 
-        transaction.update(scheduleDocRef, { appointments: appointments });
+        let dayAverage = 0;
+        if (timeTakenInSeconds !== undefined) {
+          appointments[targetAppointmentIndex].timeTakenInSeconds = timeTakenInSeconds;
+          let aSum: number = 0;
+          let j = 0;
+          for (let i = 0; i < appointments.length; i++) {
+            if (appointments[i].timeTakenInSeconds === undefined || appointments[i].timeTakenInSeconds === 0) { continue }
+            aSum += appointments[i].timeTakenInSeconds!;
+            j += 1;
+          }
+          dayAverage = Math.floor(aSum / j);
+        }
+
+        transaction.update(scheduleDocRef, {
+          appointments: appointments,
+          dayAverage: dayAverage,
+        });
         return;
       });
       this.loggerService.log('Appointment State Updated');
@@ -471,7 +521,31 @@ export class DatabaseService {
     }
   }
 
+  /*
+   *
+        let oldLength:number = appointments.length >= 2 ? appointments.length - 1 : 0;
+        let oldAverage: number = 0?
+   * */
+  async setOrUpdateClinicAppointmentsTimeAverage(firestorePath: string, newAverageInSeconds: number) {
+    // const clinicDocRef = doc(this.firestore, firestorePath);
+    // try {
+    //   await runTransaction(this.firestore, async (transaction) => {
+    //     const targetClinicDoc = await transaction.get(clinicDocRef);
+    //     if (!targetClinicDoc.exists()) { throw "Document does not exist!"; }
+    //     let mainAverage = targetClinicDoc.data()['mainAverageInSeconds'];
 
+    //     if (mainAverage !== undefined) {
+    //       appointments[targetAppointmentIndex].timeTakenInSeconds = timeTakenInSeconds;
+    //     }
+
+    //     transaction.update(scheduleDocRef, { appointments: appointments });
+    //     return;
+    //   });
+    //   this.loggerService.log('Appointment State Updated');
+    // } catch (error) {
+    //   this.loggerService.logError('Error in update appointment state Transaction', error);
+    // }
+  }
 
   // Function to access the real-time data stream
   // getTodayScheduleRealTimeData(): Observable<Appointment[]> {

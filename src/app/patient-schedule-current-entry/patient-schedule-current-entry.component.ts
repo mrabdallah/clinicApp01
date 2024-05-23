@@ -13,7 +13,7 @@ import { Appointment } from '../types';
 import { DatabaseService } from '../database.service';
 import { LoggerService } from '../logger.service';
 import { Router } from '@angular/router';
-import { Subscription, takeLast, timer } from 'rxjs';
+import { Subscription, takeLast, timer, Subject, interval, takeUntil, } from 'rxjs';
 // import { MatIconButtonModule } from '@angular/material';
 // import '@material/web/button/filled-button.js';
 
@@ -80,6 +80,10 @@ export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
   updateOnSiteIsInProgress = false;
   updatePaidIsInProgress = false;
   updateUrgencyInProgress = false;
+  stopwatchIsActive: boolean = false;
+  intervalSubscription: any;
+  startTime: number = 0;
+  totalSeconds: number = 0;
 
   emitPatientNotHereEvent() {
     let today = new Date();
@@ -102,6 +106,8 @@ export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
   }
 
   async setStateToExamining() {
+    this.startTime = performance.now();  // Record start time
+
     this.updateAppointmentState = true;
     let today = new Date();
     let scheduleFirestorePath: string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
@@ -120,6 +126,9 @@ export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
 
   async setStateToDone() {
     this.updateAppointmentState = true;
+    const currentTime = performance.now();
+    const elapsedTimeMs = currentTime - this.startTime;
+    this.totalSeconds = Math.floor(elapsedTimeMs / 1000); // Convert to seconds
     let today = new Date();
     let scheduleFirestorePath: string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
     try {
@@ -127,6 +136,7 @@ export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
         this.appointment.patient.id,
         scheduleFirestorePath,
         'done',
+        this.totalSeconds,
       );
       this.appointmentDone.emit();
     } catch (error) {
@@ -137,9 +147,14 @@ export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
   }
 
   async toggleOnSite() {
-    this.updateOnSiteIsInProgress = true;
     let today = new Date();
     let scheduleFirestorePath: string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+    this.updateOnSiteIsInProgress = true;
+
+    if (this.appointment.patientInClinic === false) {
+      this.databaseService.resetLatenessCounter(this.appointment.patient.id, scheduleFirestorePath);
+    }
+
     try {
       await this.databaseService.toggleOnSite(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.patientInClinic);
     } catch (error) {
@@ -178,5 +193,8 @@ export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
   navigateToPatientDetails() {
     this.router.navigate([`patient/${this.appointment.patient.id}`]);
     // console.log('navigated');
+  }
+
+  ngOnDestroy() {
   }
 }
