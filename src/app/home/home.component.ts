@@ -48,7 +48,7 @@ import { LoggerService } from '../logger.service';
   ],
   templateUrl: './home.component.html',
   styles: `
-  
+
   .second-period{
     display: flex;
     flex-direction: column;
@@ -57,7 +57,7 @@ import { LoggerService } from '../logger.service';
   .prg-bar{
     width: 100%;
   }
-  
+
   .patient-schedule-entry-container {
     box-sizing: border-box;
     cursor: move;
@@ -88,9 +88,9 @@ import { LoggerService } from '../logger.service';
 })
 export class HomeComponent {
   loggerService: LoggerService = inject(LoggerService);
-  newPatientFormDialogOpened: boolean =false;
+  newPatientFormDialogOpened: boolean = false;
   private databaseService = inject(DatabaseService);
-  public todaySchedule$: Observable<Appointment[]> = of([]);
+  //public todaySchedule$: Observable<Appointment[]> = this.databaseService.todaySchedule$;
   public todaySchedule: Appointment[] = [];
   public todayScheduleFiltered: Appointment[] = [];
   patients: any[] = [];
@@ -104,11 +104,16 @@ export class HomeComponent {
     // private newPatientModalService: NewPatientModalService
     private temporaryDataSrvService: TemporaryDataSrvService
   ) {
-    this.todayScheduleSubscription = this.databaseService.fetchTodaySchedule()
-    .subscribe((schedule: Appointment[]) => {
-      this.todaySchedule = [...schedule];
-      this.todayScheduleFiltered = [...schedule.filter((appointment:Appointment) => appointment.state.toLowerCase() !== "done")];
+    this.todayScheduleSubscription = this.databaseService.todaySchedule$.subscribe((appointments) => {
+      console.log(appointments);
+      this.todaySchedule = [...appointments];
+      this.todayScheduleFiltered = [...appointments.filter((appointment: Appointment) => appointment.state.toLowerCase() !== "done")];
     });
+    //this.todayScheduleSubscription = this.databaseService.fetchTodaySchedule()
+    //  .subscribe((schedule: Appointment[]) => {
+    //    this.todaySchedule = [...schedule];
+    //    this.todayScheduleFiltered = [...schedule.filter((appointment: Appointment) => appointment.state.toLowerCase() !== "done")];
+    //  });
   }
 
   ngOnInit() {
@@ -121,13 +126,13 @@ export class HomeComponent {
 
     this.temporaryDataSrvService.getData().subscribe(dialogState => {
       //this.newPatientFormDialogOpened = dialogState;
-      if(dialogState) {
+      if (dialogState) {
         this.openNewPatientFormDialog('500ms', '500ms');
       }
     });
   }
 
-  onAppointmentDone(){
+  onAppointmentDone() {
     const today = new Date();
     let tmpC = 0;
     let firestorePath = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
@@ -167,12 +172,12 @@ export class HomeComponent {
   drop(event: CdkDragDrop<Appointment[]>) {
     let today = new Date();
     // TODO: Change the 'E8WUcagWkeNQXKXGP6Uq' to use a variable
-    let scheduleFirestorePath:string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+    let scheduleFirestorePath: string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
 
     moveItemInArray(this.todayScheduleFiltered, event.previousIndex, event.currentIndex);
 
-    this.databaseService.moveAppointmentInSchedule(scheduleFirestorePath, 
-      (()=>{
+    this.databaseService.moveAppointmentInSchedule(scheduleFirestorePath,
+      (() => {
         this.todaySchedule.splice(
           this.todaySchedule.length - this.todayScheduleFiltered.length,
           this.todayScheduleFiltered.length,

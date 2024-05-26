@@ -1,4 +1,24 @@
 
+// Helper type to represent weekdays with 3-letter abbreviations
+export type Weekday = 'SAT' | 'SUN' | 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI';
+
+export interface Clinic {
+  id: string;
+  firestorePath: string;
+  mainAverageAppointmentTimeTake: number;
+  owner: string;
+  weekScheduleTemplate: { [key in Weekday]: string[] }; // Use a mapped type for weekdays
+  //weekScheduleTemplate: {
+  //  'SAT'?: string[];
+  //  'SUN'?: string[];
+  //  'MON'?: string[];
+  //  'TUE'?: string[];
+  //  'WED'?: string[];
+  //  'THU'?: string[];
+  //  'FRI'?: string[];
+  //}; // Use a mapped type for weekdays
+}
+
 export interface Patient {
   id: string;
   firstName: string;

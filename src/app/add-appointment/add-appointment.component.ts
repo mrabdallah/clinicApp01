@@ -1,4 +1,5 @@
-import { Component, OnDestroy, inject } from '@angular/core';
+import { Component, OnDestroy, Signal, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import {
@@ -13,6 +14,7 @@ import {
   FormBuilder,
   // FormControl,
   // FormGroup,
+  // FormsModule,
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
@@ -28,9 +30,9 @@ import { Store, select } from '@ngrx/store';
 import { State } from '../ngrx_store/reducers/index'; // Import your state interface
 import { TemporaryDataSrvService } from '../temporary-data-srv.service'; // Import the data service
 import { DatabaseService } from '../database.service';
-import { Observable, Subscription, first, map, of } from 'rxjs';
+import { Observable, Subscription, combineLatest, defer, first, from, map, of, take, tap, timer } from 'rxjs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { Patient } from '../types';
+import { Clinic, Patient, Weekday } from '../types';
 
 
 
@@ -82,6 +84,11 @@ export class AddAppointmentComponent implements OnDestroy {
   private databaseService = inject(DatabaseService);
   private allPatientsObservableSubscription?: Subscription;
   public allPatients$: Observable<Patient[]> = of([]);
+  public nextAvailableTime = signal<number>(0);
+  private comibinedObsSubs?: Subscription;
+  //public clinicDoc$ = this.databaseService.clinicDocOneTimeSnapshot$;
+
+  //public clinicDoc = toSignal(this.databaseService.clinicDocOneTimeSnapshot$, { initialValue: undefined });
 
   constructor(public dialogRef: MatDialogRef<AddAppointmentComponent>,
     private store: Store<State>,
@@ -139,12 +146,80 @@ export class AddAppointmentComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.allPatientsObservableSubscription?.unsubscribe();
+    this.comibinedObsSubs?.unsubscribe();
+  }
+
+  getTimeNowIn12h(): string {
+    const now = new Date();
+    const hours = now.getHours();
+    const adjustedHours = hours % 12 || 12; // Convert to 12-hour format (12 for midnight/noon)
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+
+    return `${adjustedHours}:${minutes} ${ampm}`;
+  }
+
+  getTimeNowIn24H(): string {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+
+    return `${hours}:${minutes}`;
+  }
+
+  pickAppointmentTime() {
+    console.log('picking');
+    const now = new Date();
+    const todayNameInTheWeek: number = now.getDay();
+    const dayNames: string[] = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    let mainAverageAppointmentTimeTake: number | undefined;
+    let numberOfCurrentAppointments: number = 0;
+
+    //combineLatest([this.databaseService.todaySchedule$, timer(1000, 4000)])
+    this.comibinedObsSubs = combineLatest([this.databaseService.todaySchedule$, this.databaseService.clinicDocOneTimeSnapshot$])
+      .subscribe(([schedVal, clinicVal]) => {
+        mainAverageAppointmentTimeTake = clinicVal?.mainAverageAppointmentTimeTake;
+        numberOfCurrentAppointments ??= schedVal?.length;
+        let todayScheduleTemplate = clinicVal?.weekScheduleTemplate[dayNames[todayNameInTheWeek] as Weekday];
+
+        if (now.getHours()) {
+        } else if (numberOfCurrentAppointments > 0) {
+          //
+        } else {
+        }
+        // check if now is passed schedule template
+        // if no appiontments yet
+        // // identify current time
+        // // convert schedule template into comparable form
+        // // identify which is time period in schedule template
+        // // pick the start of the identified period
+        //
+        // if there are number of appointments
+        // convert schedule template into comparable form
+        // calculate the sum time for current appointments
+        // check which period is is ocupied or free
+        // identify expected opening
+        //
+        //
+        console.log(`Inside combineLatest; mainAva: ${mainAverageAppointmentTimeTake},  numberOfCurrApp: ${numberOfCurrentAppointments}`);
+        console.log('reached');
+      });
+
+
+
+    // get target day schedule template
+    // get number of existing appointments
+    // get mainAverage
+    // calculate expected time till free slot
+    // set value, do not return a value
+    //return this.getTimeNowIn24H();
   }
 
   profileForm = this.formBuilder.group({
     patientID: ['', Validators.required],
     date: new FormControl(moment()),
     //date: new FormControl(moment().format('DD/MM/YYYY')),
+    appointmentTime: [this.pickAppointmentTime(), Validators.required],
     reasonForVisit: ['', Validators.required],
     isUrgent: [false],
     paid: [false],

@@ -12,6 +12,7 @@ import {
   updateDoc,
   setDoc,
   QueryDocumentSnapshot,
+  DocumentSnapshot,
   DocumentData,
   DocumentReference,
   docData,
@@ -20,9 +21,9 @@ import {
   runTransaction,
   Transaction
 } from '@angular/fire/firestore';
-import { Moment } from 'moment';
-import { Observable, Subscription, defer, from, map, of, scheduled, throwError } from 'rxjs';
-import { Appointment, DaySchedule, Patient } from './types';
+//import { Moment } from 'moment';
+import { Observable, Subscription, defer, from, map, take, of, scheduled, throwError, tap, catchError } from 'rxjs';
+import { Appointment, Clinic, Patient } from './types';
 import { LoggerService } from './logger.service';
 
 
@@ -35,8 +36,85 @@ export class DatabaseService {
   loggerService: LoggerService = inject(LoggerService);
   patientsOnTimeSnapshot: any[] = [];
   private allPatients$: Observable<Patient[]> = of([]);
-  // private todaySchedule$: Observable<Appointment[]> = of([]);
-  // private todayAppointmentsDocRealTimeSnapshot$: Observable<Appointments> = of([]);
+  private clinc?: Clinic;
+  public todaySchedule$: Observable<Appointment[]> = new Observable(observer => {
+    this.loggerService.log('Fetching todaySchedule$');
+    let today = new Date();
+    today.setHours(0, 0, 0, 0); // Set time to 12 AM
+    return onSnapshot(
+      doc(this.firestore, `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`),
+      (docSnapshot) => {
+        let appointments: Appointment[] = [];
+        if (docSnapshot.exists()) {
+          this.loggerService.log('todaySchedule$ - new snapshot');
+          for (const appointment of docSnapshot.data()['appointments'] as Appointment[]) {
+            appointments.push({
+              dateTime: appointment.dateTime,
+              state: appointment.state,
+              isUrgent: appointment.isUrgent,
+              patientInClinic: appointment.patientInClinic,
+              reasonForVisit: appointment.reasonForVisit,
+              paid: appointment.paid,
+              latenessCtr: appointment.latenessCtr,
+              patient: appointment.patient as Patient,
+            } as Appointment);
+          }
+          observer.next(appointments);
+        } else {
+          this.loggerService.log('todaySchedule$ - No appointments found');
+          observer.next([...appointments]);
+        }
+      },
+      (error) => observer.error(error.message)
+    );
+  });
+  //public todaySchedule$: Observable<Appointment[]> = new Observable(observer => {
+  //  this.loggerService.log('Fetching today schedule $');
+  //  let today = new Date();
+  //  today.setHours(0, 0, 0, 0); // Set time to 12 AM
+  //  // TODO: Subtract 'E8WUcagWkeNQXKXGP6Uq' with variable represent different doctors clinics
+  //
+  //  const unsubscribe = onSnapshot(doc(this.firestore, `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`), (snapshot) => {
+  //    if (snapshot.exists()) {
+  //      console.log('yeah');
+  //      let todayScheduleAppointmentsArray: Appointment[] = [];
+  //      for (const appointment of snapshot.data()['appointments'] as Appointment[]) {
+  //        todayScheduleAppointmentsArray.push({
+  //          dateTime: appointment.dateTime,
+  //          state: appointment.state,
+  //          isUrgent: appointment.isUrgent,
+  //          patientInClinic: appointment.patientInClinic,
+  //          reasonForVisit: appointment.reasonForVisit,
+  //          paid: appointment.paid,
+  //          latenessCtr: appointment.latenessCtr,
+  //          patient: appointment.patient as Patient,
+  //        } as Appointment);
+  //      } observer.next(todayScheduleAppointmentsArray);
+  //    } else { console.log('idk'); }
+
+  //  }, (error) => {
+  //    this.loggerService.logError('error fetching today schedule:', error);
+  //    observer.error(error);
+  //  });
+  //  return unsubscribe();
+  //})
+  //.pipe(tap(x => {console.log('sadf')}))
+  ;
+
+  //public clinicDocOneTimeSnapshot$: Observable<Clinic | undefined> = docData(doc(this.firestore, this.clinic.path), { idField: 'id' })
+  public clinicDocOneTimeSnapshot$: Observable<Clinic | undefined> = docData(doc(this.firestore, `/clinics/E8WUcagWkeNQXKXGP6Uq`), { idField: 'id' })
+    .pipe(
+      //tap(x => this.loggerService.log('Fetching Clinic Doc $')),
+      //tap(x => this.loggerService.log(x)),
+      map((data) => (data ? { ...data, firestorePath: `/clinics/E8WUcagWkeNQXKXGP6Uq`, } as Clinic : undefined)), // Handle missing document
+      catchError((error) => {
+        this.loggerService.logError('Error fetching appointments doc:', error);
+        return of(undefined); // Return undefined on error
+      })
+    );
+
+
+
 
   constructor() {
     // this.fetchAllPatientsRealTimeSnapshot();
@@ -103,41 +181,41 @@ export class DatabaseService {
     });
   }
 
-  fetchTodaySchedule(): Observable<Appointment[]> {
-    this.loggerService.log('Fetching today appointments');
-    const today = new Date();
-    // TODO: Subtract 'E8WUcagWkeNQXKXGP6Uq' with variable represent different doctors clinics
-    today.setHours(0, 0, 0, 0); // Set time to 12 AM
-    const todayScheduleDocRef = doc(
-      this.firestore,
-      `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`,
-    );
-    // `/appointments/`), where("dateTime", ">=", Timestamp.fromDate(today)), orderBy(''));
-    return new Observable(observer => {
-      const unsubscribe = onSnapshot(todayScheduleDocRef, (snapshot) => {
-        if (snapshot.exists()) {
-          let todayScheduleAppointmentsArray: Appointment[] = [];
-          for (const appointment of snapshot.data()['appointments'] as Appointment[]) {
-            todayScheduleAppointmentsArray.push({
-              dateTime: appointment.dateTime,
-              state: appointment.state,
-              isUrgent: appointment.isUrgent,
-              patientInClinic: appointment.patientInClinic,
-              reasonForVisit: appointment.reasonForVisit,
-              paid: appointment.paid,
-              latenessCtr: appointment.latenessCtr,
-              patient: appointment.patient as Patient,
-            } as Appointment);
-          }
-          observer.next(todayScheduleAppointmentsArray);
-        }
-      }, (error) => {
-        observer.error(error);
-      });
+  //fetchTodaySchedule(): Observable<Appointment[]> {
+  //  this.loggerService.log('Fetching today appointments');
+  //  const today = new Date();
+  //  // TODO: Subtract 'E8WUcagWkeNQXKXGP6Uq' with variable represent different doctors clinics
+  //  today.setHours(0, 0, 0, 0); // Set time to 12 AM
+  //  const todayScheduleDocRef = doc(
+  //    this.firestore,
+  //    `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`,
+  //  );
+  //  // `/appointments/`), where("dateTime", ">=", Timestamp.fromDate(today)), orderBy(''));
+  //  return new Observable(observer => {
+  //    const unsubscribe = onSnapshot(todayScheduleDocRef, (snapshot) => {
+  //      if (snapshot.exists()) {
+  //        let todayScheduleAppointmentsArray: Appointment[] = [];
+  //        for (const appointment of snapshot.data()['appointments'] as Appointment[]) {
+  //          todayScheduleAppointmentsArray.push({
+  //            dateTime: appointment.dateTime,
+  //            state: appointment.state,
+  //            isUrgent: appointment.isUrgent,
+  //            patientInClinic: appointment.patientInClinic,
+  //            reasonForVisit: appointment.reasonForVisit,
+  //            paid: appointment.paid,
+  //            latenessCtr: appointment.latenessCtr,
+  //            patient: appointment.patient as Patient,
+  //          } as Appointment);
+  //        }
+  //        observer.next(todayScheduleAppointmentsArray);
+  //      }
+  //    }, (error) => {
+  //      observer.error(error);
+  //    });
 
-      return () => unsubscribe();
-    });
-  }
+  //    return () => unsubscribe();
+  //  });
+  //}
 
   getPatientDetails(patientID: string): Observable<Patient | null> {
     const patientDocRef = doc(this.firestore, `/patients/${patientID}`);

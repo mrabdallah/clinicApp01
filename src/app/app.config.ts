@@ -11,15 +11,15 @@ import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { environment } from '../environments/environment';
 // import { StoreModule } from '@ngrx/store';
 import { provideStore } from '@ngrx/store';
-import { reducers, metaReducers } from './ngrx_store/reducers/index'; // Import your reducers and meta-reducers
+import { reducers, metaReducers } from './ngrx_store/reducers/index';
+import { provideServiceWorker } from '@angular/service-worker'; // Import your reducers and meta-reducers
 
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes,  withComponentInputBinding()),
+    provideRouter(routes, withComponentInputBinding()),
     provideAnimationsAsync(),
-    importProvidersFrom(
-      [
+    importProvidersFrom([
         // provideFirebaseApp(() => initializeApp({
         //   "projectId": "clinicapp-edaa7",
         //   "appId": "1:141256004330:web:05a7231b43a51aecf27d93",
@@ -30,8 +30,7 @@ export const appConfig: ApplicationConfig = {
         // })),
         provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
         // provideFirestore(() => getFirestore()),
-      ]
-    ),
+    ]),
     importProvidersFrom(provideAuth(() => getAuth())),
     importProvidersFrom(provideAnalytics(() => getAnalytics())),
     ScreenTrackingService,
@@ -39,13 +38,20 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(provideFirestore(() => getFirestore())),
     provideStore(reducers, { metaReducers }),
     provideStoreDevtools({
-      maxAge: 25, // Retains last 25 states
-      logOnly: !isDevMode(), // Restrict extension to log-only mode
-      autoPause: true, // Pauses recording actions and state changes when the extension window is not open
-      trace: false, //  If set to true, will include stack trace for every dispatched action, so you can see it in trace tab jumping directly to that part of code
-      traceLimit: 75, // maximum stack trace frames to be stored (in case trace option was provided as true)
-      connectInZone: true // If set to true, the connection is established within the Angular zone
+        maxAge: 25, // Retains last 25 states
+        logOnly: !isDevMode(), // Restrict extension to log-only mode
+        autoPause: true, // Pauses recording actions and state changes when the extension window is not open
+        trace: false, //  If set to true, will include stack trace for every dispatched action, so you can see it in trace tab jumping directly to that part of code
+        traceLimit: 75, // maximum stack trace frames to be stored (in case trace option was provided as true)
+        connectInZone: true // If set to true, the connection is established within the Angular zone
+    }),
+    provideServiceWorker('ngsw-worker.js', {
+        enabled: !isDevMode(),
+        registrationStrategy: 'registerWhenStable:30000'
+    }),
+    provideServiceWorker('ngsw-worker.js', {
+        enabled: !isDevMode(),
+        registrationStrategy: 'registerWhenStable:30000'
     })
-
-  ]
+]
 };
