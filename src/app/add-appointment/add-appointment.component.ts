@@ -33,6 +33,7 @@ import { DatabaseService } from '../database.service';
 import { Observable, Subscription, combineLatest, defer, first, from, map, of, take, tap, timer } from 'rxjs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { Clinic, Patient, Weekday } from '../types';
+import { TimeManagingAndPickingService } from '../time-managing-and-picking.service';
 
 
 
@@ -86,6 +87,10 @@ export class AddAppointmentComponent implements OnDestroy {
   public allPatients$: Observable<Patient[]> = of([]);
   public nextAvailableTime = signal<number>(0);
   private comibinedObsSubs?: Subscription;
+  private suggestedAppointmentTimeSubscription?: Subscription;
+  private timeManagingAndPickingSerivce = inject(TimeManagingAndPickingService);
+  initialTimeSet = false; // Flag to track if initial suggestion was used
+
   //public clinicDoc$ = this.databaseService.clinicDocOneTimeSnapshot$;
 
   //public clinicDoc = toSignal(this.databaseService.clinicDocOneTimeSnapshot$, { initialValue: undefined });
@@ -103,6 +108,7 @@ export class AddAppointmentComponent implements OnDestroy {
   filterCtrl = new FormControl('');
 
   ngOnInit() {
+    // names for autocomplete
     this.allPatientsObservableSubscription = this.allPatients$
       .subscribe((arr) => {
         let tmpArr: any[] = [];
@@ -117,13 +123,20 @@ export class AddAppointmentComponent implements OnDestroy {
         this.options = [...tmpArr];
       });
 
-
-    this.filteredOptions = this.options.slice(); // Initialize filtered options
+    this.filteredOptions = this.options.slice(); // Initialize filtered names options
     (this.profileForm.get('patientID') as FormControl).valueChanges.subscribe(value => {
       this.filteredOptions = this.options.filter(option =>
         `${option.firstName} ${option.lastName}`.toLowerCase().includes(value!.toLowerCase())
       );
     });
+
+    this.suggestedAppointmentTimeSubscription = this.timeManagingAndPickingSerivce.
+      suggestedAppointmentTime(new Date()).subscribe(suggestedTime => {
+        if (!this.initialTimeSet && !this.profileForm.get('appointmentTime')?.dirty) {
+          this.profileForm.get('appointmentTime')?.setValue(suggestedTime);
+          this.initialTimeSet = true;
+        }
+      });
   }
 
   getFullNameForDisplay(selection: any): string {
@@ -146,80 +159,16 @@ export class AddAppointmentComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.allPatientsObservableSubscription?.unsubscribe();
-    this.comibinedObsSubs?.unsubscribe();
+    this.suggestedAppointmentTimeSubscription?.unsubscribe();
   }
 
-  getTimeNowIn12h(): string {
-    const now = new Date();
-    const hours = now.getHours();
-    const adjustedHours = hours % 12 || 12; // Convert to 12-hour format (12 for midnight/noon)
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-
-    return `${adjustedHours}:${minutes} ${ampm}`;
-  }
-
-  getTimeNowIn24H(): string {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-
-    return `${hours}:${minutes}`;
-  }
-
-  pickAppointmentTime() {
-    console.log('picking');
-    const now = new Date();
-    const todayNameInTheWeek: number = now.getDay();
-    const dayNames: string[] = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-    let mainAverageAppointmentTimeTake: number | undefined;
-    let numberOfCurrentAppointments: number = 0;
-
-    //combineLatest([this.databaseService.todaySchedule$, timer(1000, 4000)])
-    this.comibinedObsSubs = combineLatest([this.databaseService.todaySchedule$, this.databaseService.clinicDocOneTimeSnapshot$])
-      .subscribe(([schedVal, clinicVal]) => {
-        mainAverageAppointmentTimeTake = clinicVal?.mainAverageAppointmentTimeTake;
-        numberOfCurrentAppointments ??= schedVal?.length;
-        let todayScheduleTemplate = clinicVal?.weekScheduleTemplate[dayNames[todayNameInTheWeek] as Weekday];
-
-        if (now.getHours()) {
-        } else if (numberOfCurrentAppointments > 0) {
-          //
-        } else {
-        }
-        // check if now is passed schedule template
-        // if no appiontments yet
-        // // identify current time
-        // // convert schedule template into comparable form
-        // // identify which is time period in schedule template
-        // // pick the start of the identified period
-        //
-        // if there are number of appointments
-        // convert schedule template into comparable form
-        // calculate the sum time for current appointments
-        // check which period is is ocupied or free
-        // identify expected opening
-        //
-        //
-        console.log(`Inside combineLatest; mainAva: ${mainAverageAppointmentTimeTake},  numberOfCurrApp: ${numberOfCurrentAppointments}`);
-        console.log('reached');
-      });
-
-
-
-    // get target day schedule template
-    // get number of existing appointments
-    // get mainAverage
-    // calculate expected time till free slot
-    // set value, do not return a value
-    //return this.getTimeNowIn24H();
-  }
 
   profileForm = this.formBuilder.group({
     patientID: ['', Validators.required],
     date: new FormControl(moment()),
     //date: new FormControl(moment().format('DD/MM/YYYY')),
-    appointmentTime: [this.pickAppointmentTime(), Validators.required],
+    //appointmentTime: [this.pickAppointmentTime(), Validators.required],
+    appointmentTime: ['', Validators.required],
     reasonForVisit: ['', Validators.required],
     isUrgent: [false],
     paid: [false],

@@ -68,12 +68,8 @@ export class DatabaseService {
       (error) => observer.error(error.message)
     );
   });
-
-  //public clinicDocOneTimeSnapshot$: Observable<Clinic | undefined> = docData(doc(this.firestore, this.clinic.path), { idField: 'id' })
   public clinicDocOneTimeSnapshot$: Observable<Clinic | undefined> = docData(doc(this.firestore, `/clinics/E8WUcagWkeNQXKXGP6Uq`), { idField: 'id' })
     .pipe(
-      //tap(x => this.loggerService.log('Fetching Clinic Doc $')),
-      //tap(x => this.loggerService.log(x)),
       map((data) => (data ? { ...data, firestorePath: `/clinics/E8WUcagWkeNQXKXGP6Uq`, } as Clinic : undefined)), // Handle missing document
       catchError((error) => {
         this.loggerService.logError('Error fetching appointments doc:', error);
@@ -82,35 +78,22 @@ export class DatabaseService {
     );
 
 
-
-
   constructor() {
     // this.fetchAllPatientsRealTimeSnapshot();
   }
 
-  // getTodayAppointmentsDocRealTimeSnapshot(targetDate: string): Observable<DaySchedule> {
-  //   return new Observable<DaySchedule>((subscriber) => {
-  //     const unsubscribe = onSnapshot(
-  //       // TODO: change the path to be dynamic dependin on target clinic ID and doctor ID
-  //       doc(this.firestore, `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${targetDate}`),
-  //       () => {}
-  //     );
-  //     return unsubscribe;
-  //   });
-  // }
-
 
   //this.databaseService.setAppointmentTimeTaken(this.appointment.patient.id, scheduleFirestorePath, this.milliseconds / 1000);
-  async setAppointmentTimeTaken(patientID: string, scheduleFirestorePath: string, timeTakenInSeconds: number) {
+  async setAppointmentTimeTaken(patientID: string, scheduleFirestorePath: string, timeTakenInMiliSeconds: number) {
     let scheduleRef = doc(this.firestore, scheduleFirestorePath);
-    //await updateDoc(scheduleRef, {timeTakenInSeconds: timeTakenInSeconds });
+    //await updateDoc(scheduleRef, {timeTakenInMiliSeconds: timeTakenInMiliSeconds });
     try {
       await runTransaction(this.firestore, async (transaction) => {
         const scheduleDoc = await transaction.get(scheduleRef);
         if (!scheduleDoc.exists()) { throw 'Document Does not exist'; }
         let appointmentsUpstream: Appointment[] = scheduleDoc.data()['appointments'];
         let targetAppiontmentIndex: number = appointmentsUpstream.findIndex((appointment) => appointment.patient.id === patientID);
-        appointmentsUpstream[targetAppiontmentIndex].timeTakenInSeconds = timeTakenInSeconds;
+        appointmentsUpstream[targetAppiontmentIndex].timeTakenInMiliSeconds = timeTakenInMiliSeconds;
         transaction.update(scheduleRef, { appointments: appointmentsUpstream });
       });
     } catch (error) { }
@@ -423,7 +406,7 @@ export class DatabaseService {
     return appointments.findIndex((appointment) => appointment.patient.id === patientID);
   }
 
-  async updateAppointmentState(patientID: string, schedulePath: string, newState: string, timeTakenInSeconds?: number) {
+  async updateAppointmentState(patientID: string, schedulePath: string, newState: string, timeTakenInMiliSeconds?: number) {
     const scheduleDocRef = doc(this.firestore, schedulePath);
     try {
       await runTransaction(this.firestore, async (transaction) => {
@@ -439,13 +422,13 @@ export class DatabaseService {
         appointments[targetAppointmentIndex].state = (newState as 'waiting' | 'examining' | 'done');
 
         let dayAverage = 0;
-        if (timeTakenInSeconds !== undefined) {
-          appointments[targetAppointmentIndex].timeTakenInSeconds = timeTakenInSeconds;
+        if (timeTakenInMiliSeconds !== undefined) {
+          appointments[targetAppointmentIndex].timeTakenInMiliSeconds = timeTakenInMiliSeconds;
           let aSum: number = 0;
           let j = 0;
           for (let i = 0; i < appointments.length; i++) {
-            if (appointments[i].timeTakenInSeconds === undefined || appointments[i].timeTakenInSeconds === 0) { continue }
-            aSum += appointments[i].timeTakenInSeconds!;
+            if (appointments[i].timeTakenInMiliSeconds === undefined || appointments[i].timeTakenInMiliSeconds === 0) { continue }
+            aSum += appointments[i].timeTakenInMiliSeconds!;
             j += 1;
           }
           dayAverage = Math.floor(aSum / j);

@@ -5,11 +5,13 @@ export type Weekday = 'SAT' | 'SUN' | 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI';
 export interface Clinic {
   id: string;
   firestorePath: string;
-  mainAverageAppointmentTimeTake: number;
+  mainAverageAppointmentTimeTake: number;   // number in miliseconds
   owner: string;
   weekScheduleTemplate: { [key in Weekday]: string[] }; // Use a mapped type for weekdays
+  // TODO: Make a structure of even number; start and end
+  //
   //weekScheduleTemplate: {
-  //  'SAT'?: string[];
+  //  'SAT'?: string[];  '1200',  '1500',  '1700', '2300'          must be even numbers
   //  'SUN'?: string[];
   //  'MON'?: string[];
   //  'TUE'?: string[];
@@ -53,7 +55,7 @@ export interface Appointment {
   latenessCtr: number;
   patient: Patient;
   expectedTime?: Date;
-  timeTakenInSeconds?: number;
+  timeTakenInMiliSeconds?: number;
 }
 
 export interface DaySchedule {

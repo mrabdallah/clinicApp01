@@ -83,7 +83,7 @@ export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
   stopwatchIsActive: boolean = false;
   intervalSubscription: any;
   startTime: number = 0;
-  totalSeconds: number = 0;
+  totalMiliSeconds: number = 0;
 
   emitPatientNotHereEvent() {
     let today = new Date();
@@ -128,7 +128,7 @@ export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
     this.updateAppointmentState = true;
     const currentTime = performance.now();
     const elapsedTimeMs = currentTime - this.startTime;
-    this.totalSeconds = Math.floor(elapsedTimeMs / 1000); // Convert to seconds
+    this.totalMiliSeconds = Math.floor(elapsedTimeMs / 1000); // Convert to seconds
     let today = new Date();
     let scheduleFirestorePath: string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
     try {
@@ -136,7 +136,7 @@ export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
         this.appointment.patient.id,
         scheduleFirestorePath,
         'done',
-        this.totalSeconds,
+        this.totalMiliSeconds,
       );
       this.appointmentDone.emit();
     } catch (error) {
