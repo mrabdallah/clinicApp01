@@ -54,7 +54,7 @@ export interface Appointment {
   paid: boolean;
   latenessCtr: number;
   patient: Patient;
-  expectedTime?: Date;
+  expectedTime?: string;  // '13:00'
   timeTakenInMiliSeconds?: number;
 }
 

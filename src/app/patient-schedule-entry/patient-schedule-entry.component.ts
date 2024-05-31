@@ -17,6 +17,7 @@ import { LoggerService } from '../logger.service';
   ],
   templateUrl: './patient-schedule-entry.component.html',
   styles: `
+    .visible-tgl{display: none;}
     .object-containss{
       max-height: 3.5rem;
       object-fit: contain;
@@ -25,11 +26,8 @@ import { LoggerService } from '../logger.service';
       box-shadow: 0 0 9px 2px #9E9E9E;
       border-radius: 15px;
     }
-    .visible-tgl{
-      display: none;
-    }
     ::ng-deep .specific-class > .mat-expansion-indicator:after {
-      color: red;
+      color: #bc23e7 !important;
     }
     .lateness-container{
       position: relative;
@@ -48,13 +46,16 @@ import { LoggerService } from '../logger.service';
       align-items: center;
     }
     .material-icons.calendar-clock{color: red;}
+    .specific-class.material-icons{
+      color: #ccf28b;
+    }
     ::ng-deep.mat-content{
       overflow: visible;
     }
   `
 })
 export class PatientScheduleEntryComponent {
-  @Input({required: true}) appointment!: Appointment;
+  @Input({ required: true }) appointment!: Appointment;
   panelOpenState = false;
   private router = inject(Router);
   private loggerService = inject(LoggerService);
@@ -65,28 +66,28 @@ export class PatientScheduleEntryComponent {
 
 
 
-  async toggleOnSite(){
+  async toggleOnSite() {
     this.updateOnSiteIsInProgress = true;
     let today = new Date();
-    let scheduleFirestorePath:string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+    let scheduleFirestorePath: string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
     try {
-      await this.databaseService.toggleOnSite(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.patientInClinic).then();      
+      await this.databaseService.toggleOnSite(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.patientInClinic).then();
     } catch (error) {
       this.loggerService.logError('Error Updating appoinment state', error);
 
-    } finally{
-    this.updateOnSiteIsInProgress = false; // Enable button after operation (regardless of success/failure)
+    } finally {
+      this.updateOnSiteIsInProgress = false; // Enable button after operation (regardless of success/failure)
 
     }
 
   }
 
-  async togglePaid(){
+  async togglePaid() {
     this.updatePaidIsInProgress = true;
     let today = new Date();
-    let scheduleFirestorePath:string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+    let scheduleFirestorePath: string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
     try {
-       await this.databaseService.togglePaid(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.paid);
+      await this.databaseService.togglePaid(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.paid);
     } catch (error) {
       this.loggerService.logError('Error Updating appoinment state', error);
     } finally {
@@ -94,10 +95,10 @@ export class PatientScheduleEntryComponent {
     }
   }
 
-  async toggleUrgent(){
+  async toggleUrgent() {
     this.updateUrgencyInProgress = true;
     let today = new Date();
-    let scheduleFirestorePath:string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+    let scheduleFirestorePath: string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
     try {
       await this.databaseService.toggleUrgent(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.isUrgent);
     } catch (error) {

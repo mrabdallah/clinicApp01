@@ -1,21 +1,26 @@
-<div class="elems-container flex rounded-2xl shadow-xl m-2 p-2">
+<div class="flex flex-col lg:flex-row items-stretch rounded-2xl shadow-xl m-2 p-2 bg-[#09b2cc]">
 
-  <div class="flex flex-col gap-5 w-1/2">
+  <div class="text-white font-medium flex flex-col gap-5 lg:w-1/2">
     <div class="cont-elevation flex gap-7 items-center px-5 cursor-pointer" (click)="navigateToPatientDetails()">
-      <mat-icon class="icon-display" style="transform: scale(2);">account_circle</mat-icon>
+      <div class="hidden lg:inline-block">
+        <mat-icon class="icon-display" style="transform: scale(2);">account_circle</mat-icon>
+      </div>
       <p>{{appointment.patient.firstName}} {{appointment.patient.lastName}}</p>
     </div>
-    <div [class.visible-tgl]="!panelOpenState">Reason for Visit: &nbsp; &nbsp;{{appointment.reasonForVisit}}</div>
+    <div [class.visible-tgl]="!panelOpenState">
+      <p>Reason for Visit: &nbsp; &nbsp;{{appointment.reasonForVisit}}</p>
+      <p>Expected Time: {{appointment.expectedTime}}</p>
+    </div>
   </div>
 
 
-  <div class="spacer grow-[2]"></div>
+  <div class="spacer grow-[2] hidden lg:block"></div>
 
-  <div class="actions_nd_stats flex items-start justify-end  w-1/2 gap-2">
+  <div class="actions_nd_stats flex items-start justify-end  lg:w-1/2 gap-2">
     <!-- <mat-accordion> -->
 
-    <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false"
-      style="border-radius: 0.7rem;">
+    <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false" class="text-white"
+      style="border-radius: 0.7rem; background: #ccf28b; color: #096da7; border: 1px solid hsl(255deg 61% 74% / 50%);">
       <!-- --------------------------- Flags & Main Actions -------------------------- -->
       <mat-expansion-panel-header class="specific-class">
         @if (appointment.latenessCtr > 0 && !appointment.patientInClinic) {
@@ -46,7 +51,7 @@
 
       </mat-expansion-panel-header>
       <!-- --------------------------- Actions -------------------------- -->
-      <div class="flex gap-2 border-t-2 border-r-blue-300 pt-4">
+      <div class="flex flex-wrap gap-2 border-t-2 border-r-blue-300 pt-4">
         <button mat-mini-fab aria-label="Call Patient"
           class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
           <mat-icon>call</mat-icon>

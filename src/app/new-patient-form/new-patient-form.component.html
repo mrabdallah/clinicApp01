@@ -7,13 +7,13 @@
       <!-- --------------------First Name---------------- -->
       <mat-form-field appearance="outline" class="grow mt-8">
         <mat-label>First Name</mat-label>
-        <input type="text" matInput formControlName="firstName">        
+        <input type="text" matInput formControlName="firstName">
       </mat-form-field>
 
       <!-- --------------------Last Name---------------- -->
       <mat-form-field appearance="outline" class="grow mt-8">
         <mat-label>Last Name</mat-label>
-        <input type="text" matInput formControlName="lastName">        
+        <input type="text" matInput formControlName="lastName">
       </mat-form-field>
     </div>
 
@@ -22,19 +22,19 @@
       <mat-label>Date of birth</mat-label>
       <input matInput [matDatepicker]="dp" formControlName="dateOfBirth">
       @if (!profileForm.get('dateOfBirth')?.valid) {
-        <mat-hint>MMMM Do, YYYY</mat-hint>
+      <mat-hint>MMMM Do, YYYY</mat-hint>
       }
       <mat-datepicker-toggle matIconSuffix [for]="dp"></mat-datepicker-toggle>
       <mat-datepicker #dp></mat-datepicker>
     </mat-form-field>
 
-      <!-- --------------------Address---------------- -->
-      <mat-form-field appearance="outline" class="grow mt-8">
-        <mat-label>Address</mat-label>
-        <input type="text" matInput formControlName="address">        
-      </mat-form-field>
+    <!-- --------------------Address---------------- -->
+    <mat-form-field appearance="outline" class="grow mt-8">
+      <mat-label>Address</mat-label>
+      <input type="text" matInput formControlName="address">
+    </mat-form-field>
 
-    <div class="flex">
+    <div class="flex flex-wrap gap-2">
       <!-- --------------------Primary Contact Number---------------- -->
       <mat-form-field appearance="outline" class="grow mt-8">
         <mat-label>Primary Contact Number</mat-label>
@@ -84,9 +84,10 @@
         <input type="text" matInput formControlName="preferredAppointmentDaysAndTimes">
       </mat-form-field>
     </div>
-    
+
     <div class="flex">
-      <mat-checkbox formControlName="optInForDataSharing" labelPosition="before" color="`red`">Opt In for Data Sharing</mat-checkbox>
+      <mat-checkbox formControlName="optInForDataSharing" labelPosition="before" color="`red`">Opt In for Data
+        Sharing</mat-checkbox>
     </div>
 
 

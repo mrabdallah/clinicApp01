@@ -134,7 +134,7 @@ export class HomeComponent {
 
   openNewAppointmentDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(AddAppointmentComponent, {
-      width: '50vw',
+      width: '80vw',
       enterAnimationDuration,
       exitAnimationDuration,
       data: { testdatakey: 'testdatavalue' }
@@ -143,7 +143,7 @@ export class HomeComponent {
 
   openNewPatientFormDialog(enterAnimationDuration: string, exitAnimationDuration: string): void {
     this.dialog.open(NewPatientFormComponent, {
-      width: '75vw',
+      width: '80vw',
       enterAnimationDuration,
       exitAnimationDuration,
       data: { testdatakey: 'testdatavalue' }

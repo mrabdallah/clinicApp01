@@ -32,7 +32,7 @@ import { TemporaryDataSrvService } from '../temporary-data-srv.service'; // Impo
 import { DatabaseService } from '../database.service';
 import { Observable, Subscription, combineLatest, defer, first, from, map, of, take, tap, timer } from 'rxjs';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { Clinic, Patient, Weekday } from '../types';
+import { Appointment, Clinic, Patient, Weekday } from '../types';
 import { TimeManagingAndPickingService } from '../time-managing-and-picking.service';
 
 
@@ -86,11 +86,12 @@ export class AddAppointmentComponent implements OnDestroy {
   private allPatientsObservableSubscription?: Subscription;
   public allPatients$: Observable<Patient[]> = of([]);
   public nextAvailableTime = signal<number>(0);
-  private comibinedObsSubs?: Subscription;
+  //private comibinedObsSubs?: Subscription;
   private suggestedAppointmentTimeSubscription?: Subscription;
   private timeManagingAndPickingSerivce = inject(TimeManagingAndPickingService);
   initialTimeSet = false; // Flag to track if initial suggestion was used
-
+  private todayAppointments: Appointment[] = [];
+  private todayAppointmentsSubsciption: Subscription;
   //public clinicDoc$ = this.databaseService.clinicDocOneTimeSnapshot$;
 
   //public clinicDoc = toSignal(this.databaseService.clinicDocOneTimeSnapshot$, { initialValue: undefined });
@@ -101,10 +102,13 @@ export class AddAppointmentComponent implements OnDestroy {
     private temporaryDataSrvService: TemporaryDataSrvService
   ) {
     this.allPatients$ = this.databaseService.fetchAllPatientsRealTimeSnapshot();
+    this.todayAppointmentsSubsciption = this.databaseService.todaySchedule$.subscribe((appointments) => {
+      this.todayAppointments = [...appointments];
+    });
   }
 
-  options: any[] = [];
-  filteredOptions: any[] = [];
+  options: { firstName: string; lastName: string; id: string; primaryContact: string }[] = [];
+  filteredOptions: { firstName: string; lastName: string; id: string; primaryContact: string }[] = [];
   filterCtrl = new FormControl('');
 
   ngOnInit() {
@@ -123,11 +127,16 @@ export class AddAppointmentComponent implements OnDestroy {
         this.options = [...tmpArr];
       });
 
+
     this.filteredOptions = this.options.slice(); // Initialize filtered names options
     (this.profileForm.get('patientID') as FormControl).valueChanges.subscribe(value => {
-      this.filteredOptions = this.options.filter(option =>
-        `${option.firstName} ${option.lastName}`.toLowerCase().includes(value!.toLowerCase())
-      );
+      this.filteredOptions = this.options.filter(option => {
+        let result: boolean = `${option.firstName} ${option.lastName}`.toLowerCase().includes(value!.toLowerCase());
+        for (let a of this.todayAppointments) {
+          if (a.patient.id === option.id && a.state !== 'done') { result = false; }
+        }
+        return result;
+      });
     });
 
     this.suggestedAppointmentTimeSubscription = this.timeManagingAndPickingSerivce.
@@ -160,6 +169,7 @@ export class AddAppointmentComponent implements OnDestroy {
   ngOnDestroy(): void {
     this.allPatientsObservableSubscription?.unsubscribe();
     this.suggestedAppointmentTimeSubscription?.unsubscribe();
+    this.todayAppointmentsSubsciption.unsubscribe();
   }
 
 
@@ -182,11 +192,11 @@ export class AddAppointmentComponent implements OnDestroy {
     // }),
   });
 
-  getPatientFullData(id?: string) {
-    if (id) {
-      let patientIndex: number = this.options.findIndex(elem => elem.id === id);
-      return this.options[patientIndex];
-    }
+  getPatientFullData(id: string) {
+    //if (id) {
+    let patientIndex: number = this.options.findIndex(elem => elem.id === id);
+    return this.options[patientIndex];
+    //}
   }
 
   onSubmit() {
@@ -203,6 +213,7 @@ export class AddAppointmentComponent implements OnDestroy {
     this.databaseService.createNewAppointment(
       {
         dateTime: moment(this.profileForm.value.date, 'DD/MM/YYYY').toDate(),
+        expectedTime: typeof (this.profileForm.value.appointmentTime) === 'string' ? this.profileForm.value.appointmentTime : '',
         state: 'waiting',
         isUrgent: typeof this.profileForm.value.isUrgent === 'boolean' ? this.profileForm.value.isUrgent : false,
         patientInClinic: typeof (this.profileForm.value.patientInClinic) === 'boolean' ? this.profileForm.value.patientInClinic : false,

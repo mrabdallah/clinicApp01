@@ -1,54 +1,64 @@
-<div class="rounded-2xl flex drop-shadow m-2 p-2" style="background-color: hsl(185.45deg 31.43% 93.14%);">
+<div class="rounded-2xl flex flex-col lg:flex-row items-stretch drop-shadow m-2 p-2 bg-[#0277B6]">
 
-  <div class="flex flex-col gap-5 w-1/2">
-    <div class="cont-elevation flex gap-7 items-center px-5 cursor-pointer" (click)="navigateToPatientDetails()">
-      <mat-icon class="icon-display" style="transform: scale(2);">account_circle</mat-icon>
-      <p>{{appointment.patient.firstName}} {{appointment.patient.lastName}}</p> 
+  <div class="text-white font-medium flex flex-col gap-5 lg:w-1/2">
+    <div class="flex gap-7 items-center px-5 cursor-pointer" (click)="navigateToPatientDetails()">
+      <div class="hidden lg:inline-block">
+        <mat-icon style="transform: scale(2);">account_circle</mat-icon>
+      </div>
+      <p class="text-sm">{{appointment.patient.firstName}} {{appointment.patient.lastName}}</p>
     </div>
-    <div [class.visible-tgl]="!panelOpenState">Reason for Visit:  &nbsp; &nbsp;{{appointment.reasonForVisit}}</div>
+    <div [class.visible-tgl]="!panelOpenState">
+      <p>Reason for Visit: &nbsp; &nbsp;{{appointment.reasonForVisit}}</p>
+      <p>Expected Time: {{appointment.expectedTime}}</p>
+    </div>
   </div>
 
-  <div class="spacer grow-[2]"></div>
+  <div class="spacer grow-[2] hidden lg:block"></div>
 
-  <div class="actions_nd_stats flex items-start justify-end w-1/3 gap-2">
-    <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false"
-      style="border-radius: 0.7rem;">
+  <div class="actions_nd_stats flex items-start justify-end lg:w-1/3 gap-2">
+    <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false" class="text-white"
+      style="border-radius: 0.7rem; background: #ccf28b; color: #096da7; border: 1px solid hsl(255deg 61% 74% / 50%);">
       <!-- --------------------------- Flags & Main Actions -------------------------- -->
       <mat-expansion-panel-header class="specific-class">
         @if (appointment.latenessCtr > 0) {
-          <div class="flex justify-center items-center lateness-container">
-            <!-- <mat-icon class="icon-btn">browse_gallery</mat-icon> -->
-            <p class="lateness-counter">{{appointment.latenessCtr}}</p>
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M200-640h560v-80H200v80Zm0 0v-80 80Zm0 560q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v227q-19-9-39-15t-41-9v-43H200v400h252q7 22 16.5 42T491-80H200Zm520 40q-83 0-141.5-58.5T520-240q0-83 58.5-141.5T720-440q83 0 141.5 58.5T920-240q0 83-58.5 141.5T720-40Zm67-105 28-28-75-75v-112h-40v128l87 87Z"/></svg>            
+        <div class="flex justify-center items-center lateness-container">
+          <!-- <mat-icon class="icon-btn">browse_gallery</mat-icon> -->
+          <p class="lateness-counter">{{appointment.latenessCtr}}</p>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000">
+            <path
+              d="M200-640h560v-80H200v80Zm0 0v-80 80Zm0 560q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v227q-19-9-39-15t-41-9v-43H200v400h252q7 22 16.5 42T491-80H200Zm520 40q-83 0-141.5-58.5T520-240q0-83 58.5-141.5T720-440q83 0 141.5 58.5T920-240q0 83-58.5 141.5T720-40Zm67-105 28-28-75-75v-112h-40v128l87 87Z" />
+          </svg>
           <!-- <mat-icon class="icon-btn">warning</mat-icon> -->
-          </div>
-          
-          <!-- warning z -->
+        </div>
+
+        <!-- warning z -->
         }
 
         @if (appointment.isUrgent) {
-          <img src="assets/images/alarm.gif" alt="Emergency" class="object-containss">
+        <img src="assets/images/alarm.gif" alt="Emergency" class="object-containss">
         }
 
         <div class="flex justify-center items-center gap-2">
           @if (appointment.patientInClinic) {
-            <mat-icon class="icon-btn">where_to_vote</mat-icon>
+          <mat-icon class="icon-btn">where_to_vote</mat-icon>
           }
           @if (appointment.paid) {
-            <mat-icon class="icon-btn mr-3">paid</mat-icon>
+          <mat-icon class="icon-btn mr-3">paid</mat-icon>
           }
         </div>
-        
+
       </mat-expansion-panel-header>
       <!-- --------------------------- Actions -------------------------- -->
-      <div class="flex gap-2 border-t-2 border-r-blue-300 pt-4">
-        <button mat-mini-fab aria-label="Call Patient" class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+      <div class="flex gap-2 flex-wrap border-t-2 border-r-blue-300 pt-4">
+        <button mat-mini-fab aria-label="Call Patient"
+          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
           <mat-icon>call</mat-icon>
         </button>
-        <button mat-mini-fab aria-label="Send SMS to Patient" class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+        <button mat-mini-fab aria-label="Send SMS to Patient"
+          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
           <mat-icon>sms</mat-icon>
         </button>
-        <button mat-mini-fab aria-label="Patient on site toggle"  (click)="toggleOnSite()"
+        <button mat-mini-fab aria-label="Patient on site toggle" (click)="toggleOnSite()"
           class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"
           [disabled]="updateOnSiteIsInProgress">
           <mat-icon>where_to_vote</mat-icon>
@@ -62,10 +72,13 @@
           class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"
           [disabled]="updateUrgencyInProgress">
           <!-- <mat-icon>f119</mat-icon> -->
-          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M200-160v-80h64l79-263q8-26 29.5-41.5T420-560h120q26 0 47.5 15.5T617-503l79 263h64v80H200Zm148-80h264l-72-240H420l-72 240Zm92-400v-200h80v200h-80Zm238 99-57-57 142-141 56 56-141 142Zm42 181v-80h200v80H720ZM282-541 141-683l56-56 142 141-57 57ZM40-360v-80h200v80H40Zm440 120Z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+            <path
+              d="M200-160v-80h64l79-263q8-26 29.5-41.5T420-560h120q26 0 47.5 15.5T617-503l79 263h64v80H200Zm148-80h264l-72-240H420l-72 240Zm92-400v-200h80v200h-80Zm238 99-57-57 142-141 56 56-141 142Zm42 181v-80h200v80H720ZM282-541 141-683l56-56 142 141-57 57ZM40-360v-80h200v80H40Zm440 120Z" />
+          </svg>
         </button>
       </div>
     </mat-expansion-panel>
   </div>
-  
+
 </div>

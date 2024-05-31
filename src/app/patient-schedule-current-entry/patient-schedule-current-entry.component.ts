@@ -42,10 +42,6 @@ import { Subscription, takeLast, timer, Subject, interval, takeUntil, } from 'rx
       100%{background-position:0% 50%}
   }
 
-  ::ng-deep .specific-class > .mat-expansion-indicator:after {
-      color: red !important;
-    }
-
   .object-containss{
     max-height: 3.5rem;
     object-fit: contain;
@@ -60,6 +56,7 @@ import { Subscription, takeLast, timer, Subject, interval, takeUntil, } from 'rx
   .visible-tgl{
     display: none;
   }
+
 
   @media screen and (max-width: 600px){
     .scale-down-on-small{

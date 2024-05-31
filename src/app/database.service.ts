@@ -50,6 +50,7 @@ export class DatabaseService {
           for (const appointment of docSnapshot.data()['appointments'] as Appointment[]) {
             appointments.push({
               dateTime: appointment.dateTime,
+              expectedTime: appointment.expectedTime,
               state: appointment.state,
               isUrgent: appointment.isUrgent,
               patientInClinic: appointment.patientInClinic,
@@ -185,6 +186,7 @@ export class DatabaseService {
                   },
                   reasonForVisit: appointment.reasonForVisit,
                   dateTime: appointment.dateTime,
+                  expectedTime: appointment.expectedTime,
                   state: 'waiting',
                   isUrgent: appointment.isUrgent,
                   patientInClinic: appointment.patientInClinic,
@@ -210,6 +212,7 @@ export class DatabaseService {
                   },
                   reasonForVisit: appointment.reasonForVisit,
                   dateTime: appointment.dateTime,
+                  expectedTime: appointment.expectedTime,
                   state: 'waiting',
                   latenessCtr: appointment.latenessCtr,
                   isUrgent: appointment.isUrgent,
@@ -309,9 +312,9 @@ export class DatabaseService {
   }
 
 
-  async moveAppointmentInSchedule(scheduleFirestorePath: string, previousAppointments: Appointment[]) {
+  async moveAppointmentInSchedule(path: string, previousAppointments: Appointment[]) {
     // TODO: Change the 'E8WUcagWkeNQXKXGP6Uq' to use a variable
-    const targetDayScheduleDocRef = doc(this.firestore, scheduleFirestorePath);
+    const targetDayScheduleDocRef = doc(this.firestore, path);
     try {
 
       await runTransaction(this.firestore, async (transaction) => {
