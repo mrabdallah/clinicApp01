@@ -1,6 +1,6 @@
-<div class="rounded-2xl flex flex-col lg:flex-row items-stretch drop-shadow m-2 p-2 bg-[#0277B6]">
+<div class="rounded-2xl flex flex-col md:flex-row items-stretch drop-shadow m-2 p-2 bg-[#0277B6]">
 
-  <div class="text-white font-medium flex flex-col gap-5 lg:w-1/2">
+  <div class="text-white font-medium flex flex-col gap-5 md:w-1/2">
     <div class="flex gap-7 items-center px-5 cursor-pointer" (click)="navigateToPatientDetails()">
       <div class="hidden lg:inline-block">
         <mat-icon style="transform: scale(2);">account_circle</mat-icon>
@@ -13,9 +13,9 @@
     </div>
   </div>
 
-  <div class="spacer grow-[2] hidden lg:block"></div>
+  <div class="spacer grow-[2] hidden md:block"></div>
 
-  <div class="actions_nd_stats flex items-start justify-end lg:w-1/3 gap-2">
+  <div class="actions_nd_stats flex items-start lg:w-1/3 gap-2">
     <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false" class="text-white"
       style="border-radius: 0.7rem; background: #ccf28b; color: #096da7; border: 1px solid hsl(255deg 61% 74% / 50%);">
       <!-- --------------------------- Flags & Main Actions -------------------------- -->

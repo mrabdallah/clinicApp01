@@ -1,0 +1,37 @@
+<div class="flex justify-center content-center" style="height: 80vh;">
+  <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()" class="flex flex-col p-12 justify-center">
+    <mat-form-field appearance="outline">
+      <mat-label>Enter your email</mat-label>
+      <input matInput placeholder="pat@example.com" formControlName="email" (blur)="updateErrorMessage()" required>
+      @if (signUpForm.get('email')!.invalid) {
+      <mat-error>{{errorMessages.email}}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Enter your password</mat-label>
+      <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password"
+        (blur)="updateErrorMessage()" required>
+      <button mat-icon-button matSuffix (click)="togglePasswordVisibility($event)" [attr.aria-label]="'Hide password'"
+        [attr.aria-pressed]="hidePassword">
+        <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+      </button>
+      @if(signUpForm.get('password')!.invalid){
+      <mat-error>{{errorMessages.password}}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Confirm Password</mat-label>
+      <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="confirmPassword"
+        (blur)="updateErrorMessage()" required>
+      @if(signUpForm.get('confirmPassword')!.invalid){
+      <mat-error>{{errorMessages.confirmPassword}}</mat-error>
+      }
+    </mat-form-field>
+
+
+    <button mat-raised-button color="primary" type="submit" [disabled]="!signUpForm.valid">Submit</button>
+  </form>
+
+</div>

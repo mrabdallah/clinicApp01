@@ -8,8 +8,9 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { TemporaryDataSrvService } from './temporary-data-srv.service'; // Import the data service
-
+import { MatButtonModule } from '@angular/material/button';
 import {
+
   CdkDrag,
   DragDropModule,
   CdkDragDrop,
@@ -36,6 +37,7 @@ import { NewPatientFormComponent } from './new-patient-form/new-patient-form.com
     CdkDragPlaceholder,
     RouterOutlet,
     CommonModule,
+    MatButtonModule,
     MatIconModule,
     MatProgressBarModule,
     DragDropModule,
@@ -46,6 +48,9 @@ import { NewPatientFormComponent } from './new-patient-form/new-patient-form.com
   ],
   templateUrl: './app.component.html',
   styles: `
+  :host{
+    height: 100dvh;
+  }
   main {
     transition: 0.5s;
   }
@@ -96,9 +101,9 @@ export class AppComponent {
   // private todaySchedule$: Observable<any[]>;
 
   isOpen = false;
-  
 
- 
+
+
 
   toggleSidebar() {
     this.isOpen = !this.isOpen;
