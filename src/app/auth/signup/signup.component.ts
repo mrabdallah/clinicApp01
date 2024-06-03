@@ -1,24 +1,34 @@
 import { Component, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { AuthService } from '../../auth.service';
+import { Router } from '@angular/router';
+import { take } from 'rxjs';
 
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule,],
+  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule,
+    MatProgressSpinnerModule,
+  ],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.css'
 })
 export class SignupComponent {
+  authService = inject(AuthService);
+  router = inject(Router);
+  isSigningUp = false;
   hidePassword = true;
   errorMessages = {
     email: '',
     password: '',
-    confirmPassword: 'fffffff',
+    confirmPassword: '',
+    main: '',
   }
   private formBuilder: FormBuilder = inject(FormBuilder);
 
@@ -71,18 +81,30 @@ export class SignupComponent {
 
     const confirmPasswordControl = this.signUpForm.get('confirmPassword');
     if (confirmPasswordControl?.hasError('required')) {
-      console.error('r');
       this.errorMessages.confirmPassword = 'Confirm password is required';
     } else if (confirmPasswordControl?.hasError('passwordsDontMatch')) {
-      console.error('d');
       this.errorMessages.confirmPassword = 'Passwords do not match';
     } else {
-      console.error('n');
       this.errorMessages.confirmPassword = '';
     }
   }
 
 
-  onSubmit() { }
+  onSubmit() {
+    if (this.signUpForm.valid) {
+      this.isSigningUp = true;
+      this.authService.signUp(this.signUpForm.value.email!, this.signUpForm.value.password!)
+        .pipe(take(1))
+        .subscribe({
+          next: (_) => {
+            this.signUpForm.reset();
+            this.router.navigateByUrl('');
+          },
+          error: (error) => {
+            this.errorMessages.main = error.message;
+          }
+        });
+    }
+  }
 
 }

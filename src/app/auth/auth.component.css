@@ -1,0 +1,16 @@
+.or-para-cont {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  /* position: absolute; */
+  /* transform-origin: center; */
+  /* transform: translate(0px, -4em); */
+}
+
+.or-para {
+  position: absolute;
+  padding: 3px 9px;
+  background: #e7f0f9;
+  transform-origin: center;
+  transform: translate(0px, -4em);
+}

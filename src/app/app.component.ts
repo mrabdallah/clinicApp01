@@ -76,6 +76,7 @@ import { NewPatientFormComponent } from './new-patient-form/new-patient-form.com
     width: 250px;
   }
   .side-bar-toggle-btn{
+    z-index: 19;
     transition: 0.5s;
     position: fixed;
     top: 50%;
