@@ -91,17 +91,21 @@ export class SignupComponent {
 
 
   onSubmit() {
+    if (!this.signUpForm.valid) { return; }
+    this.isSigningUp = true;
     if (this.signUpForm.valid) {
       this.isSigningUp = true;
       this.authService.signUp(this.signUpForm.value.email!, this.signUpForm.value.password!)
-        .pipe(take(1))
+        //.pipe(take(1))
         .subscribe({
           next: (_) => {
-            this.signUpForm.reset();
             this.router.navigateByUrl('');
+            this.isSigningUp = false;
+            this.signUpForm.reset();
           },
           error: (error) => {
             this.errorMessages.main = error.message;
+            this.isSigningUp = false;
           }
         });
     }

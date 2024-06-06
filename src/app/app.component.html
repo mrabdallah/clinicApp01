@@ -1,20 +1,4 @@
-<header class="flex flex-row-reverse">
-  <!--<nav>
-    <a href="/html/">HTML</a> |
-    <a href="/css/">CSS</a> |
-    <a href="/js/">JavaScript</a> |
-    <a href="/jquery/">jQuery</a>
-  </nav>-->
-  <div>
-    @if(true) {
-    <button mat-icon-button color="primary" aria-label="Example icon button with a home icon"
-      class="!bg-[#09b3ce33] hover:!bg-[#6dc4df]">
-      <mat-icon>login</mat-icon>
-    </button>
-    } @else {
-    }
-  </div>
-</header>
+<header> <app-top-bar></app-top-bar> </header>
 <main [class.sidebar-opend]="isOpen" class="h-full flex flex-col m-0">
 
   <div class="side-bar-container shadow-sm" [class.open]="isOpen">

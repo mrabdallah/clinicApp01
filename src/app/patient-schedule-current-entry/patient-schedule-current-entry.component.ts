@@ -115,7 +115,7 @@ export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
         'examining',
       );
     } catch (error) {
-      this.loggerService.logError('Error Updating appoinment state', error);
+      this.loggerService.logError(error, 'Error Updating appoinment state');
     } finally {
       this.updateAppointmentState = false;
     }
@@ -137,7 +137,7 @@ export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
       );
       this.appointmentDone.emit();
     } catch (error) {
-      this.loggerService.logError('Error Updating appoinment state', error);
+      this.loggerService.logError(error, 'Error Updating appoinment state');
     } finally {
       this.updateAppointmentState = false;
     }
@@ -155,7 +155,7 @@ export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
     try {
       await this.databaseService.toggleOnSite(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.patientInClinic);
     } catch (error) {
-      this.loggerService.logError('Error Updating appoinment state', error);
+      this.loggerService.logError(error, 'Error Updating appoinment state');
     } finally {
       this.updateOnSiteIsInProgress = false;
     }
@@ -168,7 +168,7 @@ export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
     try {
       await this.databaseService.togglePaid(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.paid);
     } catch (error) {
-      this.loggerService.logError('Error Updating appoinment state', error);
+      this.loggerService.logError(error, 'Error Updating appoinment state');
     } finally {
       this.updatePaidIsInProgress = false;
     }
@@ -181,7 +181,7 @@ export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
     try {
       await this.databaseService.toggleUrgent(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.isUrgent);
     } catch (error) {
-      this.loggerService.logError('Error Updating appoinment state', error);
+      this.loggerService.logError(error, 'Error Updating appoinment state');
     } finally {
       this.updateUrgencyInProgress = false;
     }

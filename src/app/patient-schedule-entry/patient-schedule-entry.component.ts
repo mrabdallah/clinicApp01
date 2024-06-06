@@ -73,7 +73,7 @@ export class PatientScheduleEntryComponent {
     try {
       await this.databaseService.toggleOnSite(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.patientInClinic).then();
     } catch (error) {
-      this.loggerService.logError('Error Updating appoinment state', error);
+      this.loggerService.logError(error, 'Error Updating appoinment state');
 
     } finally {
       this.updateOnSiteIsInProgress = false; // Enable button after operation (regardless of success/failure)
@@ -89,7 +89,7 @@ export class PatientScheduleEntryComponent {
     try {
       await this.databaseService.togglePaid(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.paid);
     } catch (error) {
-      this.loggerService.logError('Error Updating appoinment state', error);
+      this.loggerService.logError(error, 'Error Updating appoinment state');
     } finally {
       this.updatePaidIsInProgress = false;
     }
@@ -102,7 +102,7 @@ export class PatientScheduleEntryComponent {
     try {
       await this.databaseService.toggleUrgent(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.isUrgent);
     } catch (error) {
-      this.loggerService.logError('Error Updating appoinment state', error);
+      this.loggerService.logError(error, 'Error Updating appoinment state');
     } finally {
       this.updateUrgencyInProgress = false;
     }

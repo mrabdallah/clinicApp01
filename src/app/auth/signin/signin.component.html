@@ -1,5 +1,10 @@
 <div class="flex justify-center content-center">
   <form [formGroup]="signInForm" (ngSubmit)="onSubmit()" class="flex flex-col p-12 justify-center">
+    @if(errorMessages.main.length > 0) {
+    <div class="rounded mb-4 p-2 bg-gray-300">
+      <mat-error>{{errorMessages.main}}</mat-error>
+    </div>
+    }
     <mat-form-field appearance="outline">
       <mat-label>Enter your email</mat-label>
       <input matInput placeholder="pat@example.com" formControlName="email" (blur)="updateErrorMessage()" required>
@@ -21,11 +26,9 @@
       }
     </mat-form-field>
 
-
-
-
-    <button mat-raised-button color="primary" type="submit"
-      [disabled]="isSigningIn || !signInForm.valid">Submit</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="isSigningIn || !signInForm.valid">
+      Sign in
+    </button>
   </form>
   @if(isSigningIn){
   <mat-spinner></mat-spinner>

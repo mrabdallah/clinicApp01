@@ -8,14 +8,15 @@ export class LoggerService {
 
   constructor() { }
 
-  log(obj: any){
+  log(obj: any) {
     if (!environment.production) {
       console.log(obj);
     }
   }
 
-  logError(message: string, error: any){
+  logError(error: any, customMessege?: string) {
     if (!environment.production) {
+      if (customMessege) { console.error(customMessege); }
       console.error(error);
     }
   }

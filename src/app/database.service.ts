@@ -73,7 +73,7 @@ export class DatabaseService {
     .pipe(
       map((data) => (data ? { ...data, firestorePath: `/clinics/E8WUcagWkeNQXKXGP6Uq`, } as Clinic : undefined)), // Handle missing document
       catchError((error) => {
-        this.loggerService.logError('Error fetching appointments doc:', error);
+        this.loggerService.logError(error, 'Error fetching appointments doc:');
         return of(undefined); // Return undefined on error
       })
     );
@@ -285,7 +285,7 @@ export class DatabaseService {
       });
       this.loggerService.log('Late Patient Appointment\'s transaction successfully committed!');
     } catch (error) {
-      this.loggerService.logError('Failed in: Late Patient Appointment\'s transaction:', error);
+      this.loggerService.logError(error, 'Failed in: Late Patient Appointment\'s transaction:');
     } finally {
     }
   }
@@ -307,7 +307,7 @@ export class DatabaseService {
       });
       this.loggerService.log('Transaction successfully committed!');
     } catch (error) {
-      this.loggerService.logError('error onappointmentdone: ', error);
+      this.loggerService.logError(error, 'error onappointmentdone');
     }
   }
 
@@ -330,7 +330,7 @@ export class DatabaseService {
       });
       this.loggerService.log('Transaction successfully committed!');
     } catch (error) {
-      this.loggerService.logError('Transaction failed: ', error);
+      this.loggerService.logError(error, 'Transaction failed: ');
       throw error;
     }
   }
@@ -352,7 +352,7 @@ export class DatabaseService {
         return;
       });
     } catch (error) {
-      this.loggerService.logError('Error Updating appoinment state', error);
+      this.loggerService.logError(error, 'Error Updating appoinment state');
     }
   }
 
@@ -377,7 +377,7 @@ export class DatabaseService {
         return;
       });
     } catch (error) {
-      this.loggerService.logError('Error Updating appoinment state', error);
+      this.loggerService.logError(error, 'Error Updating appoinment state');
     }
   }
 
@@ -445,7 +445,7 @@ export class DatabaseService {
       });
       this.loggerService.log('Appointment State Updated');
     } catch (error) {
-      this.loggerService.logError('Error in update appointment state Transaction', error);
+      this.loggerService.logError(error, 'Error in update appointment state Transaction');
     }
   }
 

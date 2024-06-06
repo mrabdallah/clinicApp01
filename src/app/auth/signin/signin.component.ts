@@ -61,18 +61,21 @@ export class SigninComponent {
   }
 
   onSubmit() {
+    if (!this.signInForm.valid) { return; }
     this.isSigningIn = true;
     this.authService.signIn(this.signInForm.value.email!, this.signInForm.value.password!)
-      .pipe(take(1))
+      //.pipe(take(1))
       .subscribe({
         next: (_) => {
-          this.signInForm.reset();
           this.router.navigateByUrl('');
+          this.isSigningIn = false;
+          this.signInForm.reset();
         },
-        error: (error) => {
+        error: (error: Error) => {
           this.errorMessages.main = error.message;
+          this.isSigningIn = false;
+
         }
       });
-
   }
 }

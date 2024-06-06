@@ -1,6 +1,6 @@
-import { Component, inject, TemplateRef, ViewContainerRef } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal, Signal, TemplateRef, ViewContainerRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { Observable, Subscription, catchError, map, of, tap } from 'rxjs';
 import {
   MatDialog
@@ -26,6 +26,9 @@ import { PatientScheduleEntryComponent } from './patient-schedule-entry/patient-
 import { PatientScheduleCurrentEntryComponent } from './patient-schedule-current-entry/patient-schedule-current-entry.component';
 import { DatabaseService } from './database.service';
 import { NewPatientFormComponent } from './new-patient-form/new-patient-form.component';
+import { AuthService } from './auth.service';
+import { AppUser } from './auth/user.model';
+import { TopBarComponent } from './top-bar/top-bar.component';
 
 @Component({
   selector: 'app-root',
@@ -42,6 +45,7 @@ import { NewPatientFormComponent } from './new-patient-form/new-patient-form.com
     MatProgressBarModule,
     DragDropModule,
     SideBarComponent,
+    TopBarComponent,
     ClockComponent,
     PatientScheduleEntryComponent,
     PatientScheduleCurrentEntryComponent,
@@ -96,15 +100,35 @@ import { NewPatientFormComponent } from './new-patient-form/new-patient-form.com
   `,
   // styleUrl: './app.component.css'
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy, OnInit {
+  router = inject(Router);
+  authService = inject(AuthService);
+  #userSubscription?: Subscription;
+  userSignal = signal<AppUser | undefined | null>(null);// = signal(this.authService.userSignal.mutate9);
+  //navEndSub: Subscription = this.router.url navigationEnd.subscribe(() => {
+  //  this.isAuthUrl$.next(this.router.url === '/auth
+  //});
 
   title = 'clinic-manager';
   // private todaySchedule$: Observable<any[]>;
 
   isOpen = false;
 
+  logout() {
+    this.authService.logout();
+  }
 
+  ngOnInit(): void {
+    this.#userSubscription = this.authService.user$.subscribe(user => {
+      if (user) {
+        this.userSignal.set(user!);
+      }
+    });
+  }
 
+  ngOnDestroy(): void {
+    this.#userSubscription?.unsubscribe();
+  }
 
   toggleSidebar() {
     this.isOpen = !this.isOpen;
