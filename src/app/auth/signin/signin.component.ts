@@ -5,7 +5,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { AuthService } from '../../auth.service';
 import { Router } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { take } from 'rxjs';
 
@@ -35,7 +35,7 @@ export class SigninComponent {
     event.stopPropagation();
   }
 
-  signInForm = this.formBuilder.group({
+  signInForm: FormGroup = this.formBuilder.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });

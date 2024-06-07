@@ -1,1 +1,72 @@
-<p>edit-schedule works!</p>
+<form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" class="">
+  <div formArrayName="sat">
+    sat
+    <button mat-raised-button type="button" (click)="onAddIntervalControls('sat')">Add</button>
+
+    <div>
+      @for (controlItem of getControls('sat'); track trackByFunc; let i = $index) {
+      <div>
+        <label for="time-{{ i }}">{{ 0 ? "Interval Start Time" : (i % 2 === 0 ? "Interval Start Time" : "Interval End
+          Time") }}:</label>
+        <input id="time-{{ i }}" type="time" [formControlName]="i">
+      </div>
+      }
+    </div>
+  </div>
+  <div formArrayName="sun">
+    sun
+    <button mat-raised-button type="button" (click)="onAddIntervalControls('sun')">Basic</button>
+    @for (controlItem of getControls('sun'); track trackByFunc; let i = $index) {
+    <div>
+      <label for="Interval-{{ i }}">Alias:</label>
+      <input id="alias-{{ i }}" type="time" [formControlName]="i">
+    </div>
+    }
+  </div>
+  <div formArrayName="mon">
+    <button mat-raised-button type="button" (click)="onAddIntervalControls('mon')">Basic</button>
+    @for (controlItem of getControls('mon'); track trackByFunc; let i = $index) {
+    <div>
+      <label for="alias-{{ i }}">Alias:</label>
+      <input id="alias-{{ i }}" type="time" [formControlName]="i">
+    </div>
+    }
+  </div>
+  <div formArrayName="tue">
+    <button mat-raised-button type="button" (click)="onAddIntervalControls('tue')">Basic</button>
+    @for (controlItem of getControls('tue'); track trackByFunc; let i = $index) {
+    <div>
+      <label for="alias-{{ i }}">Alias:</label>
+      <input id="alias-{{ i }}" type="time" [formControlName]="i">
+    </div>
+    }
+  </div>
+  <div formArrayName="wed">
+    <button mat-raised-button type="button" (click)="onAddIntervalControls('wed')">Basic</button>
+    @for (controlItem of getControls('wed'); track trackByFunc; let i = $index) {
+    <div>
+      <label for="alias-{{ i }}">Alias:</label>
+      <input id="alias-{{ i }}" type="time" [formControlName]="i">
+    </div>
+    }
+  </div>
+  <div formArrayName="thu">
+    <button mat-raised-button type="button" (click)="onAddIntervalControls('thu')">Basic</button>
+    @for (controlItem of getControls('thu'); track trackByFunc; let i = $index) {
+    <div>
+      <label for="alias-{{ i }}">Alias:</label>
+      <input id="alias-{{ i }}" type="time" [formControlName]="i">
+    </div>
+    }
+  </div>
+  <div formArrayName="fri">
+    <button mat-raised-button type="button" (click)="onAddIntervalControls('fri')">Basic</button>
+    @for (controlItem of getControls('fri'); track trackByFunc; let i = $index) {
+    <div>
+      <label for="alias-{{ i }}">Alias:</label>
+      <input id="alias-{{ i }}" type="time" [formControlName]="i">
+    </div>
+    }
+  </div>
+  <button mat-raised-button color="primary" type="submit" [disabled]="!scheduleForm.valid">Submit</button>
+</form>

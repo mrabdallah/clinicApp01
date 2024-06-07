@@ -9,5 +9,5 @@ export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'auth', component: AuthComponent },
   { path: 'patient/:id', component: PatientDetailsComponent },
-  { path: '/edit_schedule', component: EditScheduleComponent },
+  { path: 'edit_schedule', component: EditScheduleComponent },
 ];
