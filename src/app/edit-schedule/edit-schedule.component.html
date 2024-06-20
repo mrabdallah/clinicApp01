@@ -1,72 +1,182 @@
-<form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" class="">
-  <div formArrayName="sat">
-    sat
-    <button mat-raised-button type="button" (click)="onAddIntervalControls('sat')">Add</button>
+{{this.selectClinicBehaviorSubject | async}}
+<div class="px-8 py-2 flex flex-col md:flex-row gap-8">
+  @if(clinics.length > 0) {
+  <h4>Selected Clinic</h4>
+  <mat-form-field appearance="outline">
+    <mat-label>Selected Clinic</mat-label>
+    <mat-select [(value)]="selectedClinicID" (selectionChange)="onSelectionChange($event.value)">
+      @for (clinic of clinics; track clinic) {
+      <mat-option [value]="clinic.id">{{clinic.clinicName}}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  } @else {
+  <div class="flex flex-col">
+    <h4>No Clinic, yet!, create a new one</h4>
+    <create-clinic></create-clinic>
+  </div>
+  }
+</div>
 
-    <div>
+@if(selectedClinicID) {
+
+<form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-2 p-2">
+  <div formArrayName="sat" class="mb-4 mx-5 p-4 rounded-md day-cont">
+    <p class="text-center">Saturday</p>
+    <div class="flex flex-wrap">
       @for (controlItem of getControls('sat'); track trackByFunc; let i = $index) {
-      <div>
+      <div [class.bottomborder]="i % 2 !== 0" class="flx-two-col flex flex-col">
         <label for="time-{{ i }}">{{ 0 ? "Interval Start Time" : (i % 2 === 0 ? "Interval Start Time" : "Interval End
           Time") }}:</label>
-        <input id="time-{{ i }}" type="time" [formControlName]="i">
+        <input id="time-{{ i }}" type="time" [formControlName]="i" class="m-2 p-2 time-input-field">
       </div>
+
+      @if(i % 2 !== 0) {
+      <hr class="w-4/5">
+      }
       }
     </div>
-  </div>
-  <div formArrayName="sun">
-    sun
-    <button mat-raised-button type="button" (click)="onAddIntervalControls('sun')">Basic</button>
-    @for (controlItem of getControls('sun'); track trackByFunc; let i = $index) {
-    <div>
-      <label for="Interval-{{ i }}">Alias:</label>
-      <input id="alias-{{ i }}" type="time" [formControlName]="i">
+    <div class="flex justify-evenly content-center">
+      @if(getControls('sat').length >= 2){
+      <button mat-raised-button type="button" (click)="onRemoveLastIntervalControl('sat')">Remove Interval</button>
+      }
+      <button mat-raised-button type="button" (click)="onAddIntervalControls('sat')">Add Interval</button>
     </div>
-    }
   </div>
-  <div formArrayName="mon">
-    <button mat-raised-button type="button" (click)="onAddIntervalControls('mon')">Basic</button>
-    @for (controlItem of getControls('mon'); track trackByFunc; let i = $index) {
-    <div>
-      <label for="alias-{{ i }}">Alias:</label>
-      <input id="alias-{{ i }}" type="time" [formControlName]="i">
+
+  <div formArrayName="sun" class="mb-4 mx-5 p-4 rounded-md day-cont">
+    <p class="text-center">Sunday</p>
+    <div class="flex flex-wrap">
+      @for (controlItem of getControls('sun'); track trackByFunc; let i = $index) {
+      <div class="flx-two-col flex flex-col">
+        <label for="time-{{ i }}">{{ 0 ? "Interval Start Time" : (i % 2 === 0 ? "Interval Start Time" : "Interval End
+          Time") }}:</label>
+        <input id="time-f-{{ i }}" type="time" [formControlName]="i" class="m-2 p-2 time-input-field">
+      </div>
+      @if(i % 2 !== 0) {
+      <hr class="w-4/5">
+      }
+      }
     </div>
-    }
-  </div>
-  <div formArrayName="tue">
-    <button mat-raised-button type="button" (click)="onAddIntervalControls('tue')">Basic</button>
-    @for (controlItem of getControls('tue'); track trackByFunc; let i = $index) {
-    <div>
-      <label for="alias-{{ i }}">Alias:</label>
-      <input id="alias-{{ i }}" type="time" [formControlName]="i">
+    <div class="flex justify-evenly content-center">
+      @if(getControls('sun').length >= 2){
+      <button mat-raised-button type="button" (click)="onRemoveLastIntervalControl('sun')">Remove Interval</button>
+      }
+      <button mat-raised-button type="button" (click)="onAddIntervalControls('sun')">Add Interval</button>
     </div>
-    }
   </div>
-  <div formArrayName="wed">
-    <button mat-raised-button type="button" (click)="onAddIntervalControls('wed')">Basic</button>
-    @for (controlItem of getControls('wed'); track trackByFunc; let i = $index) {
-    <div>
-      <label for="alias-{{ i }}">Alias:</label>
-      <input id="alias-{{ i }}" type="time" [formControlName]="i">
+
+  <div formArrayName="mon" class="mb-4 mx-5 p-4 rounded-md day-cont">
+    <p class="text-center">Monday</p>
+    <div class="flex flex-wrap">
+      @for (controlItem of getControls('mon'); track trackByFunc; let i = $index) {
+      <div class="flx-two-col flex flex-col">
+        <label for="time-{{ i }}">{{ 0 ? "Interval Start Time" : (i % 2 === 0 ? "Interval Start Time" : "Interval End
+          Time") }}:</label>
+        <input id="time-f-{{ i }}" type="time" [formControlName]="i" class="m-2 p-2 time-input-field">
+      </div>
+      @if(i % 2 !== 0) {
+      <hr class="w-4/5">
+      }
+      }
     </div>
-    }
-  </div>
-  <div formArrayName="thu">
-    <button mat-raised-button type="button" (click)="onAddIntervalControls('thu')">Basic</button>
-    @for (controlItem of getControls('thu'); track trackByFunc; let i = $index) {
-    <div>
-      <label for="alias-{{ i }}">Alias:</label>
-      <input id="alias-{{ i }}" type="time" [formControlName]="i">
+    <div class="flex justify-evenly content-center">
+      @if(getControls('mon').length >= 2){
+      <button mat-raised-button type="button" (click)="onRemoveLastIntervalControl('mon')">Remove Interval</button>
+      }
+      <button mat-raised-button type="button" (click)="onAddIntervalControls('mon')">Add Interval</button>
     </div>
-    }
   </div>
-  <div formArrayName="fri">
-    <button mat-raised-button type="button" (click)="onAddIntervalControls('fri')">Basic</button>
-    @for (controlItem of getControls('fri'); track trackByFunc; let i = $index) {
-    <div>
-      <label for="alias-{{ i }}">Alias:</label>
-      <input id="alias-{{ i }}" type="time" [formControlName]="i">
+
+  <div formArrayName="tue" class="mb-4 mx-5 p-4 rounded-md day-cont">
+    <p class="text-center">Tuesday</p>
+    <div class="flex flex-wrap">
+      @for (controlItem of getControls('tue'); track trackByFunc; let i = $index) {
+      <div class="flx-two-col flex flex-col">
+        <label for="time-{{ i }}">{{ 0 ? "Interval Start Time" : (i % 2 === 0 ? "Interval Start Time" : "Interval End
+          Time") }}:</label>
+        <input id="time-f-{{ i }}" type="time" [formControlName]="i" class="m-2 p-2 time-input-field">
+      </div>
+      @if(i % 2 !== 0) {
+      <hr class="w-4/5">
+      }
+      }
     </div>
-    }
+    <div class="flex justify-evenly content-center">
+      @if(getControls('tue').length >= 2){
+      <button mat-raised-button type="button" (click)="onRemoveLastIntervalControl('tue')">Remove Interval</button>
+      }
+      <button mat-raised-button type="button" (click)="onAddIntervalControls('tue')">Add Interval</button>
+    </div>
   </div>
-  <button mat-raised-button color="primary" type="submit" [disabled]="!scheduleForm.valid">Submit</button>
+
+  <div formArrayName="wed" class="mb-4 mx-5 p-4 rounded-md day-cont">
+    <p class="text-center">Wednesday</p>
+    <div class="flex flex-wrap">
+      @for (controlItem of getControls('wed'); track trackByFunc; let i = $index) {
+      <div class="flx-two-col flex flex-col">
+        <label for="time-{{ i }}">{{ 0 ? "Interval Start Time" : (i % 2 === 0 ? "Interval Start Time" : "Interval End
+          Time") }}:</label>
+        <input id="time-f-{{ i }}" type="time" [formControlName]="i" class="m-2 p-2 time-input-field">
+      </div>
+      @if(i % 2 !== 0) {
+      <hr class="w-4/5">
+      }
+      }
+    </div>
+    <div class="flex justify-evenly content-center">
+      @if(getControls('wed').length >= 2){
+      <button mat-raised-button type="button" (click)="onRemoveLastIntervalControl('wed')">Remove Interval</button>
+      }
+      <button mat-raised-button type="button" (click)="onAddIntervalControls('wed')">Add Interval</button>
+    </div>
+  </div>
+
+  <div formArrayName="thu" class="mb-4 mx-5 p-4 rounded-md day-cont">
+    <p class="text-center">Thursday</p>
+    <div class="flex flex-wrap">
+      @for (controlItem of getControls('thu'); track trackByFunc; let i = $index) {
+      <div class="flx-two-col flex flex-col">
+        <label for="time-{{ i }}">{{ 0 ? "Interval Start Time" : (i % 2 === 0 ? "Interval Start Time" : "Interval End
+          Time") }}:</label>
+        <input id="time-f-{{ i }}" type="time" [formControlName]="i" class="m-2 p-2 time-input-field">
+      </div>
+      @if(i % 2 !== 0) {
+      <hr class="w-4/5">
+      }
+      }
+    </div>
+    <div class="flex justify-evenly content-center">
+      @if(getControls('thu').length >= 2){
+      <button mat-raised-button type="button" (click)="onRemoveLastIntervalControl('thu')">Remove Interval</button>
+      }
+      <button mat-raised-button type="button" (click)="onAddIntervalControls('thu')">Add Interval</button>
+    </div>
+  </div>
+
+  <div formArrayName="fri" class="mb-4 mx-5 p-4 rounded-md day-cont">
+    <p class="text-center">Friday</p>
+    <div class="flex flex-wrap">
+      @for (controlItem of getControls('fri'); track trackByFunc; let i = $index) {
+      <div class="flx-two-col flex flex-col">
+        <label for="time-{{ i }}">{{ 0 ? "Interval Start Time" : (i % 2 === 0 ? "Interval Start Time" : "Interval End
+          Time") }}:</label>
+        <input id="time-f-{{ i }}" type="time" [formControlName]="i" class="m-2 p-2 time-input-field">
+      </div>
+      @if(i % 2 !== 0) {
+      <hr class="w-4/5">
+      }
+      }
+    </div>
+    <div class="flex justify-evenly content-center">
+      @if(getControls('fri').length >= 2){
+      <button mat-raised-button type="button" (click)="onRemoveLastIntervalControl('fri')">Remove Interval</button>
+      }
+      <button mat-raised-button type="button" (click)="onAddIntervalControls('fri')">Add Interval</button>
+    </div>
+  </div>
+
+  <button mat-raised-button color="primary" type="submit"
+    [disabled]="!selectedClinicID || !scheduleForm.touched || !scheduleForm.valid">Submit</button>
 </form>
+}

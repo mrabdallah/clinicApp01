@@ -19,24 +19,86 @@ import {
   orderBy,
   getDoc,
   runTransaction,
-  Transaction
+  Transaction,
+  FirestoreError,
+  limit,
+  docSnapshots,
+  QuerySnapshot,
+  Query
 } from '@angular/fire/firestore';
 //import { Moment } from 'moment';
-import { Observable, Subscription, defer, from, map, take, of, scheduled, throwError, tap, catchError } from 'rxjs';
+import { Observable, Subscription, defer, from, map, take, of, scheduled, throwError, tap, catchError, mergeMap } from 'rxjs';
 import { Appointment, Clinic, Patient } from './types';
 import { LoggerService } from './logger.service';
+import { FirebaseError } from '@angular/fire/app';
+import { AuthService } from './auth.service';
+import { Store } from '@ngrx/store';
+import { AppState } from './store/app.reducer';
+import { selectUser } from './store/app.selectors';
+import { AppUser } from './auth/user.model';
 
 
+// converter method
+const clinicConverter = {
+  toFirestore(clinic: Clinic) {
+    return clinic; // Convert clinic object to plain object for Firestore
+  },
+  fromFirestore(snapshot: QueryDocumentSnapshot): Clinic {
+    const clinic = {
+      id: snapshot.id,
+      clinicName: snapshot.data()['clinicName'],
+      clinicAddress: snapshot.data()['clinicAddress'],
+      firestorePath: snapshot.ref.path,
+      mainAverageAppointmentTimeTake: snapshot.data()['mainAverageAppointmentTimeTake'],
+      ownerID: snapshot.data()['ownerID'],
+      weekScheduleTemplate: snapshot.data()['weekScheduleTemplate'],
+    } as Clinic;
+    return clinic;
+  },
+};
 
 @Injectable({
   providedIn: 'root'
 })
 export class DatabaseService {
-  firestore: Firestore = inject(Firestore);
-  loggerService: LoggerService = inject(LoggerService);
+  private firestore: Firestore = inject(Firestore);
+  private _authService = inject(AuthService);
+  public loggerService: LoggerService = inject(LoggerService);
   patientsOnTimeSnapshot: any[] = [];
   private allPatients$: Observable<Patient[]> = of([]);
-  private clinc?: Clinic;
+  public ownedClinics$: Observable<Clinic[]> = this._authService.user$.pipe(
+    mergeMap(user => from(
+      getDocs(query(collection(this.firestore, `clinics`), where('ownerID', '==', user?.id)).withConverter(clinicConverter))
+        .then(querySnapshot => {
+          if (!querySnapshot.empty) { throwError(() => new Error('No clinics created yet')); }
+          const clinics: Clinic[] = [];
+          querySnapshot.forEach(doc => {
+            clinics.push(doc.data());
+          });
+          return clinics;
+        })
+    ).pipe(catchError(this._handleFirestoreError)))
+  );
+
+  private _handleFirestoreError(error: FirestoreError) {
+    let errorMessage = 'An unknown error occurred!';
+    if (!error || !error.code) {
+      return throwError(() => new Error(errorMessage));
+    }
+    switch (error.code) {
+      case 'not-found':
+        errorMessage = 'Document not found';
+        break;
+      case 'unauthenticated':
+        errorMessage = 'No valid credentials was provided with request';
+        break;
+      case 'permission-denied':
+        errorMessage = 'Perminssion denied';
+        break;
+    }
+    return throwError(() => new Error(errorMessage));
+  }
+
   public todaySchedule$: Observable<Appointment[]> = new Observable(observer => {
     this.loggerService.log('Fetching todaySchedule$');
     let today = new Date();
@@ -69,7 +131,99 @@ export class DatabaseService {
       (error) => observer.error(error.message)
     );
   });
-  public clinicDocOneTimeSnapshot$: Observable<Clinic | undefined> = docData(doc(this.firestore, `/clinics/E8WUcagWkeNQXKXGP6Uq`), { idField: 'id' })
+
+
+  constructor(private store: Store<AppState>) {
+    // this.fetchAllPatientsRealTimeSnapshot();
+  }
+
+  /*
+   *   public ownedClinics$: Observable<Clinic[]> = this._authService.user$.pipe(
+    mergeMap(user => from(
+      getDocs(query(collection(this.firestore, `clinics`), where('ownerID', '==', user?.id)).withConverter(clinicConverter))
+        .then(querySnapshot => {
+          if (!querySnapshot.empty) { throwError(() => new Error('No clinics created yet')); }
+          const clinics: Clinic[] = [];
+          querySnapshot.forEach(doc => {
+            clinics.push(doc.data());
+          });
+          return clinics;
+        })
+    ).pipe(catchError(this._handleFirestoreError)))
+  );
+
+   * */
+
+  getMyOwnedClinics(userID: string): Observable<Clinic[]> {
+    if (userID.length < 1) {
+      this.loggerService.logWarning('no userID provided');
+      return of([]);
+    }
+    const col = collection(this.firestore, 'clinics').withConverter(clinicConverter);
+    const q = query(col, where('ownerID', '==', userID));
+    return from(getDocs(q)).pipe(
+      map((querySnapshot: QuerySnapshot<Clinic, Clinic>) => {
+        if (!querySnapshot.empty) {
+          this.loggerService.logWarning('empty query; no clinics owned by current user');
+          let clinics: Clinic[] = [];
+          for (let i = 0; i < querySnapshot.docs.length; i++) {
+            clinics.push(querySnapshot.docs[i].data());
+          }
+          return clinics;
+        }
+        return []
+      })
+    );
+  }
+  /*getMyOwnedClinics(): Observable<Clinic[]> {
+    return this.store.select(selectUser).pipe(
+      take(1), // Get the user only once
+      map(user => {
+        if (user === null) {
+          return of([]);
+          //return throwError(() => new Error('No user provided'));
+        }
+        const coll = collection(this.firestore, 'clinics').withConverter(clinicConverter);
+        return query(coll, where('ownerID', '==', (user as AppUser).id));
+      }),
+      //catchError(error => of([])),
+      mergeMap(firestoreQuery => {
+        if (firestoreQuery instanceof Error) {
+          return of([]); // Return empty array if error from previous pipe
+        }
+        return from(getDocs(firestoreQuery as Query));
+      }),
+      map(querysnapshot => {
+        if (querysnapshot && (querysnapshot as QuerySnapshot).empty) {
+          //const a: Clinic[] = []
+          return [];
+          //return a;
+        }
+        return (querysnapshot as QuerySnapshot).docs.map(doc => doc.data() as Clinic); // Use map for data transformation
+      })
+    );
+  }*/
+
+
+  public getClinicDoc(clinicID: string): Observable<Clinic> {
+    const promise = getDoc(doc(this.firestore, 'clinics', clinicID).withConverter(clinicConverter))
+    return from(promise)
+      .pipe(
+        map((docSnapshot) => {
+          if (docSnapshot.exists()) {
+            return docSnapshot.data();
+          } else {
+            const error: any = new Error('Document Does not exist');
+            error.timestamp = Date.now();
+            return error;
+            //throw new Error('Document not found'); // Throw custom error
+          }
+        }),
+        catchError(this._handleFirestoreError)
+      );
+  }
+
+  public getClinicDocs$: Observable<Clinic | undefined> = docData(doc(this.firestore, `/clinics/E8WUcagWkeNQXKXGP6Uq`), { idField: 'id' })
     .pipe(
       map((data) => (data ? { ...data, firestorePath: `/clinics/E8WUcagWkeNQXKXGP6Uq`, } as Clinic : undefined)), // Handle missing document
       catchError((error) => {
@@ -78,10 +232,6 @@ export class DatabaseService {
       })
     );
 
-
-  constructor() {
-    // this.fetchAllPatientsRealTimeSnapshot();
-  }
 
 
   //this.databaseService.setAppointmentTimeTaken(this.appointment.patient.id, scheduleFirestorePath, this.milliseconds / 1000);
@@ -99,6 +249,23 @@ export class DatabaseService {
       });
     } catch (error) { }
   }
+
+  addNewClinic(clinicData: Clinic): Observable<DocumentReference> {
+    const promise = addDoc(collection(this.firestore, 'clinics').withConverter(clinicConverter), {
+      clinicName: clinicData.clinicName,
+      clinicAddress: clinicData.clinicAddress,
+      ownerID: clinicData.ownerID,
+    });
+    return from(promise).pipe(catchError(this._handleFirestoreError));
+  }
+
+  public updateClinicWeekSchedule(obj: any, clinicPath: string): Observable<void> {
+    const promise = updateDoc(doc(this.firestore, clinicPath), {
+      weekScheduleTemplate: obj,
+    });
+    return from(promise).pipe(catchError(this._handleFirestoreError));
+  }
+
 
 
   fetchAllPatientsRealTimeSnapshot(): Observable<Patient[]> {

@@ -1,0 +1,14 @@
+@if(myClinics().length === 0) {
+Network error, or no clinic created, yet.
+}
+<div class="flex">
+  @for (clinic of myClinics(); track clinic.id; let i = $index) {
+  <!--<a mat-raised-button [routerLink]="['/clinic', clinic.id]">{{clinic.clinicName}}</a>-->
+  <p>hi</p>
+  }
+</div>
+
+<div>
+  my clinics:
+  {{ (myClinics$ | async)?.selectedClinic?.clinicName }}
+</div>

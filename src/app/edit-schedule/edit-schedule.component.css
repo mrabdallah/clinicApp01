@@ -1,0 +1,25 @@
+.time-input-field {
+  border-radius: 7px;
+  border: 1px solid hsl(0deg 0% 50% / 40%);
+}
+
+.flx-two-col {
+  flex: 1 1 50%;
+}
+
+.two-col-grid-cont {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.day-cont {
+  border: 1px solid hsl(0deg 0% 0% / 20%);
+}
+
+/*.bottomborder:after {
+  content: "";
+  display: block;
+  margin: 0 auto;
+  width: 50%;
+  border-bottom: 1px solid black;
+}*/

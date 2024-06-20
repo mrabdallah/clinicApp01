@@ -9,6 +9,6 @@ export const initialState: State = {
   newPatientFormDialogOpened: false,
 };
 
-export const reducers: ActionReducerMap<State> = {};
+export const appReducers: ActionReducerMap<State> = {};
 
 export const metaReducers = [];

@@ -20,4 +20,9 @@ export class LoggerService {
       console.error(error);
     }
   }
+  logWarning(messege: string) {
+    if (!environment.production) {
+      console.warn(messege);
+    }
+  }
 }

@@ -140,7 +140,7 @@ export class AddAppointmentComponent implements OnDestroy {
     });
 
     this.suggestedAppointmentTimeSubscription = this.timeManagingAndPickingSerivce.
-      suggestedAppointmentTime(new Date()).subscribe(suggestedTime => {
+      suggestedAppointmentTime().subscribe(suggestedTime => {
         if (!this.initialTimeSet && !this.profileForm.get('appointmentTime')?.dirty) {
           this.profileForm.get('appointmentTime')?.setValue(suggestedTime);
           this.initialTimeSet = true;

@@ -2,12 +2,12 @@
 // Helper type to represent weekdays with 3-letter abbreviations
 export type Weekday = 'SAT' | 'SUN' | 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI';
 
-export interface Clinic {
+/*export interface ClinicProps {
   id: string;
   firestorePath: string;
   mainAverageAppointmentTimeTake: number;   // number in miliseconds
-  owner: string;
-  weekScheduleTemplate: { [key in Weekday]: string[] }; // Use a mapped type for weekdays
+  ownerID: string;
+  weekScheduleTemplate?: { [key in Weekday]: string[] }; // Use a mapped type for weekdays
   // TODO: Make a structure of even number; start and end
   //
   //weekScheduleTemplate: {
@@ -19,6 +19,18 @@ export interface Clinic {
   //  'THU'?: string[];
   //  'FRI'?: string[];
   //}; // Use a mapped type for weekdays
+}*/
+
+export class Clinic {
+  constructor(
+    public clinicName: string,
+    public clinicAddress: string,
+    public ownerID: string,
+    public weekScheduleTemplate?: { [key in Weekday]: string[] }, // Use a mapped type for weekdays
+    public id?: string,
+    public firestorePath?: string,
+    public mainAverageAppointmentTimeTake?: number,   // number in miliseconds
+  ) { }
 }
 
 export interface Patient {

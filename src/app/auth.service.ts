@@ -12,7 +12,7 @@ export class AuthService {
   loggerService = inject(LoggerService);
   firebaseAuth = inject(Auth);
   //#user$ = user(this.firebaseAuth);
-  user$ = user(this.firebaseAuth)
+  user$: Observable<AppUser | null> = user(this.firebaseAuth)
     .pipe(map(user => {
       if (user) {
         this.loggerService.log(`user logged in; ${user.email}`);
@@ -30,10 +30,6 @@ export class AuthService {
 
   private handleError(error: FirebaseError) {
     let errorMessage = 'An unknown error occurred!';
-    //console.log('errorhandler:')
-    //console.log(error.message);
-    //console.log(error.code);
-    //console.log(error.name);
     if (!error || !error.code) {
       return throwError(() => new Error(errorMessage));
     }

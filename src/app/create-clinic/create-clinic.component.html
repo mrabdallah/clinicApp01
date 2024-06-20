@@ -1,0 +1,25 @@
+@if(newClinicForm) {
+<form [formGroup]="newClinicForm" (ngSubmit)="onSubmit()" class="flex md:flex-row flex-col gap-1 md:gap-8">
+  <mat-form-field appearance="outline">
+    <mat-label>Enter Clinic Name</mat-label>
+    <input matInput placeholder="Clinic Name" formControlName="clinicName" required>
+    @if (newClinicForm.get('clinicName')!.invalid) {
+    <mat-error>{{errorMessages.clinicName}}</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Enter Clinic Address</mat-label>
+    <input matInput placeholder="Clinic Address" formControlName="clinicAddress" required>
+    @if (newClinicForm.get('clinicAddress')!.invalid) {
+    <mat-error>{{errorMessages.clinicAddress}}</mat-error>
+    }
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" type="submit" [disabled]="isSubmitting || !newClinicForm.valid">
+    Sign in
+  </button>
+
+
+</form>
+}

@@ -33,7 +33,7 @@ export class TimeManagingAndPickingService {
   getEpochFrom2400(time: string): number {
     let now = new Date();
     now.setHours(parseInt(time.slice(0, 2)));
-    now.setMinutes(parseInt(time.slice(2)));
+    now.setMinutes(parseInt(time.slice(3)));
     return now.getTime();
   }
 
@@ -122,10 +122,13 @@ export class TimeManagingAndPickingService {
         return finalSuggestedTime;
       });
   }*/
-  suggestedAppointmentTime(now: Date): Observable<string> {
+  suggestedAppointmentTime(): Observable<string> {
+    // TODO:: populate `clinicID` from the store -> current clinic or selected clinic
+    const clinicID = '';
+    let now = new Date();
     return combineLatest([
       this.databaseService.todaySchedule$,
-      this.databaseService.clinicDocOneTimeSnapshot$,
+      this.databaseService.getClinicDoc(clinicID),
     ]).pipe(
       map(([schedVal, clinicVal]) => {
         if (clinicVal === undefined) {
@@ -135,6 +138,9 @@ export class TimeManagingAndPickingService {
         const timeNow24 = parseInt(`${now.getHours()}${this.prefixZeroToNumber(now.getMinutes())}`);
         const todayNameInTheWeek = now.getDay();
         const dayNamesArr = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+        //if (!clinicVal || clinicVal.weekScheduleTemplate === undefined) { return ''; }
+        if (clinicVal.weekScheduleTemplate === undefined) { return ''; }
 
         const todayScheduleTemplate = clinicVal.weekScheduleTemplate[dayNamesArr[todayNameInTheWeek] as Weekday];
         const mainAverage = clinicVal.mainAverageAppointmentTimeTake;
@@ -148,9 +154,9 @@ export class TimeManagingAndPickingService {
           let expected: number | undefined;
 
           for (let i = 0; i < todayScheduleTemplate.length; i += 2) {
-            const capacityForInterval = this.calcCapacityForInterval(todayScheduleTemplate[i], todayScheduleTemplate[i + 1], mainAverage);
+            const capacityForInterval = this.calcCapacityForInterval(todayScheduleTemplate[i], todayScheduleTemplate[i + 1], (mainAverage ?? 1200000));
             if (unprocessedNumberOfAppointments <= capacityForInterval) {
-              expected = unprocessedNumberOfAppointments * mainAverage + this.getEpochFrom2400(todayScheduleTemplate[i]);
+              expected = unprocessedNumberOfAppointments * (mainAverage ?? 1200000) + this.getEpochFrom2400(todayScheduleTemplate[i]);
               expected -= 30 * 60 * 1000; // Subtract 30 minutes for early arrival
               expected = Math.max(expected, this.getEpochFrom2400(todayScheduleTemplate[i])); // Ensure time is within clinic hours
               break;

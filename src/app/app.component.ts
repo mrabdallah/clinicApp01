@@ -29,6 +29,8 @@ import { NewPatientFormComponent } from './new-patient-form/new-patient-form.com
 import { AuthService } from './auth.service';
 import { AppUser } from './auth/user.model';
 import { TopBarComponent } from './top-bar/top-bar.component';
+import { Store } from '@ngrx/store';
+import { AppState } from './store/app.reducer';
 
 @Component({
   selector: 'app-root',
@@ -104,19 +106,11 @@ export class AppComponent implements OnDestroy, OnInit {
   router = inject(Router);
   authService = inject(AuthService);
   #userSubscription?: Subscription;
-  userSignal = signal<AppUser | undefined | null>(null);// = signal(this.authService.userSignal.mutate9);
-  //navEndSub: Subscription = this.router.url navigationEnd.subscribe(() => {
-  //  this.isAuthUrl$.next(this.router.url === '/auth
-  //});
-
+  userSignal = signal<AppUser | undefined | null>(null);// = signal(this.authService.userSignal.mutate);
   title = 'clinic-manager';
-  // private todaySchedule$: Observable<any[]>;
-
   isOpen = false;
 
-  logout() {
-    this.authService.logout();
-  }
+  constructor(private store: Store<AppState>) { }
 
   ngOnInit(): void {
     this.#userSubscription = this.authService.user$.subscribe(user => {
@@ -128,6 +122,10 @@ export class AppComponent implements OnDestroy, OnInit {
 
   ngOnDestroy(): void {
     this.#userSubscription?.unsubscribe();
+  }
+
+  logout() {
+    this.authService.logout();
   }
 
   toggleSidebar() {
