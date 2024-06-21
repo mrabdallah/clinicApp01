@@ -24,6 +24,16 @@ export const authReducer = createReducer(
     newState.user = cloneDeep(user);
     return newState;
   }),
+  on(AuthActions.loginSuccess, (state, { user }) => {
+    const newState = cloneDeep(state);
+    newState.user = cloneDeep(user);
+    return newState;
+  }),
+  on(AuthActions.logout, state => {
+    const newState = cloneDeep(state);
+    newState.user = null;
+    return newState;
+  }),
   //on(ScoreboardPageActions.resetScore, state => ({ home: 0, away: 0 })),
   //on(ScoreboardPageActions.setScores, (state, { game }) => ({ home: game.home, away: game.away }))
 );

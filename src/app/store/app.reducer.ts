@@ -5,11 +5,11 @@ import { MyClinicsState, myClinicsReducer } from "./my-clinics.reducer";
 
 export interface AppState {
   auth: AuthState;
-  myClinic: MyClinicsState;
+  myClinics: MyClinicsState;
 }
 
 
 export const appReducer: ActionReducerMap<AppState> = {
   auth: authReducer,
-  myClinic: myClinicsReducer,
+  myClinics: myClinicsReducer,
 };

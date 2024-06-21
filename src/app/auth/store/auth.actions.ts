@@ -12,4 +12,4 @@ export const loginSuccess = createAction(
   props<{ user: AppUser }>()
 );
 
-export const logout = createAction('');
+export const logout = createAction('[Auth] userLoggedOut');

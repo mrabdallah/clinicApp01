@@ -31,6 +31,7 @@ import { AppUser } from './auth/user.model';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { Store } from '@ngrx/store';
 import { AppState } from './store/app.reducer';
+import { loginSuccess, logout } from './auth/store/auth.actions';
 
 @Component({
   selector: 'app-root',
@@ -116,6 +117,9 @@ export class AppComponent implements OnDestroy, OnInit {
     this.#userSubscription = this.authService.user$.subscribe(user => {
       if (user) {
         this.userSignal.set(user!);
+        this.store.dispatch(loginSuccess({ user: user }));
+      } else {
+        this.store.dispatch(logout());
       }
     });
   }
