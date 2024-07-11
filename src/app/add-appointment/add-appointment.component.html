@@ -2,7 +2,7 @@
 <mat-dialog-content>
 
 
-  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="flex flex-col">
+  <form [formGroup]="newAppointmentForm" (ngSubmit)="onSubmit()" class="flex flex-col">
     <!-- -------------------------Patient Name------------------------- -->
     <div class="patient-name flex items-center gap-3">
       <mat-form-field appearance="outline" class="grow mt-8">
@@ -28,16 +28,26 @@
     <mat-form-field appearance="outline">
       <mat-label>Date</mat-label>
       <input matInput [matDatepicker]="dp" formControlName="date">
-      @if (!profileForm.get('date')?.valid) {
+      @if (!newAppointmentForm.get('date')?.valid) {
       <mat-hint>MMMM Do, YYYY</mat-hint>
       }
       <mat-datepicker-toggle matIconSuffix [for]="dp"></mat-datepicker-toggle>
       <mat-datepicker #dp></mat-datepicker>
     </mat-form-field>
 
+    <!--
     <div style="display: flex; border-radius: 4px; border: 1px solid gray; padding: 10px;">
       <input type="time" formControlName="appointmentTime" class="grow outline-none border-none font-sans text-lg">
     </div>
+    -->
+    <mat-form-field appearance="outline">
+      <mat-label>Time</mat-label>
+      <mat-select formControlName="time">
+        @for (suggestion of suggestedTimes; track suggestion) {
+        <mat-option [value]="suggestion.value">{{suggestion.viewValue}}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
 
     <mat-form-field appearance="outline" class="grow mt-8">
       <mat-label>Reason For Visit</mat-label>
@@ -57,7 +67,7 @@
 
 
     <div class="flex justify-center">
-      <button mat-raised-button color="primary" type="submit" [disabled]="!profileForm.valid"
+      <button mat-raised-button color="primary" type="submit" [disabled]="!newAppointmentForm.valid"
         class="w-28">Confirm</button>
     </div>
 

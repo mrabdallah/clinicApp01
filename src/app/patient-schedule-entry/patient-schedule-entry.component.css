@@ -1,0 +1,47 @@
+.visible-tgl {
+  display: none;
+}
+
+.object-containss {
+  max-height: 3.5rem;
+  object-fit: contain;
+}
+
+.cont-elevation {
+  box-shadow: 0 0 9px 2px #9E9E9E;
+  border-radius: 15px;
+}
+
+::ng-deep .specific-class>.mat-expansion-indicator:after {
+  color: #bc23e7 !important;
+}
+
+.lateness-container {
+  position: relative;
+  margin-right: 15px;
+}
+
+.lateness-counter {
+  position: absolute;
+  z-index: 99;
+  transform: translate(15px, -7px);
+  border-radius: 50%;
+  background: red;
+  height: 18px;
+  width: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.material-icons.calendar-clock {
+  color: red;
+}
+
+.specific-class.material-icons {
+  color: #ccf28b;
+}
+
+::ng-deep.mat-content {
+  overflow: visible;
+}

@@ -3,14 +3,17 @@ import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Va
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { Clinic } from '../types';
+import { Clinic, Weekday } from '../types';
 import { DatabaseService } from '../database.service';
-import { BehaviorSubject, Observable, Subscription, fromEvent, take } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, fromEvent, take, tap } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
 import { CreateClinicComponent } from '../create-clinic/create-clinic.component';
 import { MatSelectModule } from '@angular/material/select';
-import { consumerPollProducersForChange } from '@angular/core/primitives/signals';
+//import { consumerPollProducersForChange } from '@angular/core/primitives/signals';
 import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { AppState } from '../store/app.reducer';
+import { selectedClinic, myClinics } from '../store/app.selectors';
 //import { MatSelectChange } from '@angular/material/select';
 
 @Component({
@@ -29,12 +32,12 @@ import { Router } from '@angular/router';
   styleUrl: './edit-schedule.component.css'
 })
 export class EditScheduleComponent implements OnInit, OnDestroy {
+  static weekdays = ['SAT', 'SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI'];
   isSubmitting = false;
   ErrorMessages = {};
   scheduleForm: FormGroup;
-  currentClinc?: Clinic;
-  clinics: Clinic[] = [];
-  selectedClinicID?: string;
+  currentClincStoreSubscription?: Subscription;
+  selectedClinicFirestorePath?: string;
   errorMessages = {
     main: '',
   }
@@ -44,39 +47,84 @@ export class EditScheduleComponent implements OnInit, OnDestroy {
   public clinics$?: Observable<Clinic[]>
   public clinicsSubscription?: Subscription;
   selectClinicBehaviorSubject?: BehaviorSubject<string>;
+  weekScheduleTemplateCopy: { [key in Weekday]: string[] } = {
+    SAT: [],
+    SUN: [],
+    MON: [],
+    TUE: [],
+    WED: [],
+    THU: [],
+    FRI: [],
+  };
 
-  constructor() {
+  constructor(private store: Store<AppState>) {
     this.scheduleForm = this._formBuilder.group({
-      sat: new FormArray([]),
-      sun: new FormArray([]),
-      mon: new FormArray([]),
-      tue: new FormArray([]),
-      wed: new FormArray([]),
-      thu: new FormArray([]),
-      fri: new FormArray([]),
+      SAT: new FormArray([]),
+      SUN: new FormArray([]),
+      MON: new FormArray([]),
+      TUE: new FormArray([]),
+      WED: new FormArray([]),
+      THU: new FormArray([]),
+      FRI: new FormArray([]),
     });
   }
 
   ngOnInit(): void {
-    //this.clinics$ = this._databaseService.clinics$.pipe(take(1));
-    this.clinicsSubscription = this._databaseService.clinics$.subscribe((clinics: Clinic[]) => {
-      this.clinics = [...clinics];
-    });
-    this.selectClinicBehaviorSubject = new BehaviorSubject('');
+    this.currentClincStoreSubscription = this.store.select(selectedClinic).pipe(
+      tap(clinic => {
+        this.selectedClinicFirestorePath = clinic?.firestorePath;
+        for (const day of EditScheduleComponent.weekdays) {
+          this.handleWeekday(day, clinic);
+        }
+      })
+    ).subscribe();
   }
 
   ngOnDestroy(): void {
-    this.clinicsSubscription?.unsubscribe();
+    //this.clinicsSubscription?.unsubscribe();
+    this.currentClincStoreSubscription?.unsubscribe();
   }
 
-  onSelectionChange(val: string) {
-    this.selectClinicBehaviorSubject?.next(val);
-    this.updateScheduleFormFieldsInitialValues();
+  matchLength(day: string, dayLength: number) {
+    const targetArray: FormArray = this.scheduleForm.get(day) as FormArray;
+    const diff = Math.abs(dayLength - targetArray.length);
+    if (targetArray.length > dayLength) {
+      for (let i = diff; i > 0; i--) {
+        (<FormArray>this.scheduleForm?.get(day)).removeAt(targetArray.length - 1);
+      }
+    } else {
+      for (let i = diff; i > 0; i--) {
+        let intervalControl = new FormControl(null, Validators.required);
+        (<FormArray>this.scheduleForm?.get(day)).push(intervalControl);
+      }
+    }
   }
 
-  updateScheduleFormFieldsInitialValues() {
-    this._databaseService.
+  handleWeekday(day: string, clinic: Clinic | null) {
+    if (!clinic) {
+      return;
+    }
+    const dayArrLength = clinic.weekScheduleTemplate?.[day as Weekday]?.length ?? 0;
+    const dayFormLength = (<FormArray>this.scheduleForm.get(day)).length;
+
+    if (dayArrLength > 0 && dayFormLength === dayArrLength) {
+      this.scheduleForm.get(day)?.setValue(clinic!.weekScheduleTemplate![day as Weekday]);
+    } else if (dayArrLength > 0) {  // FORM is current fields are greater or smaller
+      this.matchLength(day, dayArrLength);
+      (<FormArray>this.scheduleForm?.get(day)).setValue(clinic!.weekScheduleTemplate![day as Weekday]);
+    } else {  // day should be cleared in the FORM
+      this.matchLength(day, 0);
+    }
+
+    //this.weekScheduleTemplateCopy[day] = clinic?.weekScheduleTemplate?.[day] ?? [];
   }
+
+  //onSelectionChange(val: string) {
+  //  this.selectClinicBehaviorSubject?.next(val);
+  //  this.updateScheduleFormFieldsInitialValues();
+  //}
+
+  updateScheduleFormFieldsInitialValues() { }
 
   getControls(day: string) {
     return (<FormArray>this.scheduleForm.get(day)).controls;
@@ -119,22 +167,24 @@ export class EditScheduleComponent implements OnInit, OnDestroy {
     //    }
     //  });
     const schd = {
-      ...(this.scheduleForm.value.sat.length > 0) && { sat: this.scheduleForm.value.sat },
-      ...(this.scheduleForm.value.sun.length > 0) && { sun: this.scheduleForm.value.sun },
-      ...(this.scheduleForm.value.mon.length > 0) && { mon: this.scheduleForm.value.mon },
-      ...(this.scheduleForm.value.tue.length > 0) && { tue: this.scheduleForm.value.tue },
-      ...(this.scheduleForm.value.wed.length > 0) && { wed: this.scheduleForm.value.wed },
-      ...(this.scheduleForm.value.thu.length > 0) && { thu: this.scheduleForm.value.thu },
-      ...(this.scheduleForm.value.fri.length > 0) && { fri: this.scheduleForm.value.fri },
+      ...(this.scheduleForm.value.SAT.length > 0) && { SAT: this.scheduleForm.value.SAT },
+      ...(this.scheduleForm.value.SUN.length > 0) && { SUN: this.scheduleForm.value.SUN },
+      ...(this.scheduleForm.value.MON.length > 0) && { MON: this.scheduleForm.value.MON },
+      ...(this.scheduleForm.value.TUE.length > 0) && { TUE: this.scheduleForm.value.TUE },
+      ...(this.scheduleForm.value.WED.length > 0) && { WED: this.scheduleForm.value.WED },
+      ...(this.scheduleForm.value.THU.length > 0) && { THU: this.scheduleForm.value.THU },
+      ...(this.scheduleForm.value.FRI.length > 0) && { FRI: this.scheduleForm.value.FRI },
     }
-    const path: string = this.clinics.find(element => element.id === this.selectedClinicID)!.firestorePath!;
+    const path: string = this.selectedClinicFirestorePath!;
+    console.log('path:');
+    console.log(path);
     this._databaseService.updateClinicWeekSchedule(schd, path)
       .pipe(take(1))
       .subscribe({
         next: (_) => {
           //this._router.;
           this.isSubmitting = false;
-          this.scheduleForm.reset();
+          //this.scheduleForm.reset();
 
         },
         error: (error: Error) => {

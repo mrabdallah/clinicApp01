@@ -26,6 +26,11 @@ export class Clinic {
     public clinicName: string,
     public clinicAddress: string,
     public ownerID: string,
+    public personal: {
+      doctorIDs: string[],
+      assistantIDs: string[],
+    },
+    public clinicSubtitle?: string,
     public weekScheduleTemplate?: { [key in Weekday]: string[] }, // Use a mapped type for weekdays
     public id?: string,
     public firestorePath?: string,
@@ -57,8 +62,9 @@ export interface Patient {
 
 export interface Appointment {
   // firestorePath?: string;
-  // id?: string;
-  dateTime: Date; // Use Date instead of any
+  //id?: string;
+  clinicID?: string;
+  dateTime: Date;
   state: 'waiting' | 'examining' | 'done';
   isUrgent: boolean;
   patientInClinic: boolean;

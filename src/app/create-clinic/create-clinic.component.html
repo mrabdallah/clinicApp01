@@ -1,5 +1,5 @@
 @if(newClinicForm) {
-<form [formGroup]="newClinicForm" (ngSubmit)="onSubmit()" class="flex md:flex-row flex-col gap-1 md:gap-8">
+<form [formGroup]="newClinicForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-1 md:gap-8">
   <mat-form-field appearance="outline">
     <mat-label>Enter Clinic Name</mat-label>
     <input matInput placeholder="Clinic Name" formControlName="clinicName" required>
@@ -16,8 +16,57 @@
     }
   </mat-form-field>
 
+
+
+
+  <div formGroupName="personal">
+
+    <div formArrayName="doctorEmails">
+      <p class="text-left">Doctors</p>
+      <div class="flex flex-wrap gap-3">
+        @for (controlItem of getPersonalControls('doctorEmails'); track trackByFunc; let i = $index) {
+        <mat-form-field appearance="outline">
+          <mat-label>Enter doctor's email</mat-label>
+          <input matInput id="doctor-{{i}}" type="text" [formControlName]="i" class="m-2 p-2">
+        </mat-form-field>
+        }
+      </div>
+      <div class="flex justify-evenly content-center">
+        @if(getPersonalControls('doctorEmails').length >= 1){
+        <button mat-raised-button type="button" (click)="removePersonalControls('doctorEmails')">Remove a doctor
+          email</button>
+        }
+        <button mat-raised-button type="button" (click)="addPersonalControls('doctorEmails')">Add a doctor
+          email</button>
+      </div>
+    </div>
+
+    <div formArrayName="assistantEmails">
+      <p class="text-left">Assistants</p>
+      <div class="flex flex-wrap gap-3">
+        @for (controlItem of getPersonalControls('assistantEmails'); track trackByFunc; let i = $index) {
+        <mat-form-field appearance="outline">
+          <mat-label>Enter assistant's email</mat-label>
+          <input matInput id="assistant-{{i}}" type="text" [formControlName]="i" class="m-2 p-2">
+        </mat-form-field>
+        }
+      </div>
+      <div class="flex justify-evenly content-center">
+        @if(getPersonalControls('assistantEmails').length >= 1){
+        <button mat-raised-button type="button" (click)="removePersonalControls('assistantEmails')">Remove an assistant
+          email</button>
+        }
+        <button mat-raised-button type="button" (click)="addPersonalControls('assistantEmails')">Add an assistant
+          email</button>
+      </div>
+    </div>
+
+  </div>
+
+
+
   <button mat-raised-button color="primary" type="submit" [disabled]="isSubmitting || !newClinicForm.valid">
-    Sign in
+    Add
   </button>
 
 

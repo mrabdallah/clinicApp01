@@ -1,13 +1,48 @@
+<!--
 @if(myClinics()?.length === 0) {
 Network error, or no clinic created, yet.
 }
 <div class="flex">
   @for (clinic of myClinics(); track clinic.id; let i = $index) {
-  <!--<a mat-raised-button [routerLink]="['/clinic', clinic.id]">{{clinic.clinicName}}</a>-->
   <p>{{clinic.clinicName}}</p>
   }
 </div>
+-->
 
-<div>
-  my clinics:
+<div class="px-8 py-2 flex flex-col flex-wrap justify-center content-center mb-6 gap-8">
+  @if(myClinics() && myClinics()!.length > 0) {
+  <h4>Your Clinics</h4>
+  <!--
+  <mat-form-field appearance="outline">
+    <mat-label>Selected Clinic</mat-label>
+    <mat-select [(value)]="selectedClinicID" (selectionChange)="onSelectionChange($event.value)">
+      @for (clinic of myClinics(); track clinic) {
+      <mat-option [value]="clinic.id">{{clinic.clinicName}}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  -->
+  <div class="flex flex-wrap justify-center content-center gap-4">
+    @for (clinic of myClinics(); track clinic) {
+    <staff-clinic-card [clinic]="clinic"></staff-clinic-card>
+    }
+  </div>
+
+  <div class="flex flex-col mb-6">
+    <button mat-raised-button color="primary" (click)="openCreateClinicDialog('500ms', '500ms')">Add a new
+      clinic</button>
+    <!--<create-clinic></create-clinic>-->
+  </div>
+
+  }
+
 </div>
+
+
+
+<!--
+@if (selectedClinicSignal()) {
+<edit-schedule></edit-schedule>
+}
+-->
+<!--<a mat-raised-button [routerLink]="['/clinic', clinic.id]">{{clinic.clinicName}}</a>-->

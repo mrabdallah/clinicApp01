@@ -1,7 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { DatabaseService } from './database.service';
-import { Observable, Subscription, combineLatest, map } from 'rxjs';
-import { Weekday } from './types';
+import { Observable, Subscription, combineLatest, delay, map, of, take, takeUntil } from 'rxjs';
+import { Appointment, Weekday } from './types';
+import { Store } from '@ngrx/store';
+
+import { AppState } from './store/app.reducer';
+import * as AppSelectors from "./store/app.selectors";
+import { LoggerService } from './logger.service';
+import { concatLatestFrom } from '@ngrx/operators';
+import { cloneDeep } from 'lodash-es';
 
 @Injectable({
   providedIn: 'root'
@@ -9,17 +16,23 @@ import { Weekday } from './types';
 export class TimeManagingAndPickingService {
   private databaseService = inject(DatabaseService);
   private comibinedObservablesSubs?: Subscription;
-  constructor() { }
+  private _loggerService = inject(LoggerService);
 
-  getTimeNowIn12h(): string {
-    const now = new Date();
-    const hours = now.getHours();
-    const adjustedHours = hours % 12 || 12; // Convert to 12-hour format (12 for midnight/noon)
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+  constructor(private store: Store<AppState>) { }
 
-    return `${adjustedHours}:${minutes} ${ampm}`;
+  epochIntoTimeInputFieldFormat(time: Date): string {
+    return `${time.getHours()}:${time.getMinutes()}`;
   }
+
+  //getTimeNowIn12h(): string {  // 09:00 AM
+  //  const now = new Date();
+  //  const hours = now.getHours();
+  //  const adjustedHours = (hours % 12 || 12).toString().padStart(2, '0'); // Convert to 12-hour format (12 for midnight/noon)
+  //  const minutes = now.getMinutes().toString().padStart(2, '0');
+  //  const ampm = hours >= 12 ? 'PM' : 'AM';
+
+  //  return `${adjustedHours}:${minutes} ${ampm}`;
+  //}
 
   /////////////////
   getTimeNowIn24H(): string {
@@ -29,7 +42,7 @@ export class TimeManagingAndPickingService {
     return `${hours}:${minutes}`;
   }
 
-  ////////////////
+  /* '18:35'  ->  Epoch */
   getEpochFrom2400(time: string): number {
     let now = new Date();
     now.setHours(parseInt(time.slice(0, 2)));
@@ -122,52 +135,120 @@ export class TimeManagingAndPickingService {
         return finalSuggestedTime;
       });
   }*/
-  suggestedAppointmentTime(): Observable<string> {
-    // TODO:: populate `clinicID` from the store -> current clinic or selected clinic
-    const clinicID = '';
-    let now = new Date();
+
+  //getDateObjFromTargetDayDateStr(daydateStr: string): Date {
+  //  let date = new Date();
+  //  const dayInMonth: number = parseInt(daydateStr.split('_')[0]);
+  //  const month: number = parseInt(daydateStr.split('_')[1]) - 1;
+  //  const year: number = parseInt(daydateStr.split('_')[2]);
+  //  date.setDate(dayInMonth);
+  //  date.setMonth(month);
+  //  date.setFullYear(year);
+  //  return date;
+  //}
+
+  strToHours(str: string) {  // 15:00   returns 15
+    return parseInt(str.split(':')[0]);
+  }
+
+  strToMinutes(str: string) {   // 15:20  returns 20
+    return parseInt(str.split(':')[1]);
+  }
+
+  getAvailableAppointmentTimes(): Observable<Date[]> {
     return combineLatest([
-      this.databaseService.todaySchedule$,
-      this.databaseService.getClinicDoc(clinicID),
+      this.store.select(AppSelectors.newAppointment),
+      this.store.select(AppSelectors.selectedClinic),
     ]).pipe(
-      map(([schedVal, clinicVal]) => {
-        if (clinicVal === undefined) {
-          return '';
+      map(([newAppointment, selectedClinic]) => {
+        if (
+          selectedClinic === null ||
+          selectedClinic === undefined ||
+          selectedClinic.weekScheduleTemplate === undefined ||
+          newAppointment === null ||
+          newAppointment.targetDayDateStr === undefined ||
+          newAppointment.targetDate === undefined
+        ) {
+          return [];
         }
 
-        const timeNow24 = parseInt(`${now.getHours()}${this.prefixZeroToNumber(now.getMinutes())}`);
-        const todayNameInTheWeek = now.getDay();
         const dayNamesArr = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+        const now = new Date();
+        const nowDate12Am = new Date()
+        nowDate12Am.setHours(0, 0, 0, 0);
+        //const targetDateObj: Date = this.getDateObjFromTargetDayDateStr(newAppointment.targetDayDateStr);
+        const targetWeekDay: Weekday = dayNamesArr[newAppointment.targetDate.getDay()] as Weekday;
+        const targetDayIntervals: string[] = selectedClinic.weekScheduleTemplate[targetWeekDay] ?? [];
+        const clinicAverageTime = selectedClinic.mainAverageAppointmentTimeTake ?? 1200000;  // default to 20 minutes
+        // no schedule for the target day || the target date is passed
+        if (targetDayIntervals.length < 2 || nowDate12Am.getTime() > newAppointment.targetDate.getTime()) {
+          return [];  // TODO: maybe return error
+        }
 
-        //if (!clinicVal || clinicVal.weekScheduleTemplate === undefined) { return ''; }
-        if (clinicVal.weekScheduleTemplate === undefined) { return ''; }
+        if (  // target date is today and all intervals ended
+          nowDate12Am.getTime() === newAppointment.targetDate.getTime() &&
+          now.getHours() >
+          this.strToHours(targetDayIntervals[targetDayIntervals.length - 1])
+          && now.getMinutes() > this.strToMinutes(targetDayIntervals[targetDayIntervals.length - 1])
+        ) {
+          return [];
+        } else {  // if target date is today or an upcomming day.
+          let cursorTime: Date = cloneDeep(newAppointment.targetDate);
+          cursorTime.setHours(this.strToHours(targetDayIntervals[0]));
+          cursorTime.setMinutes(this.strToMinutes(targetDayIntervals[0]));
+          let suggestions: Date[] = [];
 
-        const todayScheduleTemplate = clinicVal.weekScheduleTemplate[dayNamesArr[todayNameInTheWeek] as Weekday];
-        const mainAverage = clinicVal.mainAverageAppointmentTimeTake;
-
-        if (this.isTimeEndedForBooking(todayScheduleTemplate, timeNow24)) {
-          // TODO: Suggest next available day (can be implemented here or returned as empty string)
-          return '';
-        } else {
-          const numberOfCurrentAppointments = schedVal?.length;
-          let unprocessedNumberOfAppointments = numberOfCurrentAppointments;
-          let expected: number | undefined;
-
-          for (let i = 0; i < todayScheduleTemplate.length; i += 2) {
-            const capacityForInterval = this.calcCapacityForInterval(todayScheduleTemplate[i], todayScheduleTemplate[i + 1], (mainAverage ?? 1200000));
-            if (unprocessedNumberOfAppointments <= capacityForInterval) {
-              expected = unprocessedNumberOfAppointments * (mainAverage ?? 1200000) + this.getEpochFrom2400(todayScheduleTemplate[i]);
-              expected -= 30 * 60 * 1000; // Subtract 30 minutes for early arrival
-              expected = Math.max(expected, this.getEpochFrom2400(todayScheduleTemplate[i])); // Ensure time is within clinic hours
-              break;
-            } else {
-              unprocessedNumberOfAppointments -= capacityForInterval;
+          for (let i = 0; i < targetDayIntervals.length; i += 2) {
+            //let sectionBooked = true;
+            const currentIntervalEnd: Date = cloneDeep(newAppointment.targetDate);
+            currentIntervalEnd.setHours(this.strToHours(targetDayIntervals[i + 1]));
+            currentIntervalEnd.setMinutes(this.strToMinutes(targetDayIntervals[i + 1]));
+            //this.getDateObjFromTargetDayDateStr(targetDayIntervals[i + 1]);
+            while (cursorTime.getTime() < currentIntervalEnd.getTime()) {
+              const indexOfConflictingAppointment: number = newAppointment.targetDayAppointments
+                .findIndex(a => {
+                  let tt = a.dateTime.getTime();
+                  if (tt <= cursorTime.getTime() && (tt + clinicAverageTime) >= cursorTime.getTime()) {
+                    return true;
+                  }
+                  return false;
+                });
+              if (indexOfConflictingAppointment === -1) {
+                suggestions.push(cursorTime);
+              }
+              cursorTime = new Date(cursorTime.getTime() + clinicAverageTime + 1);
             }
           }
 
-          return expected ? `${this.prefixZeroToNumber(new Date(expected).getHours())}:${this.prefixZeroToNumber(new Date(expected).getMinutes())}` : '';
+          /*
+           *             for (let appointment of newAppointment.targetDayAppointments) {
+            if (  // an appointment is booked clashing with cursorTime?
+              cursorTime.getTime() <= (appointment.dateTime.getTime() + clinicAverageTime) &&
+              cursorTime.getTime() >= appointment.dateTime.getTime()
+            ) {
+              cursorTime.setTime(cursorTime.getTime() + clinicAverageTime);
+              continue;
+            }
+            suggestions.push(cursorTime);
+            cursorTime.setTime(cursorTime.getTime() + clinicAverageTime);
+
+            if (  // interval is booked at? break to start on the next interval
+              (cursorTime.getTime() >=
+                this.getDateObjFromTargetDayDateStr(targetDayIntervals[i + 1]).getTime())
+              ||
+              (appointment.dateTime.getTime() >=
+                this.getDateObjFromTargetDayDateStr(targetDayIntervals[i + 1]).getTime())
+            ) {
+              break;
+            }
+          }
+
+           * */
+          return suggestions;
         }
       }),
+      takeUntil(of(undefined).pipe(delay(1000))), // Emits immediately and completes
+      //take(1),
     );
   }
 }

@@ -1,15 +1,18 @@
 import { ActionReducerMap } from "@ngrx/store";
 import { AuthState, authReducer } from "../auth/store/auth.reducer";
-import { MyClinicsState, myClinicsReducer } from "./my-clinics.reducer";
+import { ClinicState, clinicReducer } from "./clinic.reducer";
+import { ScheduleState, scheduleReducer } from "./schedule.reducer";
 
 
 export interface AppState {
   auth: AuthState;
-  myClinics: MyClinicsState;
+  clinic: ClinicState;
+  schedule: ScheduleState;
 }
 
 
 export const appReducer: ActionReducerMap<AppState> = {
   auth: authReducer,
-  myClinics: myClinicsReducer,
+  clinic: clinicReducer,
+  schedule: scheduleReducer
 };

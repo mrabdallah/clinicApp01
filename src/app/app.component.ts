@@ -57,6 +57,7 @@ import { loginSuccess, logout } from './auth/store/auth.actions';
   styles: `
   :host{
     height: 100dvh;
+    width: 100dvw;
   }
   main {
     transition: 0.5s;

@@ -1,0 +1,95 @@
+@if(newClinicForm) {
+<h3 class="self-center">Create New Clinic</h3>
+
+<form [formGroup]="newClinicForm" (ngSubmit)="onSubmit()" class="p-0" #formDirective="ngForm">
+  <mat-dialog-content class="flex flex-col gap-1 md:gap-2">
+
+    <mat-form-field appearance="outline" class="w-full" style="font-size:14px;">
+      <mat-label style="font-size:14px;">Enter Clinic Name</mat-label>
+      <input matInput placeholder="مثال: د. هشام عبد السلام" formControlName="clinicName" required
+        style="direction: rtl;">
+      @if (newClinicForm.get('clinicName')!.invalid) {
+      <mat-error>{{errorMessages.clinicName}}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-full" style="font-size:14px;">
+      <mat-label style="font-size:14px;">Enter Clinic Subtitle</mat-label>
+      <input matInput placeholder="مثال: د. دكتوراه الأنف والأذن والحنجرة وجراحات الرأس والرقبة"
+        formControlName="clinicSubtitle" required style="direction: rtl;">
+      @if (newClinicForm.get('clinicSubtitle')!.invalid) {
+      <mat-error>{{errorMessages.clinicSubtitle}}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>Enter Clinic Address</mat-label>
+      <input matInput placeholder="مثال: الشمكري، باب الشعرية، محافظة القاهرة" formControlName="clinicAddress" required
+        style="direction: rtl;">
+      @if (newClinicForm.get('clinicAddress')!.invalid) {
+      <mat-error>{{errorMessages.clinicAddress}}</mat-error>
+      }
+    </mat-form-field>
+
+
+
+
+    <div formGroupName="personal" class="flex flex-col gap-1 mb-1">
+
+      <div formArrayName="doctorEmails" class="p-2 rounded custom-border">
+        <p class="text-left my-2">Doctors</p>
+        <div class="flex flex-wrap gap-3">
+          @for (controlItem of getPersonalControls('doctorEmails'); track trackByFunc; let i = $index) {
+          <mat-form-field appearance="outline">
+            <mat-label>Enter doctor's email</mat-label>
+            <input matInput id="doctor-{{i}}" type="text" [formControlName]="i" class="m-2 p-2">
+          </mat-form-field>
+          }
+        </div>
+        <div class="flex justify-evenly content-center">
+          @if(getPersonalControls('doctorEmails').length >= 1){
+          <button mat-raised-button type="button" (click)="removePersonalControls('doctorEmails')"
+            style="font-size:11px;">Remove a doctor
+            email</button>
+          }
+          <button mat-raised-button type="button" (click)="addPersonalControls('doctorEmails')"
+            style="font-size:11px;">Add more doctor
+            emails?</button>
+        </div>
+      </div>
+
+      <div formArrayName="assistantEmails" class="p-6 rounded custom-border mb-1">
+        <p class="text-left my-2">Assistants</p>
+        <div class="flex flex-wrap gap-3">
+          @for (controlItem of getPersonalControls('assistantEmails'); track trackByFunc; let i = $index) {
+          <mat-form-field appearance="outline">
+            <mat-label>Enter assistant's email</mat-label>
+            <input matInput id="assistant-{{i}}" type="text" [formControlName]="i" class="m-2 p-2">
+          </mat-form-field>
+          }
+        </div>
+        <div class="flex justify-evenly content-center">
+          @if(getPersonalControls('assistantEmails').length >= 1){
+          <button mat-raised-button type="button" (click)="removePersonalControls('assistantEmails')"
+            style="font-size:11px;">Remove an
+            assistant
+            email</button>
+          }
+          <button mat-raised-button type="button" (click)="addPersonalControls('assistantEmails')"
+            style="font-size:11px;">Add more assistant
+            emails?</button>
+        </div>
+      </div>
+
+    </div>
+
+
+
+    <button mat-raised-button color="primary" type="submit" [disabled]="isSubmitting || !newClinicForm.valid">
+      Add
+    </button>
+
+
+  </mat-dialog-content>
+</form>
+}

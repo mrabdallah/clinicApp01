@@ -1,1 +1,31 @@
-<p>clinic works!</p>
+<div class="flex flex-col gap-y-2">
+
+  <!-- Add Appointment Button -->
+  <div class="fixed right-4 bottom-12 z-10">
+    <button mat-icon-button aria-label="Add Appointment"
+      class="rounded-full flex items-center justify-center p-2 scale-150"
+      (click)="openNewAppointmentDialog('500ms', '500ms')" style="background: hsl(198.67deg 97.57% 48.43% / 40%);">
+      <mat-icon>format_list_bulleted_add</mat-icon>
+    </button>
+  </div>
+
+  <!-- ----------------------------------- Entries for clinic Operators -------------------------------- -->
+  <div cdkDropList (cdkDropListDropped)="drop($event)"
+    class="rounded-2xl mx-14 md:mx-11 lg:mx-40 my-4 px-1 flex flex-col gap-2 patient-schedule-entries bg-white">
+
+
+    @for (appointment of scheduleFiltered; track appointment.patient.id; let idx = $index) {
+    <div class="patient-schedule-entry-container" cdkDrag>
+      <div class="patient-schedule-entry-placeholder" *cdkDragPlaceholder></div>
+
+      @if (idx > 0) {
+      <patient-schedule-entry [appointment]="appointment"></patient-schedule-entry>
+      } @else {
+      <patient-schedule-current-entry [appointment]="appointment"></patient-schedule-current-entry>
+      }
+    </div>
+    }
+
+
+  </div>
+</div>

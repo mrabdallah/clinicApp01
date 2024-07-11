@@ -8,9 +8,13 @@ export class LoggerService {
 
   constructor() { }
 
-  log(obj: any) {
+  log(obj: any, obj2?: any) {
     if (!environment.production) {
-      console.log(obj);
+      if (obj2 !== undefined) {
+        console.log(obj, obj2);
+      } else {
+        console.log(obj);
+      }
     }
   }
 

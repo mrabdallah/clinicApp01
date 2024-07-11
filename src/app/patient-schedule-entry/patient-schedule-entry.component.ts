@@ -1,11 +1,18 @@
 import { Component, Input, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { Appointment } from '../types';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
-import { DatabaseService } from '../database.service';
 import { Router } from '@angular/router';
+
+import { Observable, catchError, finalize, take, tap, throwError } from 'rxjs';
+import { Store } from '@ngrx/store';
+
+import { Appointment } from '../types';
+import { AppState } from '../store/app.reducer';
+import { DatabaseService } from '../database.service';
 import { LoggerService } from '../logger.service';
+import * as ScheduleActions from '../store/schedule.actions';
+
 
 @Component({
   selector: 'patient-schedule-entry',
@@ -16,43 +23,7 @@ import { LoggerService } from '../logger.service';
     MatExpansionModule,
   ],
   templateUrl: './patient-schedule-entry.component.html',
-  styles: `
-    .visible-tgl{display: none;}
-    .object-containss{
-      max-height: 3.5rem;
-      object-fit: contain;
-    }
-    .cont-elevation{
-      box-shadow: 0 0 9px 2px #9E9E9E;
-      border-radius: 15px;
-    }
-    ::ng-deep .specific-class > .mat-expansion-indicator:after {
-      color: #bc23e7 !important;
-    }
-    .lateness-container{
-      position: relative;
-      margin-right: 15px;
-    }
-    .lateness-counter {
-      position: absolute;
-      z-index: 99;
-      transform: translate(15px, -7px);
-      border-radius: 50%;
-      background: red;
-      height: 18px;
-      width: 18px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .material-icons.calendar-clock{color: red;}
-    .specific-class.material-icons{
-      color: #ccf28b;
-    }
-    ::ng-deep.mat-content{
-      overflow: visible;
-    }
-  `
+  styleUrl: './patient-schedule-entry.component.css'
 })
 export class PatientScheduleEntryComponent {
   @Input({ required: true }) appointment!: Appointment;
@@ -64,48 +35,72 @@ export class PatientScheduleEntryComponent {
   updatePaidIsInProgress = false;
   updateUrgencyInProgress = false;
 
+  constructor(private _store: Store<AppState>) { }
 
-
-  async toggleOnSite() {
+  toggleOnSite() {
     this.updateOnSiteIsInProgress = true;
-    let today = new Date();
-    let scheduleFirestorePath: string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
-    try {
-      await this.databaseService.toggleOnSite(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.patientInClinic).then();
-    } catch (error) {
-      this.loggerService.logError(error, 'Error Updating appoinment state');
 
-    } finally {
-      this.updateOnSiteIsInProgress = false; // Enable button after operation (regardless of success/failure)
+    const targetDate = this.appointment.dateTime;
+    const schedulePath: string = `/clinics/${this.appointment.clinicID}/schedule/` +
+      `${targetDate.getDate()}_${targetDate.getMonth() + 1}_${targetDate.getFullYear()}`;
 
-    }
-
+    this.databaseService.toggleOnSite(
+      this.appointment.patient.id,
+      schedulePath,
+      !this.appointment.patientInClinic,
+    )
+      .pipe(
+        tap(() => { console.log('Component: Appointment state updated successfully'); }),
+        catchError(error => throwError(() => error)),
+        take(1),
+        finalize(() => this.updateOnSiteIsInProgress = false),
+      ).subscribe(() => {
+        console.log('toggling onsite');
+      });
   }
 
-  async togglePaid() {
+  togglePaid() {
     this.updatePaidIsInProgress = true;
-    let today = new Date();
-    let scheduleFirestorePath: string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
-    try {
-      await this.databaseService.togglePaid(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.paid);
-    } catch (error) {
-      this.loggerService.logError(error, 'Error Updating appoinment state');
-    } finally {
-      this.updatePaidIsInProgress = false;
-    }
+
+    const targetDate = this.appointment.dateTime;
+    const schedulePath: string = `/clinics/${this.appointment.clinicID}/schedule/` +
+      `${targetDate.getDate()}_${targetDate.getMonth() + 1}_${targetDate.getFullYear()}`;
+
+    this.databaseService.togglePaid(
+      this.appointment.patient.id,
+      schedulePath,
+      !this.appointment.paid
+    )
+      .pipe(
+        tap(() => { console.log('Component: Appointment state updated successfully'); }),
+        catchError(error => throwError(() => error)),
+        take(1),
+        finalize(() => this.updatePaidIsInProgress = false),
+      ).subscribe(() => {
+        console.log('toggling Paid');
+      });
   }
 
-  async toggleUrgent() {
+  toggleUrgent() {
     this.updateUrgencyInProgress = true;
-    let today = new Date();
-    let scheduleFirestorePath: string = `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
-    try {
-      await this.databaseService.toggleUrgent(this.appointment.patient.id, scheduleFirestorePath, !this.appointment.isUrgent);
-    } catch (error) {
-      this.loggerService.logError(error, 'Error Updating appoinment state');
-    } finally {
-      this.updateUrgencyInProgress = false;
-    }
+
+    const targetDate = this.appointment.dateTime;
+    const schedulePath: string = `/clinics/${this.appointment.clinicID}/schedule/` +
+      `${targetDate.getDate()}_${targetDate.getMonth() + 1}_${targetDate.getFullYear()}`;
+
+    this.databaseService.toggleUrgent(
+      this.appointment.patient.id,
+      schedulePath,
+      !this.appointment.isUrgent
+    )
+      .pipe(
+        tap(() => { console.log('Component: Appointment state updated successfully'); }),
+        catchError(error => throwError(() => error)),
+        take(1),
+        finalize(() => this.updateUrgencyInProgress = false),
+      ).subscribe(() => {
+        console.log('toggling Urgent');
+      });
   }
 
   navigateToPatientDetails() {

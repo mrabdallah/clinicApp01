@@ -1,9 +1,21 @@
-<div class="m-0">
+<div class="p-2 flex flex-col justify-center content-center">
   <!--<img src="assets/images/sasun-bughdaryan-RlIppR1I3E8-unsplash.jpg" class="object-cover h-64 w-screen">-->
 
-  <div class="flex flex-col gap-y-2">
+  <div>
+    <h2 class="text-center">Clinics</h2>
+  </div>
+
+  <div class="p-2 flex flex-col md:flex-row flex-wrap justify-center content-center gap-4">
+
+    @if (allClinics$ | async; as allClinics) {
+    @for (clinic of allClinics; track clinic.id; let idx = $index) {
+
+    <clinic-card [clinic]="clinic"></clinic-card>
+    }
+    }
 
     <!-- Add Appointment Button -->
+    <!--
     <div class="fixed right-4 bottom-12 z-10">
       <button mat-icon-button aria-label="Add Appointment"
         class="rounded-full flex items-center justify-center p-2 scale-150"
@@ -11,10 +23,12 @@
         <mat-icon>format_list_bulleted_add</mat-icon>
       </button>
     </div>
+    -->
 
     <!--<app-clock></app-clock>-->
 
     <!-- -------------------- progress-container -------------------- -->
+    <!--
     <div class="text-base my-4 mx-12 p-4 rounded-2xl flex flex-col lg:flex-row gap-4"
       style="border: 1px solid hsl(255deg 61% 74% / 50%)">
       <div class="w-full self-center">
@@ -35,9 +49,11 @@
         <mat-progress-bar class="prg-bar" mode="determinate" [value]="secondPeriodValue"></mat-progress-bar>
       </div>
     </div>
+    -->
 
 
     <!-- ------------------------------------------ Entries ------------------------------------------ -->
+    <!--
     <div cdkDropList (cdkDropListDropped)="drop($event)"
       class="rounded-2xl mx-14 md:mx-11 lg:mx-40 my-4 px-1 flex flex-col gap-2 patient-schedule-entries bg-white">
 
@@ -57,5 +73,6 @@
 
 
     </div>
+    -->
   </div>
 </div>

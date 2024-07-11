@@ -1,9 +1,10 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, user, UserCredential } from "@angular/fire/auth";
-import { Observable, catchError, from, map, tap, throwError } from 'rxjs';
-import { AppUser } from './auth/user.model';
+import { Observable, catchError, from, map, of, switchMap, tap, throwError } from 'rxjs';
+import { AppUser, UserRole } from './auth/user.model';
 import { LoggerService } from './logger.service';
 import { FirebaseError } from '@angular/fire/app';
+import { Firestore, doc, onSnapshot } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root'
@@ -11,22 +12,53 @@ import { FirebaseError } from '@angular/fire/app';
 export class AuthService {
   loggerService = inject(LoggerService);
   firebaseAuth = inject(Auth);
+  private firestore: Firestore = inject(Firestore);
   //#user$ = user(this.firebaseAuth);
   user$: Observable<AppUser | null> = user(this.firebaseAuth)
-    .pipe(map(user => {
-      if (user) {
-        this.loggerService.log(`user logged in; ${user.email}`);
-        return new AppUser(user.email!, user.uid!, user.displayName || undefined);
-      } else {
-        this.loggerService.log(`user logged out.`);
-        return null;
-      }
-    }));
+    .pipe(
+      switchMap((user) => {
+        if (user) {
+          this.loggerService.log(`inside authservice, switmap -> user logged in; ${user.email}`);
+          return this.getUserCustomData(user.uid).pipe(
+            map(
+              (customData) => {
+                return new AppUser(user.email!, user.uid, customData?.displayName, customData?.role);
+              })
+          );
+        } else {
+          return of(null);
+        }
+      }),
+      //map(user => {
+      //  if (user) {
+      //    return new AppUser(user.email!, user.uid!);
+      //  } else {
+      //    this.loggerService.log(`no user, or user logged out.`);
+      //    return null;
+      //  }
+      //})
+    );
   //userSignal = signal<AppUser | undefined | null>(undefined);
 
   //constructor() { }
   //
   //get user$() { return this.#user$; }
+
+  getUserCustomData(userID: string): Observable<{ displayName: string, role: UserRole } | null> {
+    return new Observable(observer => {
+      return onSnapshot(doc(this.firestore, `/users/${userID}`), (docSnapshot) => {
+        console.log(`getUserCustomData -> new call`);
+        if (docSnapshot.exists()) {
+          observer.next({
+            displayName: docSnapshot.data()['displayName'],
+            role: docSnapshot.data()['role'],
+          });
+        } else {
+          observer.next(null);
+        }
+      });
+    });
+  }
 
   private handleError(error: FirebaseError) {
     let errorMessage = 'An unknown error occurred!';

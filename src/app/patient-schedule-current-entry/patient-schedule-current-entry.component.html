@@ -53,11 +53,13 @@
       <!-- --------------------------- Actions -------------------------- -->
       <div class="flex flex-wrap gap-2 border-t-2 border-r-blue-300 pt-4">
         <button mat-mini-fab aria-label="Call Patient"
-          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"
+          disabled>
           <mat-icon>call</mat-icon>
         </button>
         <button mat-mini-fab aria-label="Send SMS to Patient"
-          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]">
+          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"
+          disabled>
           <mat-icon>sms</mat-icon>
         </button>
         <button mat-mini-fab aria-label="Patient on site toggle" (click)="toggleOnSite()"

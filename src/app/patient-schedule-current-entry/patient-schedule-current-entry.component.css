@@ -1,0 +1,47 @@
+.elems-container {
+  background: linear-gradient(270deg, #8EE0FB, #FFB2E6, #F7E3AF);
+  background-size: 600% 600%;
+
+  -webkit-animation: AnimationName 5s ease infinite;
+  -moz-animation: AnimationName 5s ease infinite;
+  animation: AnimationName 5s ease infinite;
+}
+
+@keyframes AnimationName {
+  0% {
+    background-position: 0% 50%
+  }
+
+  50% {
+    background-position: 100% 50%
+  }
+
+  100% {
+    background-position: 0% 50%
+  }
+}
+
+.object-containss {
+  max-height: 3.5rem;
+  object-fit: contain;
+}
+
+.icon-btn {
+  transform: scale(1.2);
+}
+
+.cont-elevation {
+  box-shadow: 0 0 9px 2px #9E9E9E;
+  border-radius: 15px;
+}
+
+.visible-tgl {
+  display: none;
+}
+
+
+@media screen and (max-width: 600px) {
+  .scale-down-on-small {
+    transform: scale(0.7);
+  }
+}
