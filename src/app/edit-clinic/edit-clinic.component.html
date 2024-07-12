@@ -1,1 +1,227 @@
-<p>edit-clinic works!</p>
+<div class="p-12 flex flex-col">
+
+  <h2 class="text-center">Edit Clinic</h2>
+
+  <div class="flex content-between items-center">
+    <p>Clinic Name:</p>
+    @if (editFlags.clinicName) {
+    <mat-form-field appearance="outline" class="ml-4 grow">
+      <mat-label>Clinic Name</mat-label>
+      <input matInput [(ngModel)]="editValues.clinicName">
+    </mat-form-field>
+    <div class="flex mr-2">
+      <button mat-icon-button aria-label="Edit" class="mr-2" (click)="save('clinicName')">
+        <mat-icon>save</mat-icon>
+      </button>
+      <button mat-icon-button aria-label="Edit" (click)="edit('clinicName')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    } @else {
+    <p class="ml-4 grow text-sm">{{editValues.clinicName}}</p>
+    <button mat-icon-button aria-label="Edit" (click)="edit('clinicName')">
+      <mat-icon>edit</mat-icon>
+    </button>
+    }
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="flex content-between items-center">
+    <p>Clinic Subtitle:</p>
+    @if (editFlags.clinicSubtitle) {
+    <mat-form-field appearance="outline" class="ml-4 grow">
+      <mat-label>Clinic Subtitle</mat-label>
+      <input matInput [(ngModel)]="editValues.clinicSubtitle">
+    </mat-form-field>
+
+    <div class="flex mr-2">
+      <button mat-icon-button aria-label="Edit" class="mr-2" (click)="save('clinicSubtitle')">
+        <mat-icon>save</mat-icon>
+      </button>
+      <button mat-icon-button aria-label="Edit" (click)="edit('clinicSubtitle')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    } @else {
+    <p class="ml-4 grow text-sm">{{editValues.clinicSubtitle}}</p>
+    <button mat-icon-button aria-label="Edit" (click)="edit('clinicSubtitle')">
+      <mat-icon>edit</mat-icon>
+    </button>
+    }
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="flex content-between items-center">
+    <p>Clinic Address:</p>
+    @if (editFlags.clinicAddress) {
+    <mat-form-field appearance="outline" class="ml-4 grow">
+      <mat-label>Clinic Address</mat-label>
+      <input matInput [(ngModel)]="editValues.clinicAddress">
+    </mat-form-field>
+    <div class="flex mr-2">
+      <button mat-icon-button aria-label="Edit" (click)="save('clinicAddress')">
+        <mat-icon>save</mat-icon>
+      </button>
+      <button mat-icon-button aria-label="Edit" (click)="edit('clinicAddress')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    } @else {
+    <p class="ml-4 grow text-sm">{{editValues.clinicAddress}}</p>
+    <button mat-icon-button aria-label="Edit" (click)="edit('clinicAddress')">
+      <mat-icon>edit</mat-icon>
+    </button>
+    }
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="flex content-between items-center">
+    <p>Clinic Average Examination Time:</p>
+    @if (editFlags.mainAverageAppointmentTimeTake) {
+    <mat-form-field appearance="outline" class="ml-4 grow">
+      <mat-label>Average Examination Time (Minutes)</mat-label>
+      <input matInput type="number" [(ngModel)]="editValues.mainAverageAppointmentTimeTake">
+    </mat-form-field>
+    <div class="flex mr-2">
+      <button mat-icon-button aria-label="Save" (click)="save('mainAverageAppointmentTimeTake')">
+        <mat-icon>save</mat-icon>
+      </button>
+      <button mat-icon-button aria-label="Close" (click)="edit('mainAverageAppointmentTimeTake')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    } @else {
+    <p class="ml-4 grow text-sm">{{editValues.mainAverageAppointmentTimeTake}}</p>
+    <button mat-icon-button aria-label="Edit" (click)="edit('mainAverageAppointmentTimeTake')">
+      <mat-icon>edit</mat-icon>
+    </button>
+    }
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="flex content-between items-center">
+    <p>Fee:</p>
+    @if (editFlags.fee) {
+    <mat-form-field appearance="outline" class="ml-4 grow">
+      <mat-label>Fee</mat-label>
+      <input matInput type="number" [(ngModel)]="editValues.fee">
+    </mat-form-field>
+    <div class="flex mr-2">
+      <button mat-icon-button aria-label="Save" (click)="save('fee')">
+        <mat-icon>save</mat-icon>
+      </button>
+      <button mat-icon-button aria-label="Close" (click)="edit('fee')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    } @else {
+    <p class="ml-4 grow text-sm">{{editValues.fee}}</p>
+    <button mat-icon-button aria-label="Edit" (click)="edit('fee')">
+      <mat-icon>edit</mat-icon>
+    </button>
+    }
+  </div>
+
+
+  <mat-divider></mat-divider>
+
+
+  @if(editFlags.personal) {
+
+  <div class="flex flex-col content-center">
+
+    <div class="flex justify-center mr-2">
+      <button mat-icon-button aria-label="Edit" (click)="onPersonalFormSubmit()" [disabled]="isSubmittingPersonalForm">
+        <mat-icon>save</mat-icon>
+      </button>
+      <button mat-icon-button aria-label="Edit" (click)="edit('personal')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+
+    <form [formGroup]="personalForm" (ngSubmit)="onPersonalFormSubmit()" class="p-0" #personalFormDirective="ngForm">
+      <div formArrayName="doctorEmails" class="p-2 rounded custom-border">
+        <p class="text-left my-2">Doctors</p>
+        <div class="flex flex-wrap gap-3">
+          @for (controlItem of getPersonalControls('doctorEmails'); track trackByFunc; let i = $index) {
+          <mat-form-field appearance="outline">
+            <mat-label>Enter doctor's email</mat-label>
+            <input matInput id="doctor-{{i}}" type="text" [formControlName]="i" class="m-2 p-2">
+          </mat-form-field>
+          }
+        </div>
+        <div class="flex justify-evenly content-center">
+          @if(getPersonalControls('doctorEmails').length >= 1){
+          <button mat-raised-button type="button" (click)="removePersonalControls('doctorEmails')"
+            style="font-size:11px;">Remove a doctor
+            email</button>
+          }
+          <button mat-raised-button type="button" (click)="addPersonalControls('doctorEmails')"
+            style="font-size:11px;">Add more doctor
+            emails?</button>
+        </div>
+      </div>
+
+      <div formArrayName="assistantEmails" class="p-6 rounded custom-border mb-1">
+        <p class="text-left my-2">Assistants</p>
+        <div class="flex flex-wrap gap-3">
+          @for (controlItem of getPersonalControls('assistantEmails'); track trackByFunc; let i = $index) {
+          <mat-form-field appearance="outline">
+            <mat-label>Enter assistant's email</mat-label>
+            <input matInput id="assistant-{{i}}" type="text" [formControlName]="i" class="m-2 p-2">
+          </mat-form-field>
+          }
+        </div>
+        <div class="flex justify-evenly content-center">
+          @if(getPersonalControls('assistantEmails').length >= 1){
+          <button mat-raised-button type="button" (click)="removePersonalControls('assistantEmails')"
+            style="font-size:11px;">Remove an
+            assistant
+            email</button>
+          }
+          <button mat-raised-button type="button" (click)="addPersonalControls('assistantEmails')"
+            style="font-size:11px;">Add more assistant
+            emails?</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  }
+  @else {
+  <div class="flex flex-col justify-center">
+    <div class="flex content-center justify-center">
+      <button mat-icon-button aria-label="Edit" (click)="edit('personal')">
+        <mat-icon>edit</mat-icon>
+      </button>
+    </div>
+    <div>
+      <h4>Doctors: </h4>
+      @for (doctorEmail of clinic?.personal?.doctorEmails; track doctorEmail; let i =$index) {
+
+      <p class="ml-4 grow text-sm">{{doctorEmail}}</p>
+      }
+    </div>
+    <div>
+      <h4>Assistants: </h4>
+      @for (assistantEmail of clinic?.personal?.assistantEmails; track assistantEmail; let i =$index) {
+
+      <p class="ml-4 grow text-sm">{{assistantEmail}}</p>
+      }
+    </div>
+
+  </div>
+  }
+
+
+
+
+  <div></div>
+
+
+
+</div>

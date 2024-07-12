@@ -27,14 +27,15 @@ export class Clinic {
     public clinicAddress: string,
     public ownerID: string,
     public personal: {
-      doctorIDs: string[],
-      assistantIDs: string[],
+      doctorEmails: string[],
+      assistantEmails: string[],
     },
     public clinicSubtitle?: string,
     public weekScheduleTemplate?: { [key in Weekday]: string[] }, // Use a mapped type for weekdays
     public id?: string,
     public firestorePath?: string,
     public mainAverageAppointmentTimeTake?: number,   // number in miliseconds
+    public fee?: number
   ) { }
 }
 

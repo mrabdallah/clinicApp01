@@ -9,6 +9,8 @@ export const allClinics = (state: AppState) => state.clinic.allClinics;
 
 export const selectedClinic = (state: AppState) => state.clinic.selectedClinic;
 
+export const clinicToEdit = (state: AppState) => state.clinic.clinicToEdit;
+
 export const todayAppointments = (state: AppState) => state.schedule.appointments;
 
 export const newAppointment = (state: AppState) => state.schedule.newAppointment;

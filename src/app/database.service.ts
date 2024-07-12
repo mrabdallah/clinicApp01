@@ -56,6 +56,7 @@ const clinicConverter = {
       ownerID: snapshot.data()['ownerID'],
       personal: snapshot.data()['personal'],
       weekScheduleTemplate: snapshot.data()['weekScheduleTemplate'],
+      fee: snapshot.data()['fee']
     } as Clinic;
     return clinic;
   },
@@ -177,8 +178,8 @@ export class DatabaseService {
       clinicAddress: clinicData.clinicAddress,
       ownerID: clinicData.ownerID,
       personal: {
-        doctorIDs: clinicData.personal.doctorIDs,
-        assistantIDs: clinicData.personal.assistantIDs,
+        doctorEmails: clinicData.personal.doctorEmails,
+        assistantEmails: clinicData.personal.assistantEmails,
       },
       clinicSubtitle: clinicData.clinicSubtitle,
     });
@@ -427,7 +428,6 @@ export class DatabaseService {
       throw error;
     }
   }
-
 
   toggleOnSite(patientID: string, schedulePath: string, newState: boolean): Observable<any> {
     const scheduleDocRef = doc(this.firestore, schedulePath);
@@ -799,6 +799,18 @@ export class DatabaseService {
     const clinicRef = doc(this.firestore, clinicPath);
     const promise = deleteDoc(clinicRef);
     return from(promise).pipe(catchError(this._handleFirestoreError));
+  }
+
+  updateClinicField(clinicPath: string, fieldName: string, newState: any): Observable<any> {
+    const clincDocRef = doc(this.firestore, clinicPath).withConverter(clinicConverter);
+    const promise = updateDoc(clincDocRef, {
+      [fieldName as keyof Clinic]: newState,
+    });
+    return from(promise).pipe(catchError(this._handleFirestoreError))
+      .pipe(
+        catchError(error => throwError(() => error)),
+        takeUntil(of(undefined).pipe(delay(1000))), // Emits after 1 second and completes
+      );
   }
 
 }

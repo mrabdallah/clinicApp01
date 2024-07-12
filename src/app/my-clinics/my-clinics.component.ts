@@ -25,6 +25,7 @@ import { FormArray, FormBuilder, FormControl, FormGroupDirective, ReactiveFormsM
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { DatabaseService } from '../database.service';
+import { CreateClinicDialog } from './create-clinic-dialog/create-clinic-dialog';
 
 
 @Component({
@@ -32,6 +33,7 @@ import { DatabaseService } from '../database.service';
   standalone: true,
   imports: [
     AsyncPipe,
+    CreateClinicDialog,
     //ClinicCardComponent,
     StaffClinicCardComponent,
     MatButtonModule,
@@ -87,110 +89,4 @@ export class MyClinicsComponent implements OnInit, OnDestroy {
 }
 
 
-@Component({
-  selector: 'create-clinic-dialog',
-  standalone: true,
-  imports: [
-    MatInputModule,
-    MatFormFieldModule,
-    ReactiveFormsModule,
-    MatInputModule,
-    MatButtonModule,
-    MatDialogContent,
-    MatIconModule,
-  ],
-  templateUrl: './create-clinic-dialog.html',
-  styleUrl: './create-clinic-dialog.css'
-})
-export class CreateClinicDialog implements OnInit, OnDestroy {
-  private _databaseService = inject(DatabaseService);
-  private _formBuilder = inject(FormBuilder);
-  private _userSubscription?: Subscription;
-  //private _router = inject(Router);
-  //private _authService = inject(AuthService);
-  private _currentUserID?: string;
-  public isSubmitting = false;
-  public errorMessages = {
-    clinicName: '',
-    clinicAddress: '',
-    clinicSubtitle: '',
-    main: '',
-  }
-  @ViewChild('formDirective')
-  formDirective: FormGroupDirective | undefined;
 
-  public newClinicForm = this._formBuilder.group({
-    clinicName: ['', Validators.required],
-    clinicSubtitle: ['', Validators.required],
-    clinicAddress: ['', Validators.required],
-    personal: this._formBuilder.group({
-      doctorEmails: this._formBuilder.array([]),
-      assistantEmails: this._formBuilder.array([]),
-    }),
-  });
-
-  constructor(private _store: Store<AppState>) { }
-
-  ngOnInit() {
-    //this._userSubscription = this._authService.user$.subscribe(
-    //  user => { this._currentUserID = user?.id; },
-    //);
-
-    this._userSubscription = this._store.select(AppSelectors.user).pipe(map(user => user?.id)).subscribe((userID) => {
-      this._currentUserID = userID;
-    })
-
-    this.addPersonalControls('doctorEmails');
-    this.addPersonalControls('assistantEmails');
-  }
-
-  ngOnDestroy(): void {
-    this._userSubscription?.unsubscribe();
-  }
-
-  getPersonalControls(controlName: string) {
-    return (<FormArray>this.newClinicForm.get('personal')?.get(controlName))?.controls;
-  }
-
-  addPersonalControls(controlName: string) {
-    const control = new FormControl('', [Validators.required, Validators.email]);
-    (<FormArray>this.newClinicForm.get('personal')?.get(controlName)).push(control);
-  }
-
-  removePersonalControls(controlName: string) {
-    const targetArray: FormArray = this.newClinicForm.get('personal')?.get(controlName) as FormArray;
-    (<FormArray>this.newClinicForm.get('personal')?.get(controlName)).removeAt(targetArray.length - 1);
-  }
-
-  trackByFunc(index: number, _obj: any): any {
-    return index;
-  }
-
-  onSubmit() {
-
-    if (!this.newClinicForm!.valid) { return; }
-    console.warn(this.newClinicForm.value);
-    this.isSubmitting = true;
-    this._databaseService.addNewClinic({
-      clinicName: this.newClinicForm.value.clinicName!,
-      clinicSubtitle: this.newClinicForm.value.clinicSubtitle!,
-      clinicAddress: this.newClinicForm.value.clinicAddress!,
-      ownerID: this._currentUserID!,
-      personal: {
-        doctorIDs: this.newClinicForm.value.personal!.doctorEmails! as string[],
-        assistantIDs: this.newClinicForm.value.personal!.assistantEmails! as string[]
-      },
-    }).pipe(take(1)).subscribe({
-      next: (_) => {
-        this.isSubmitting = false;
-        this.newClinicForm!.reset();
-        this.formDirective?.resetForm();
-        //this._router.navigateByUrl('');
-      },
-      error: (error: Error) => {
-        this.errorMessages.main = error.message;
-        this.isSubmitting = false;
-      }
-    });
-  }
-}

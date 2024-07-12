@@ -7,12 +7,14 @@ export interface ClinicState {
   allClinics: Clinic[];
   selectedClinic: Clinic | null;
   myClinics: Clinic[];
+  clinicToEdit: Clinic | null;
 }
 
 export const initialClinicState: ClinicState = {
   allClinics: [],
   selectedClinic: null,
-  myClinics: []
+  myClinics: [],
+  clinicToEdit: null
 };
 
 export const clinicReducer = createReducer(
@@ -38,7 +40,9 @@ export const clinicReducer = createReducer(
     newState.selectedClinic = cloneDeep(clinic);
     return newState;
   }),
-  //on(ScoreboardPageActions.awayScore, state => ({ ...state, away: state.away + 1 })),
-  //on(ScoreboardPageActions.resetScore, state => ({ home: 0, away: 0 })),
-  //on(ScoreboardPageActions.setScores, (state, { game }) => ({ home: game.home, away: game.away }))
+  on(ClinicActions.fetchClinicToEditSuccess, (state, { clinic }) => {
+    const newState = cloneDeep(state);
+    newState.clinicToEdit = cloneDeep(clinic);
+    return newState;
+  }),
 );

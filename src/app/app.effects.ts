@@ -100,6 +100,16 @@ export class AppEffects {
     }),
   ), { dispatch: false });
 
+  fetchClinicToEdit = createEffect(() => this.actions$.pipe(
+    ofType(ClinicActions.fetchClinicToEditStart),
+    switchMap((action) => {
+      return this.databaseService.fetchClinicByID(action.clinicID)
+        .pipe(
+          map(clinic => ClinicActions.fetchClinicToEditSuccess({ clinic })));
+    }),
+  ));//, { dispatch: false });
+
+
 
   constructor(
     private actions$: Actions,

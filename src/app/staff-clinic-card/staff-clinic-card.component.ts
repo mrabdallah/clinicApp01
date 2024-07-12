@@ -19,6 +19,7 @@ import { AppState } from '../store/app.reducer';
 import { deleteClinic } from '../store/clinic.actions';
 import * as AppSelectors from '../store/app.selectors';
 import { take } from 'rxjs';
+import { Router } from '@angular/router';
 
 
 interface DialogData {
@@ -38,6 +39,7 @@ interface DialogData {
   styleUrl: './staff-clinic-card.component.css'
 })
 export class StaffClinicCardComponent {
+  private router = inject(Router);
   @Input({ required: true }) clinic!: Clinic;
   readonly dialog = inject(MatDialog);
 
@@ -54,7 +56,7 @@ export class StaffClinicCardComponent {
   }
 
   goEditClinic() {
-    //
+    this.router.navigateByUrl(`/clinics/edit/${this.clinic.id}`);
   }
 }
 

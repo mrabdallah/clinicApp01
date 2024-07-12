@@ -45,6 +45,12 @@ export const deleteClinic = createAction(
   props<{ clinicPath: string }>(),
 );
 
-//export const deleteClinicSuccess = createAction(
-//  '[App Effects] deleteClinicSuccess',
-//);
+export const fetchClinicToEditStart = createAction(
+  '[EditClinic Component] fetchClinicToEditStart',
+  props<{ clinicID: string }>()
+);
+
+export const fetchClinicToEditSuccess = createAction(
+  '[Effects] fetchClinicToEditSuccess',
+  props<{ clinic: Clinic }>()
+);
