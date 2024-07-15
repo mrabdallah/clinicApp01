@@ -8,13 +8,15 @@ export interface ClinicState {
   selectedClinic: Clinic | null;
   myClinics: Clinic[];
   clinicToEdit: Clinic | null;
+  editingClinicScheduleTemplate: boolean;
 }
 
 export const initialClinicState: ClinicState = {
   allClinics: [],
   selectedClinic: null,
   myClinics: [],
-  clinicToEdit: null
+  clinicToEdit: null,
+  editingClinicScheduleTemplate: false
 };
 
 export const clinicReducer = createReducer(
@@ -40,9 +42,24 @@ export const clinicReducer = createReducer(
     newState.selectedClinic = cloneDeep(clinic);
     return newState;
   }),
-  on(ClinicActions.fetchClinicToEditSuccess, (state, { clinic }) => {
+  on(ClinicActions.newClinicToEditSnapshot, (state, { clinic }) => {
     const newState = cloneDeep(state);
     newState.clinicToEdit = cloneDeep(clinic);
+    return newState;
+  }),
+  on(ClinicActions.clearClinicToEdit, (state, { }) => {
+    const newState = cloneDeep(state);
+    newState.clinicToEdit = null;
+    return newState;
+  }),
+  on(ClinicActions.startEditingClinicScheduleTemplate, (state, { }) => {
+    const newState = cloneDeep(state);
+    newState.editingClinicScheduleTemplate = true;
+    return newState;
+  }),
+  on(ClinicActions.doneEditingClinicScheduleTemplate, (state, { }) => {
+    const newState = cloneDeep(state);
+    newState.editingClinicScheduleTemplate = false;
     return newState;
   }),
 );

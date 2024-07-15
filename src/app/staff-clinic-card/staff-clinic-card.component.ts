@@ -58,6 +58,16 @@ export class StaffClinicCardComponent {
   goEditClinic() {
     this.router.navigateByUrl(`/clinics/edit/${this.clinic.id}`);
   }
+
+  to12AmPM(timeStr: string) {
+    let minutes = parseInt(timeStr.split(':')[1]);
+    let hours = parseInt(timeStr.split(':')[0]);
+    const amPm = hours >= 12 ? 'PM' : 'AM';
+    hours = (hours % 12 || 12);
+
+    //return `${hours.toString().padStart(2, '0')}:${minutes} ${amPm}`;
+    return `${hours.toString()}:${minutes} ${amPm}`;
+  }
 }
 
 @Component({

@@ -194,16 +194,19 @@ export class TimeManagingAndPickingService {
           return [];
         } else {  // if target date is today or an upcomming day.
           let cursorTime: Date = cloneDeep(newAppointment.targetDate);
-          cursorTime.setHours(this.strToHours(targetDayIntervals[0]));
-          cursorTime.setMinutes(this.strToMinutes(targetDayIntervals[0]));
           let suggestions: Date[] = [];
+
 
           for (let i = 0; i < targetDayIntervals.length; i += 2) {
             //let sectionBooked = true;
+            cursorTime.setHours(this.strToHours(targetDayIntervals[i]));
+            cursorTime.setMinutes(this.strToMinutes(targetDayIntervals[i]));
+
             const currentIntervalEnd: Date = cloneDeep(newAppointment.targetDate);
             currentIntervalEnd.setHours(this.strToHours(targetDayIntervals[i + 1]));
             currentIntervalEnd.setMinutes(this.strToMinutes(targetDayIntervals[i + 1]));
             //this.getDateObjFromTargetDayDateStr(targetDayIntervals[i + 1]);
+
             while (cursorTime.getTime() < currentIntervalEnd.getTime()) {
               const indexOfConflictingAppointment: number = newAppointment.targetDayAppointments
                 .findIndex(a => {
@@ -213,7 +216,7 @@ export class TimeManagingAndPickingService {
                   }
                   return false;
                 });
-              if (indexOfConflictingAppointment === -1) {
+              if ((cursorTime.getTime() >= Date.now()) && indexOfConflictingAppointment === -1) {
                 suggestions.push(cursorTime);
               }
               cursorTime = new Date(cursorTime.getTime() + clinicAverageTime + 1);

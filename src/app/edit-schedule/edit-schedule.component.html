@@ -1,4 +1,4 @@
-<form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-2 p-2">
+<form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" #formDirective="ngForm" class="flex flex-col gap-2 p-2">
   <div formArrayName="SAT" class="mb-4 mx-5 p-4 rounded-md day-cont">
     <p class="text-center">Saturday</p>
     <div class="flex flex-wrap">
@@ -154,6 +154,14 @@
     </div>
   </div>
 
-  <button mat-raised-button color="primary" type="submit"
-    [disabled]="!scheduleForm.touched || !scheduleForm.valid">Submit</button>
+  <div class="flex justify-center content-center">
+    <button mat-icon-button aria-label="Save" type="submit"
+      [disabled]="!scheduleForm.touched || !scheduleForm.valid || isSubmitting">
+      <mat-icon>save</mat-icon>
+    </button>
+    <button mat-icon-button aria-label="Exit" type="button" (click)="exitEdit()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
 </form>

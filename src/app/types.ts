@@ -27,10 +27,11 @@ export class Clinic {
     public clinicAddress: string,
     public ownerID: string,
     public personal: {
-      doctorEmails: string[],
+      doctorEmails: string[],  // TODO: change the name to something else than doctor (doc/operator/specialist/...)
       assistantEmails: string[],
     },
     public clinicSubtitle?: string,
+    public geoAddress?: string,  // maps:https://maps.app.goo.gl/uEsL4Ddt12jZuKfL8
     public weekScheduleTemplate?: { [key in Weekday]: string[] }, // Use a mapped type for weekdays
     public id?: string,
     public firestorePath?: string,

@@ -1,0 +1,18 @@
+<div>
+
+  <div>
+    <h2 class="text-center">Clinics</h2>
+  </div>
+
+  <div class="p-2 flex flex-col md:flex-row flex-wrap justify-center content-center gap-4">
+
+    @if (clinics$ | async; as clinicsObs) {
+    @for (clinic of clinicsObs; track clinic.id; let idx = $index) {
+
+    <clinic-card [clinic]="clinic"></clinic-card>
+    }
+    }
+
+
+  </div>
+</div>

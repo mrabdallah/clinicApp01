@@ -37,6 +37,7 @@ import { Store } from '@ngrx/store';
 import { AppState } from './store/app.reducer';
 import * as AppSelectors from './store/app.selectors';
 import * as ScheduleActions from "./store/schedule.actions";
+import * as ClinicActions from './store/clinic.actions';
 import { AppUser } from './auth/user.model';
 
 
@@ -51,6 +52,7 @@ const clinicConverter = {
       clinicName: snapshot.data()['clinicName'],
       clinicSubtitle: snapshot.data()['clinicSubtitle'],
       clinicAddress: snapshot.data()['clinicAddress'],
+      geoAddress: snapshot.data()['geoAddress'],
       firestorePath: snapshot.ref.path,
       mainAverageAppointmentTimeTake: snapshot.data()['mainAverageAppointmentTimeTake'],
       ownerID: snapshot.data()['ownerID'],
@@ -74,6 +76,7 @@ export class DatabaseService {
   private allPatients$: Observable<Patient[]> = of([]);
   scheduleRealTimeDocSubscription?: Subscription;
   newAppointmentScheduleRealTimeDocSubscription?: Subscription;
+  clinicToEditRTDocSubscription?: Subscription;
   public ownedClinics$: Observable<Clinic[]> = this._authService.user$.pipe(
     mergeMap(user => from(
       getDocs(query(collection(this.firestore, `clinics`), where('ownerID', '==', user?.id)).withConverter(clinicConverter))
@@ -749,6 +752,37 @@ export class DatabaseService {
   unsubscribeFromScheduleRealTimeDoc() {
     this.scheduleRealTimeDocSubscription?.unsubscribe();
   }
+
+  /* ****************************** */
+  fetchClinicToEditRTDoc(clinicID: string): Observable<Clinic> {
+    return new Observable(observer => {
+      onSnapshot(
+        doc(this.firestore, `/clinics/${clinicID}`).withConverter(clinicConverter),
+        (docSnapshot) => {
+          if (docSnapshot.exists()) {
+
+            observer.next(docSnapshot.data());
+          } else {
+            observer.next(undefined);
+          }
+        },
+        (error) => observer.error(error.message)
+      )
+    });
+  }
+
+  subscribeToClinicToEditRTDoc(clinicID: string) {
+    this.clinicToEditRTDocSubscription = this.fetchClinicToEditRTDoc(clinicID)
+      .subscribe(clinic => {
+        this.store.dispatch(ClinicActions.newClinicToEditSnapshot({ clinic }));
+      });
+  }
+
+  unsubscribeFromClinicToEditRTDoc() {
+    this.clinicToEditRTDocSubscription?.unsubscribe();
+  }
+
+  /* ****************************** */
 
   fetchAppointmentScheduleRealTimeDoc(clinicPath: string, dateStr: string): Observable<Appointment[]> {
     return new Observable(observer => {

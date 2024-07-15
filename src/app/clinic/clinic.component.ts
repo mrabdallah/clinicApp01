@@ -58,14 +58,15 @@ export class ClinicComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private _temporaryDataSrvService: TemporaryDataSrvService
   ) {
+  }
+
+  ngOnInit(): void {
     this.route.params.subscribe(
       (params: Params) => {
         this._clinicID = params['id'];
       }
     );
-  }
 
-  ngOnInit(): void {
     this.store.dispatch(ClinicActions.fetchCurrentClinicByIdStart({ clinicID: this._clinicID ?? '' }));
     this._scheduleSubscription = this.store.select(AppSelectors.todayAppointments)
       .subscribe(appointments => {

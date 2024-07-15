@@ -45,12 +45,34 @@ export const deleteClinic = createAction(
   props<{ clinicPath: string }>(),
 );
 
-export const fetchClinicToEditStart = createAction(
-  '[EditClinic Component] fetchClinicToEditStart',
+export const fetchClinicToEditRTDoc = createAction(
+  '[EditClinic Component] fetchClinicToEditRTDoc',
   props<{ clinicID: string }>()
 );
 
-export const fetchClinicToEditSuccess = createAction(
-  '[Effects] fetchClinicToEditSuccess',
+export const newClinicToEditSnapshot = createAction(
+  '[Database Service] newClinicToEditSnapshot',
   props<{ clinic: Clinic }>()
 );
+
+export const unsubscribeFromClinicToEdit = createAction(
+  '[EditClinic Component] unsubscribeFromClinicToEdit'
+);
+
+export const clearClinicToEdit = createAction(
+  '[Effects] clearClinicToEdit'
+);
+
+export const startEditingClinicScheduleTemplate = createAction(
+  '[EditClinic Component] startEditingClinicScheduleTemaple'
+);
+
+export const doneEditingClinicScheduleTemplate = createAction(
+  '[EditSchedule Component] doneEditingClinicScheduleTemaple'
+);
+
+
+/*export const fetchClinicToEditSuccess = createAction(
+  '[Effects] fetchClinicToEditSuccess',
+  props<{ clinic: Clinic }>()
+);*/

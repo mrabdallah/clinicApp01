@@ -101,14 +101,46 @@ export class AppEffects {
   ), { dispatch: false });
 
   fetchClinicToEdit = createEffect(() => this.actions$.pipe(
-    ofType(ClinicActions.fetchClinicToEditStart),
-    switchMap((action) => {
-      return this.databaseService.fetchClinicByID(action.clinicID)
-        .pipe(
-          map(clinic => ClinicActions.fetchClinicToEditSuccess({ clinic })));
-    }),
-  ));//, { dispatch: false });
+    ofType(ClinicActions.fetchClinicToEditRTDoc),
+    tap((action) => {
+      const clinicID: string = action.clinicID ?? '';
+      if (clinicID.length > 0) {
+        this.databaseService.unsubscribeFromClinicToEditRTDoc();
+        this.databaseService.subscribeToClinicToEditRTDoc(clinicID);
+      }
 
+    }),
+  ), { dispatch: false });
+
+  unsubscribeFromClinicToEdit = createEffect(() => this.actions$.pipe(
+    ofType(ClinicActions.unsubscribeFromClinicToEdit),
+    map(_action => {
+      this.databaseService.unsubscribeFromClinicToEditRTDoc();
+      return ClinicActions.clearClinicToEdit();
+    })
+  ));
+  /*
+   *
+   *
+   *  return this.databaseService.getMyOwnedClinics(user?.id)
+        .pipe(
+          map(clinics => ClinicActions.fetchMyClinicsSuccess({ clinics })));
+
+   *
+   *   getNewScheduleRealTimeSubscription = createEffect(() => this.actions$.pipe(
+    ofType(ScheduleActions.getNewScheduleRealTimeSubscription),
+    concatLatestFrom(_action => this.store.select(AppSelectors.selectedClinic)),
+    tap(([_action, selectedClinic]) => {
+      const path: string = selectedClinic?.firestorePath ?? '';
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);  // set time to 12 AM
+      const dateStr: string = `${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
+      this.databaseService.unsubscribeFromScheduleRealTimeDoc();
+      this.databaseService.subscribeToScheduleRealTimeDoc(path, dateStr);
+    }),
+  ), { dispatch: false });
+
+   * */
 
 
   constructor(

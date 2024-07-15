@@ -17,6 +17,7 @@ export const newAppointment = (state: AppState) => state.schedule.newAppointment
 
 export const newAppointmentDaySchedule = (state: AppState) => state.schedule.newAppointment?.targetDayAppointments;
 
+export const editingScheduleTemplate = (state: AppState) => state.clinic.editingClinicScheduleTemplate;
 
 /*
 export const selectFeatureCount = createSelector(

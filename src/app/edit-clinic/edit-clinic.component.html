@@ -7,7 +7,7 @@
     @if (editFlags.clinicName) {
     <mat-form-field appearance="outline" class="ml-4 grow">
       <mat-label>Clinic Name</mat-label>
-      <input matInput [(ngModel)]="editValues.clinicName">
+      <input matInput placeholder="مثال: د. هشام عبد السلام" [(ngModel)]="editValues.clinicName">
     </mat-form-field>
     <div class="flex mr-2">
       <button mat-icon-button aria-label="Edit" class="mr-2" (click)="save('clinicName')">
@@ -32,7 +32,8 @@
     @if (editFlags.clinicSubtitle) {
     <mat-form-field appearance="outline" class="ml-4 grow">
       <mat-label>Clinic Subtitle</mat-label>
-      <input matInput [(ngModel)]="editValues.clinicSubtitle">
+      <input matInput placeholder="مثال: د. دكتوراه الأنف والأذن والحنجرة وجراحات الرأس والرقبة"
+        [(ngModel)]="editValues.clinicSubtitle">
     </mat-form-field>
 
     <div class="flex mr-2">
@@ -58,7 +59,7 @@
     @if (editFlags.clinicAddress) {
     <mat-form-field appearance="outline" class="ml-4 grow">
       <mat-label>Clinic Address</mat-label>
-      <input matInput [(ngModel)]="editValues.clinicAddress">
+      <input matInput placeholder="مثال: الشمكري، باب الشعرية، محافظة القاهرة" [(ngModel)]="editValues.clinicAddress">
     </mat-form-field>
     <div class="flex mr-2">
       <button mat-icon-button aria-label="Edit" (click)="save('clinicAddress')">
@@ -79,11 +80,36 @@
   <mat-divider></mat-divider>
 
   <div class="flex content-between items-center">
+    <p>Clinic Geographic Address:</p>
+    @if (editFlags.geoAddress) {
+    <mat-form-field appearance="outline" class="ml-4 grow">
+      <mat-label>Geographic Address</mat-label>
+      <input matInput placeholder="https://maps.app.goo.gl/uEsL4Ddt12jZuKfL8" [(ngModel)]="editValues.geoAddress">
+    </mat-form-field>
+    <div class="flex mr-2">
+      <button mat-icon-button aria-label="Edit" (click)="save('geoAddress')">
+        <mat-icon>save</mat-icon>
+      </button>
+      <button mat-icon-button aria-label="Edit" (click)="edit('geoAddress')">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    } @else {
+    <p class="ml-4 grow text-sm">{{editValues.geoAddress}}</p>
+    <button mat-icon-button aria-label="Edit" (click)="edit('geoAddress')">
+      <mat-icon>edit</mat-icon>
+    </button>
+    }
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="flex content-between items-center">
     <p>Clinic Average Examination Time:</p>
     @if (editFlags.mainAverageAppointmentTimeTake) {
     <mat-form-field appearance="outline" class="ml-4 grow">
       <mat-label>Average Examination Time (Minutes)</mat-label>
-      <input matInput type="number" [(ngModel)]="editValues.mainAverageAppointmentTimeTake">
+      <input matInput type="number" placeholder="10" [(ngModel)]="editValues.mainAverageAppointmentTimeTake">
     </mat-form-field>
     <div class="flex mr-2">
       <button mat-icon-button aria-label="Save" (click)="save('mainAverageAppointmentTimeTake')">
@@ -108,7 +134,7 @@
     @if (editFlags.fee) {
     <mat-form-field appearance="outline" class="ml-4 grow">
       <mat-label>Fee</mat-label>
-      <input matInput type="number" [(ngModel)]="editValues.fee">
+      <input matInput type="number" placeholder="250" [(ngModel)]="editValues.fee">
     </mat-form-field>
     <div class="flex mr-2">
       <button mat-icon-button aria-label="Save" (click)="save('fee')">
@@ -126,13 +152,11 @@
     }
   </div>
 
-
   <mat-divider></mat-divider>
-
 
   @if(editFlags.personal) {
 
-  <div class="flex flex-col content-center">
+  <div class="flex flex-col content-center my-14">
 
     <div class="flex justify-center mr-2">
       <button mat-icon-button aria-label="Edit" (click)="onPersonalFormSubmit()" [disabled]="isSubmittingPersonalForm">
@@ -193,7 +217,7 @@
   </div>
   }
   @else {
-  <div class="flex flex-col justify-center">
+  <div class="flex flex-col justify-center mt-11 mb-11">
     <div class="flex content-center justify-center">
       <button mat-icon-button aria-label="Edit" (click)="edit('personal')">
         <mat-icon>edit</mat-icon>
@@ -217,11 +241,161 @@
   </div>
   }
 
+  <mat-divider></mat-divider>
+
+  <div class="my-14">
+    @if(editFlags.weekScheduleTemplate) {
+    <div class="flex justify-center content-center">
+      <!--<button mat-icon-button aria-label="Edit Schedule Template" disabled>
+        <mat-icon>edit</mat-icon>
+      </button>-->
+      <button mat-icon-button aria-label="Quit Editing Schedule Template" (click)="editSchedule(false)">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
 
 
 
-  <div></div>
 
+
+
+
+
+
+
+
+
+    <edit-schedule></edit-schedule>
+    } @else {
+    <div class="flex justify-center content-center">
+      <button mat-icon-button aria-label="Edit Schedule Template" (click)="editSchedule(true)">
+        <mat-icon>edit</mat-icon>
+      </button>
+      <!--<button mat-icon-button aria-label="Quit Editing Schedule Template" (click)="editSchedule(false)">
+        <mat-icon>close</mat-icon>
+      </button>-->
+    </div>
+
+
+    <div class="flex flex-row-reverse gap-1 p-1">
+      @if (clinic?.weekScheduleTemplate?.SAT; as sats){
+      <div class="grow flex flex-col items-center" style="flex-basis: 0%;">
+        <p class="m-0 py-1 w-full bg-[#30eee2] text-center">السبت</p>
+        <div class="bg-[#e5d4ed] flex flex-col items-center grow w-full">
+          @for (timeInterval of sats; track timeInterval; let idx = $index) {
+          @if(idx % 2 === 0) {
+          <div class="flex justify-center content-center items-center">
+            <p class="m-1 text-xs text-center">{{to12AmPM(timeInterval)}}</p>
+            <p class="my-1 mx-2">-</p>
+            <p class="m-1 text-xs text-center">{{to12AmPM(sats[idx+1])}}</p>
+          </div>
+          }
+          }
+        </div>
+      </div>
+      }
+      @if (clinic?.weekScheduleTemplate?.SUN; as suns){
+      <div class="bg-[#e5d4ed] grow flex flex-col items-center" style="flex-basis: 0%;">
+        <p class="m-0 py-1 w-full bg-[#30eee2] text-center">الأحد</p>
+        <div class="bg-[#e5d4ed] flex flex-col items-center grow w-full">
+          @for (timeInterval of suns; track timeInterval; let idx = $index) {
+          @if(idx % 2 === 0) {
+          <div class="flex justify-center content-center items-center">
+            <p class="m-1 text-xs text-center">{{to12AmPM(timeInterval)}}</p>
+            <p class="my-1 mx-2">-</p>
+            <p class="m-1 text-xs text-center">{{to12AmPM(suns[idx+1])}}</p>
+          </div>
+          }
+          }
+        </div>
+      </div>
+      }
+      @if (clinic?.weekScheduleTemplate?.MON; as mons){
+      <div class="bg-[#e5d4ed] grow flex flex-col items-center" style="flex-basis: 0%;">
+        <p class="m-0 py-1 w-full bg-[#30eee2] text-center">الإثنين</p>
+        <div class="bg-[#e5d4ed] flex flex-col items-center grow w-full">
+          @for (timeInterval of mons; track timeInterval; let idx = $index) {
+          @if(idx % 2 === 0) {
+          <div class="flex justify-center content-center items-center">
+            <p class="m-1 text-xs text-center">{{to12AmPM(timeInterval)}}</p>
+            <p class="my-1 mx-2">-</p>
+            <p class="m-1 text-xs text-center">{{to12AmPM(mons[idx+1])}}</p>
+          </div>
+          }
+          }
+        </div>
+      </div>
+      }
+      @if (clinic?.weekScheduleTemplate?.TUE; as tues){
+      <div class="bg-[#e5d4ed] grow flex flex-col items-center" style="flex-basis: 0%;">
+        <p class="m-0 py-1 w-full bg-[#30eee2] text-center">الثلاثاء</p>
+        <div class="bg-[#e5d4ed] flex flex-col items-center grow w-full">
+          @for (timeInterval of tues; track timeInterval; let idx = $index) {
+          @if(idx % 2 === 0) {
+          <div class="flex justify-center content-center items-center">
+            <p class="m-1 text-xs text-center">{{to12AmPM(timeInterval)}}</p>
+            <p class="my-1 mx-2">-</p>
+            <p class="m-1 text-xs text-center">{{to12AmPM(tues[idx+1])}}</p>
+          </div>
+          }
+          }
+        </div>
+      </div>
+      }
+      @if (clinic?.weekScheduleTemplate?.WED; as weds){
+      <div class="bg-[#e5d4ed] grow flex flex-col items-center" style="flex-basis: 0%;">
+        <p class="m-0 py-1 w-full bg-[#30eee2] text-center">الأربعاء</p>
+        <div class="bg-[#e5d4ed] flex flex-col items-center grow w-full">
+          @for (timeInterval of weds; track timeInterval; let idx = $index) {
+          @if(idx % 2 === 0) {
+          <div class="flex justify-center content-center items-center">
+            <p class="m-1 text-xs text-center">{{to12AmPM(timeInterval)}}</p>
+            <p class="my-1 mx-2">-</p>
+            <p class="m-1 text-xs text-center">{{to12AmPM(weds[idx+1])}}</p>
+          </div>
+          }
+          }
+        </div>
+      </div>
+      }
+      @if (clinic?.weekScheduleTemplate?.THU; as thus){
+      <div class="bg-[#e5d4ed] grow flex flex-col items-center" style="flex-basis: 0%;">
+        <p class="m-0 py-1 w-full bg-[#30eee2] text-center">الخميس</p>
+        <div class="bg-[#e5d4ed] flex flex-col items-center grow w-full">
+          @for (timeInterval of thus; track timeInterval; let idx = $index) {
+          @if(idx % 2 === 0) {
+          <div class="flex justify-center content-center items-center">
+            <p class="m-1 text-xs text-center">{{to12AmPM(timeInterval)}}</p>
+            <p class="my-1 mx-2">-</p>
+            <p class="m-1 text-xs text-center">{{to12AmPM(thus[idx+1])}}</p>
+          </div>
+          }
+          }
+        </div>
+      </div>
+      }
+      @if (clinic?.weekScheduleTemplate?.FRI; as fris){
+      <div class="bg-[#e5d4ed] grow flex flex-col items-center" style="flex-basis: 0%;">
+        <p class="m-0 py-1 w-full bg-[#30eee2] text-center">الجمعة</p>
+        <div class="bg-[#e5d4ed] flex flex-col items-center grow w-full">
+          @for (timeInterval of fris; track timeInterval; let idx = $index) {
+          @if(idx % 2 === 0) {
+          <div class="flex justify-center content-center items-center">
+            <p class="m-1 text-xs text-center">{{to12AmPM(timeInterval)}}</p>
+            <p class="my-1 mx-2">-</p>
+            <p class="m-1 text-xs text-center">{{to12AmPM(fris[idx+1])}}</p>
+          </div>
+          }
+          }
+        </div>
+      </div>
+      }
+
+    </div>
+
+
+    }
+  </div>
 
 
 </div>

@@ -19,20 +19,24 @@ import * as AppSelectors from '../store/app.selectors';
 import * as ClinicActions from '../store/clinic.actions';
 import { Clinic } from '../types';
 import { DatabaseService } from '../database.service';
+import { EditScheduleComponent } from '../edit-schedule/edit-schedule.component';
 
 type EditFlags = {
   clinicName: boolean;
   clinicSubtitle: boolean;
   clinicAddress: boolean;
+  geoAddress: boolean;
   personal: boolean;
   mainAverageAppointmentTimeTake: boolean;
   fee: boolean;
+  weekScheduleTemplate: boolean;
 };
 
 type EditValues = {
   clinicName: string;
   clinicSubtitle: string;
   clinicAddress: string;
+  geoAddress: string;
   mainAverageAppointmentTimeTake: number;
   fee: number;
   personal: {
@@ -53,6 +57,7 @@ type EditValues = {
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
+    EditScheduleComponent,
     ReactiveFormsModule
   ],
   templateUrl: './edit-clinic.component.html',
@@ -64,19 +69,23 @@ export class EditClinicComponent implements OnInit, OnDestroy {
   private _clinicID?: string;
   clinic$ = this.store.select(AppSelectors.clinicToEdit);
   clinic: Clinic | null = null;
-  clinicSubscription: Subscription;
+  clinicSubscription?: Subscription;
+  weekScheduleTemplateEditingFlagSubscription?: Subscription;
   public editFlags: EditFlags = {
     clinicName: false,
     clinicSubtitle: false,
     clinicAddress: false,
+    geoAddress: false,
     personal: false,
     fee: false,
     mainAverageAppointmentTimeTake: false,
+    weekScheduleTemplate: false,
   };
   public editValues: EditValues = {
     clinicName: this.clinic?.clinicName ?? '',
     clinicSubtitle: this.clinic?.clinicSubtitle ?? '',
     clinicAddress: this.clinic?.clinicSubtitle ?? '',
+    geoAddress: this.clinic?.geoAddress ?? '',
     personal: this.clinic?.personal ?? { doctorEmails: [], assistantEmails: [] },
     mainAverageAppointmentTimeTake: this.clinic?.mainAverageAppointmentTimeTake ? (this.clinic?.mainAverageAppointmentTimeTake / 60 / 1000) : 15,
     fee: 0,
@@ -89,21 +98,29 @@ export class EditClinicComponent implements OnInit, OnDestroy {
   isSubmittingPersonalForm = false;
 
   constructor(private route: ActivatedRoute, private store: Store<AppState>) {
+  }
+
+  ngOnInit(): void {
     this.route.params.subscribe(
       (params: Params) => {
         console.log(`editing clinic with ID: ${this._clinicID}`);
         if (this._clinicID === undefined || this._clinicID !== params['id']) {
           this._clinicID = params['id'];
-          this.store.dispatch(ClinicActions.fetchClinicToEditStart({ clinicID: params['id'] }));
+          this.store.dispatch(ClinicActions.fetchClinicToEditRTDoc({ clinicID: params['id'] }));
         }
       }
     );
+
+    this.weekScheduleTemplateEditingFlagSubscription = this.store.select(AppSelectors.editingScheduleTemplate).subscribe(state => {
+      this.editFlags.weekScheduleTemplate = state;
+    });
 
     this.clinicSubscription = this.clinic$.subscribe(clinic => {
       this.clinic = cloneDeep(clinic);
       this.editValues.clinicName = clinic?.clinicName ?? '';
       this.editValues.clinicSubtitle = clinic?.clinicSubtitle ?? '';
       this.editValues.clinicAddress = clinic?.clinicAddress ?? '';
+      this.editValues.geoAddress = clinic?.geoAddress ?? '';
       this.editValues.personal = clinic?.personal ?? { doctorEmails: [], assistantEmails: [] };
       this.editValues.mainAverageAppointmentTimeTake = clinic?.mainAverageAppointmentTimeTake ? (clinic?.mainAverageAppointmentTimeTake / 1000 / 60) : 15
       this.editValues.fee = clinic?.fee ?? 0;
@@ -129,17 +146,36 @@ export class EditClinicComponent implements OnInit, OnDestroy {
         }
       }
     });
-  }
 
-  ngOnInit(): void {
   }
 
   ngOnDestroy(): void {
-    this.clinicSubscription.unsubscribe();
+    this.clinicSubscription?.unsubscribe();
+    this.store.dispatch(ClinicActions.unsubscribeFromClinicToEdit());
+    this.weekScheduleTemplateEditingFlagSubscription?.unsubscribe();
   }
+
+  to12AmPM(timeStr: string) {
+    let minutes = parseInt(timeStr.split(':')[1]);
+    let hours = parseInt(timeStr.split(':')[0]);
+    const amPm = hours >= 12 ? 'PM' : 'AM';
+    hours = (hours % 12 || 12);
+
+    //return `${hours.toString().padStart(2, '0')}:${minutes} ${amPm}`;
+    return `${hours.toString()}:${minutes} ${amPm}`;
+  }
+
 
   edit(fieldName: string) {
     this.editFlags[fieldName as keyof EditFlags] = !this.editFlags[fieldName as keyof EditFlags];
+  }
+
+  editSchedule(state: boolean) {
+    if (state) {
+      this.store.dispatch(ClinicActions.startEditingClinicScheduleTemplate());
+    } else {
+      this.store.dispatch(ClinicActions.doneEditingClinicScheduleTemplate());
+    }
   }
 
   save(fieldName: string) {
@@ -216,7 +252,7 @@ export class EditClinicComponent implements OnInit, OnDestroy {
           //this.editFlags[fieldName as keyof EditFlags] = !this.editFlags[fieldName as keyof EditFlags];
           //this.personalForm.reset();
           //this.personalFormDirective?.resetForm();
-          this.store.dispatch(ClinicActions.fetchClinicToEditStart({ clinicID: this.clinic!.id! }));
+          this.store.dispatch(ClinicActions.fetchClinicToEditRTDoc({ clinicID: this.clinic!.id! }));
           this.isSubmittingPersonalForm = false;
           this.editFlags.personal = false;
         },
