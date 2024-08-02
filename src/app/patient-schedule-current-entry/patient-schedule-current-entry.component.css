@@ -26,9 +26,11 @@
   object-fit: contain;
 }
 
+/*
 .icon-btn {
   transform: scale(1.2);
 }
+*/
 
 .cont-elevation {
   box-shadow: 0 0 9px 2px #9E9E9E;
@@ -40,8 +42,10 @@
 }
 
 
-@media screen and (max-width: 600px) {
+/*
+* @media screen and (max-width: 600px) {
   .scale-down-on-small {
-    transform: scale(0.7);
+    transform: scale(0.6);
   }
 }
+*/

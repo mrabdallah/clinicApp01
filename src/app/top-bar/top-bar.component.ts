@@ -38,6 +38,10 @@ export class TopBarComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl('auth');
   }
 
+  account() {
+    this.router.navigateByUrl(`/account/${this.userSignal()?.id}`);
+  }
+
   logout() {
     this.authService.logout();
   }

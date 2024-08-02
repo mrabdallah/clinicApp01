@@ -1,31 +1,20 @@
-<header> <app-top-bar></app-top-bar> </header>
-<main [class.sidebar-opend]="isOpen" class="h-full flex flex-col m-0">
+<div class="app-wrapper">
+  <header> <app-top-bar></app-top-bar> </header>
+  <main [class.sidebar-opend]="isOpen" class="h-full flex flex-col m-0">
 
-  <div class="side-bar-container shadow-sm" [class.open]="isOpen">
-    <div class="layered-backgrounds"></div>
-    <div class="border-b border-blue-100 close-side-bar-btn pt-20">
-      <span class="side-bar-close-btn-spacer"></span>
-      <button color="primary" mat-icon-button aria-label="Close or hide sidebar" (click)="toggleSidebar()">
-        <mat-icon class="material-icons-outlined">close</mat-icon>
+
+    <!-- bottom-bar button -->
+    <div>
+      <button [class.toggled]="isOpen"
+        class="bottom-bar-toggle-btn rounded-full flex items-center justify-center p-2 shadow-md z-20" mat-icon-button
+        aria-label="Expand or hide sidebar" (click)="openBottomSheet()"
+        style="background: hsl(198.67deg 97.57% 48.43% / 40%);">
+        <mat-icon *ngIf="isOpen">keyboard_arrow_down</mat-icon>
+        <mat-icon *ngIf="!isOpen">keyboard_arrow_up</mat-icon>
       </button>
     </div>
-    <app-side-bar></app-side-bar>
-  </div>
 
 
-  <!-- side-bar button -->
-  <div>
-    <button [class.toggled]="isOpen"
-      class="side-bar-toggle-btn rounded-full flex items-center justify-center p-2 scale-150 shadow-md z-20"
-      mat-icon-button aria-label="Expand or hide sidebar" (click)="toggleSidebar()"
-      style="background: hsl(198.67deg 97.57% 48.43% / 40%);">
-      <mat-icon *ngIf="!isOpen">chevron_right</mat-icon>
-      <!-- <mat-icon *ngIf="!isOpen" class="material-icons-outlined">chevron_right</mat-icon> -->
-      <mat-icon *ngIf="isOpen">chevron_left</mat-icon>
-      <!-- <mat-icon *ngIf="isOpen" class="material-icons-outlined">chevron_left</mat-icon> -->
-    </button>
-  </div>
-
-
-  <router-outlet></router-outlet>
-</main>
+    <router-outlet></router-outlet>
+  </main>
+</div>

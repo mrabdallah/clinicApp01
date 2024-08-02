@@ -10,11 +10,15 @@ export interface ScheduleState {
     targetDate: Date;
     targetDayAppointments: Appointment[];
   } | null;
+  isEditingAppointments: boolean;
+  currentSelectedDate: Date;
 }
 
 export const initialScheduleState: ScheduleState = {
   appointments: [],
   newAppointment: null,
+  isEditingAppointments: false,
+  currentSelectedDate: new Date(),
 };
 
 export const scheduleReducer = createReducer(
@@ -40,6 +44,11 @@ export const scheduleReducer = createReducer(
       newState.newAppointment.targetDayAppointments = cloneDeep(appointments);
     }
     return newState;
+  }),
+  on(ScheduleActions.toggleEditingAppointments, (state) => {
+    const nS = cloneDeep(state);
+    nS.isEditingAppointments = !state.isEditingAppointments;
+    return nS;
   }),
   //on(ScheduleActions.getNewAppointmentDayAppointmentsSuccess, (state, { appointments }) => {
   //  const newState = cloneDeep(state);

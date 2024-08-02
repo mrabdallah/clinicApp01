@@ -13,7 +13,8 @@
           [displayWith]="getFullNameForDisplay.bind(this)">
           @for (option of filteredOptions; track option) {
           <mat-option [value]="option.id">
-            {{ option.firstName }} {{ option.lastName }}
+            {{ option.firstName }} {{ option.lastName }} <span style="font-size: 0.7em;">{{'&nbsp;&nbsp;&nbsp;&nbsp;' +
+              option.primaryContact}}</span>
           </mat-option>
           }
         </mat-autocomplete>
@@ -43,7 +44,7 @@
     <mat-form-field appearance="outline">
       <mat-label>Time</mat-label>
       <mat-select formControlName="time">
-        @for (suggestion of suggestedTimes; track suggestion) {
+        @for (suggestion of unbookedTimes; track suggestion) {
         <mat-option [value]="suggestion.value">{{suggestion.viewValue}}</mat-option>
         }
       </mat-select>

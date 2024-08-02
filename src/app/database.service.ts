@@ -28,10 +28,11 @@ import {
   deleteDoc
 } from '@angular/fire/firestore';
 //import { Moment } from 'moment';
-import { Observable, Subscription, defer, from, map, take, of, scheduled, throwError, tap, catchError, mergeMap, delay, takeUntil } from 'rxjs';
+import { FirebaseError } from '@angular/fire/app';
+import { Observable, Subscription, defer, from, map, take, of, scheduled, throwError, tap, catchError, mergeMap, delay, takeUntil, forkJoin, EMPTY } from 'rxjs';
+
 import { Appointment, Clinic, Patient } from './types';
 import { LoggerService } from './logger.service';
-import { FirebaseError } from '@angular/fire/app';
 import { AuthService } from './auth.service';
 import { Store } from '@ngrx/store';
 import { AppState } from './store/app.reducer';
@@ -56,7 +57,8 @@ const clinicConverter = {
       firestorePath: snapshot.ref.path,
       mainAverageAppointmentTimeTake: snapshot.data()['mainAverageAppointmentTimeTake'],
       ownerID: snapshot.data()['ownerID'],
-      personal: snapshot.data()['personal'],
+      doctors: snapshot.data()['doctors'],
+      assistants: snapshot.data()['assistants'],
       weekScheduleTemplate: snapshot.data()['weekScheduleTemplate'],
       fee: snapshot.data()['fee']
     } as Clinic;
@@ -72,7 +74,7 @@ export class DatabaseService {
   private firestore: Firestore = inject(Firestore);
   private _authService = inject(AuthService);
   public loggerService: LoggerService = inject(LoggerService);
-  patientsOnTimeSnapshot: any[] = [];
+  patientsOneTimeSnapshot: any[] = [];
   private allPatients$: Observable<Patient[]> = of([]);
   scheduleRealTimeDocSubscription?: Subscription;
   newAppointmentScheduleRealTimeDocSubscription?: Subscription;
@@ -114,7 +116,7 @@ export class DatabaseService {
     // this.fetchAllPatientsRealTimeSnapshot();
   }
 
-  getMyOwnedClinics(userID?: string): Observable<Clinic[]> {
+  fetchMyOwnedClinics(userID?: string): Observable<Clinic[]> {
     if (userID === undefined) {
       return of([]);
     }
@@ -132,6 +134,7 @@ export class DatabaseService {
           for (let i = 0; i < querySnapshot.docs.length; i++) {
             clinics.push(querySnapshot.docs[i].data());
           }
+          console.log(clinics);
           return clinics;
         }
         return []
@@ -139,6 +142,53 @@ export class DatabaseService {
     );
   }
 
+  fetchDoctorClinics(userID?: string): Observable<Clinic[]> {
+    if (!userID) {
+      return of([]);
+    }
+
+    return from(getDocs(
+      query(
+        collection(this.firestore, 'clinics').withConverter(clinicConverter),
+        where('doctors', 'array-contains', userID)
+      )
+    )).pipe(
+      map((querySnapshot) =>
+        querySnapshot.empty ? [] : querySnapshot.docs.map(doc => doc.data() as Clinic)
+      ),
+      catchError(error => {
+        this.loggerService.logError('Error fetching clinics:', error); // Use logError for errors
+        return of([]);
+      }),
+    );
+  }
+
+  fetchAssistantClinics(userID?: string): Observable<Clinic[]> {
+    if (!userID) {
+      return of([]);
+    }
+
+    return from(getDocs(
+      query(
+        collection(this.firestore, 'clinics').withConverter(clinicConverter),
+        where('assistants', 'array-contains', userID)
+      )
+    )).pipe(
+      map((querySnapshot) =>
+        querySnapshot.empty ? [] : querySnapshot.docs.map(doc => doc.data() as Clinic)
+      ),
+      catchError(error => {
+        this.loggerService.logError('Error fetching clinics:', error); // Use logError for errors
+        return of([]);
+      }),
+    );
+  }
+
+
+
+  /********/
+  /********/
+  /********/
   fetchAllCLinics(): Observable<Clinic[]> {
     const clinicsRef = collection(this.firestore, "clinics");
     const q = query(clinicsRef).withConverter(clinicConverter);//, where('ownerID', '==', userID)).withConverter(clinicConverter);
@@ -158,6 +208,43 @@ export class DatabaseService {
         catchError(this._handleFirestoreError)
       );
   }
+  /********/
+  /********/
+  /********/
+
+  fetchPersonnelIDs(clinic: Clinic): Observable<[string, string][]> {
+    const listOfAssistantIDs = [...clinic.assistants];
+    const listOfDoctorIDs = [...clinic.doctors];
+    return forkJoin([
+      ...[...listOfDoctorIDs, ...listOfAssistantIDs]
+        .map(personnelEmail => {
+          return from(getDocs(
+            query(collection(this.firestore, 'users'), where("email", "==", personnelEmail))
+          ))
+            .pipe(
+              map(querySnapshot => {
+                if (querySnapshot.empty) {
+                  return null;
+                } else {
+                  const tpl: [string, string] = [querySnapshot.docs[0].id, querySnapshot.docs[0].data()['email'] as string];
+                  return tpl;
+                }
+              }),
+              catchError(error => {
+                this.loggerService.logError('Error fetching user:', error);
+                return of(null);
+              })
+            );
+        })
+    ])
+      .pipe(
+        map((results): [string, string][] => {
+          // Ensure all elements are [string, string]
+          return results.filter((result): result is [string, string] => !!result);
+        })
+      );
+  }
+
 
   //this.databaseService.setAppointmentTimeTaken(this.appointment.patient.id, scheduleFirestorePath, this.milliseconds / 1000);
   async setAppointmentTimeTaken(patientID: string, scheduleFirestorePath: string, timeTakenInMiliSeconds: number) {
@@ -180,10 +267,8 @@ export class DatabaseService {
       clinicName: clinicData.clinicName,
       clinicAddress: clinicData.clinicAddress,
       ownerID: clinicData.ownerID,
-      personal: {
-        doctorEmails: clinicData.personal.doctorEmails,
-        assistantEmails: clinicData.personal.assistantEmails,
-      },
+      doctors: clinicData.doctors,
+      assistants: clinicData.assistants,
       clinicSubtitle: clinicData.clinicSubtitle,
     });
     return from(promise).pipe(catchError(this._handleFirestoreError));
@@ -409,8 +494,24 @@ export class DatabaseService {
     }
   }
 
+  //shiftAppointments(appointments: Appointment[], previousIndex: number, currentIndex: number) {
+  //  for (let i = currentIndex; i <= previousIndex; i++) {
+  //    // get now.time
+  //    // get selected clinic target day template schedule
+  //    // calculate openings starting from now till end of the day
+  //    // check space between currentIndex and currentIndex -1
+  //    // check space between currentIndex and currentIndex +1
+  //    // if no space then shift needed appointments
+  //  }
+  //}
 
-  async updateUpstreamScheduleVersion(newSchedule: Appointment[], path: string) {
+
+  async updateUpstreamScheduleVersion(
+    newSchedule: Appointment[],
+    path: string,
+    previousIndex: number,
+    currentIndex: number
+  ) {
     const targetDayScheduleDocRef = doc(this.firestore, path);
     try {
 
@@ -419,11 +520,12 @@ export class DatabaseService {
         if (!targetDayScheduleDoc.exists()) {
           throw "Document does not exist!"; // TODO: create a new one???
         }
+        //const newScheduleShifted: Appointment[] = shiftAppointments(newSchedule, previousIndex, currentIndex);
         const upstreamSchedule: Appointment[] = targetDayScheduleDoc.data()['appointments'].slice();
 
         upstreamSchedule.splice(0, newSchedule.length, ...newSchedule);
 
-        transaction.update(targetDayScheduleDocRef, { appointments: upstreamSchedule });
+        transaction.update(targetDayScheduleDocRef, { appointments: upstreamSchedule, altered: true });
       });
       this.loggerService.log("Transaction 'updating schedule' successfully committed!");
     } catch (error) {
@@ -648,7 +750,7 @@ export class DatabaseService {
       const patientsCollection = collection(this.firestore, 'patients');
       const patientsSnapshot = await getDocs(patientsCollection);
 
-      this.patientsOnTimeSnapshot = patientsSnapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData, DocumentData>) => {
+      this.patientsOneTimeSnapshot = patientsSnapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData, DocumentData>) => {
         const data = doc.data();
         // Optionally add a doc ID property for reference:
         data['id'] = doc.id;
@@ -730,7 +832,16 @@ export class DatabaseService {
                 patient: appointment.patient as Patient,
               } as Appointment);
             }
-            this.loggerService.log('found appointments: ', appointments);
+            if (!docSnapshot.data()['altered']) {
+              appointments.sort((a, b) => {
+                if (a.dateTime.getTime() < b.dateTime.getTime()) {
+                  return -1;
+                } else if (a.dateTime.getTime() > b.dateTime.getTime()) {
+                  return 1;
+                }
+                return 0;
+              });
+            }
             observer.next(appointments);
           } else {
             this.loggerService.log('todaySchedule$ - No appointments found');
@@ -805,7 +916,6 @@ export class DatabaseService {
                 patient: appointment.patient as Patient,
               } as Appointment);
             }
-            this.loggerService.log('found appointments: ', appointments);
             observer.next(appointments);
           } else {
             this.loggerService.log('todaySchedule$ - No appointments found');
@@ -833,6 +943,40 @@ export class DatabaseService {
     const clinicRef = doc(this.firestore, clinicPath);
     const promise = deleteDoc(clinicRef);
     return from(promise).pipe(catchError(this._handleFirestoreError));
+  }
+
+  deleteAppointment(clinicID: string, dateStr: string, patientID: string): Observable<any> {
+    // TODO: Do the delete from inside a cloud function
+    const scheduleDocRef = doc(this.firestore, `/clinics/${clinicID}/schedule/${dateStr}`);
+    return from(runTransaction(this.firestore, async (transaction) => {
+      const targetScheduleSnapshot = await transaction.get(scheduleDocRef);
+      if (!targetScheduleSnapshot.exists()) {
+        return throwError(() => {
+          const error: any = new Error("Clinic Schedule Document does not exist!");
+          error.timestamp = Date.now();
+          return error;
+        });
+      }
+
+      const upstreamSchedule: Appointment[] = targetScheduleSnapshot.data()['appointments'];
+      const idx: number | undefined = this._findAppointmentIndexUsingPatientID(upstreamSchedule, patientID);
+      if (idx === undefined) {
+        return throwError(() => {
+          const error: any = new Error("Appointment does not exist!");
+          error.timestamp = Date.now();
+          return error;
+        });
+      }
+
+      upstreamSchedule.splice(idx, 1)
+      transaction.update(scheduleDocRef, { appointments: upstreamSchedule });
+      return;
+    }))
+      .pipe(
+        map(() => this.loggerService.log("Appointment state 'On site' updated successfully")),
+        catchError(error => throwError(() => error)),
+        takeUntil(of(undefined).pipe(delay(1000))), // Emits after 1 second and completes
+      );
   }
 
   updateClinicField(clinicPath: string, fieldName: string, newState: any): Observable<any> {

@@ -20,13 +20,15 @@ import * as ClinicActions from '../store/clinic.actions';
 import { Clinic } from '../types';
 import { DatabaseService } from '../database.service';
 import { EditScheduleComponent } from '../edit-schedule/edit-schedule.component';
+import { PersonnelFormComponent } from './personnel-form/personnel-form.component';
 
 type EditFlags = {
   clinicName: boolean;
   clinicSubtitle: boolean;
   clinicAddress: boolean;
   geoAddress: boolean;
-  personal: boolean;
+  assistantEmails: boolean;
+  doctorEmails: boolean;
   mainAverageAppointmentTimeTake: boolean;
   fee: boolean;
   weekScheduleTemplate: boolean;
@@ -39,10 +41,8 @@ type EditValues = {
   geoAddress: string;
   mainAverageAppointmentTimeTake: number;
   fee: number;
-  personal: {
-    assistantEmails: string[];
-    doctorEmails: string[];
-  };
+  assistantEmails?: string[];
+  doctorEmails?: string[];
 };
 
 
@@ -58,7 +58,8 @@ type EditValues = {
     MatInputModule,
     FormsModule,
     EditScheduleComponent,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    PersonnelFormComponent
   ],
   templateUrl: './edit-clinic.component.html',
   styleUrl: './edit-clinic.component.css'
@@ -76,7 +77,8 @@ export class EditClinicComponent implements OnInit, OnDestroy {
     clinicSubtitle: false,
     clinicAddress: false,
     geoAddress: false,
-    personal: false,
+    doctorEmails: false,
+    assistantEmails: false,
     fee: false,
     mainAverageAppointmentTimeTake: false,
     weekScheduleTemplate: false,
@@ -86,16 +88,11 @@ export class EditClinicComponent implements OnInit, OnDestroy {
     clinicSubtitle: this.clinic?.clinicSubtitle ?? '',
     clinicAddress: this.clinic?.clinicSubtitle ?? '',
     geoAddress: this.clinic?.geoAddress ?? '',
-    personal: this.clinic?.personal ?? { doctorEmails: [], assistantEmails: [] },
+    doctorEmails: [],
+    assistantEmails: [],
     mainAverageAppointmentTimeTake: this.clinic?.mainAverageAppointmentTimeTake ? (this.clinic?.mainAverageAppointmentTimeTake / 60 / 1000) : 15,
     fee: 0,
   };
-  public personalForm = this._formBuilder.group({
-    doctorEmails: this._formBuilder.array([]),
-    assistantEmails: this._formBuilder.array([]),
-  });
-  @ViewChild('personalFormDirective') personalFormDirective: FormGroupDirective | undefined;
-  isSubmittingPersonalForm = false;
 
   constructor(private route: ActivatedRoute, private store: Store<AppState>) {
   }
@@ -121,30 +118,11 @@ export class EditClinicComponent implements OnInit, OnDestroy {
       this.editValues.clinicSubtitle = clinic?.clinicSubtitle ?? '';
       this.editValues.clinicAddress = clinic?.clinicAddress ?? '';
       this.editValues.geoAddress = clinic?.geoAddress ?? '';
-      this.editValues.personal = clinic?.personal ?? { doctorEmails: [], assistantEmails: [] };
+      this.editValues.doctorEmails = clinic?.doctors;
+      this.editValues.assistantEmails = clinic?.assistants;
       this.editValues.mainAverageAppointmentTimeTake = clinic?.mainAverageAppointmentTimeTake ? (clinic?.mainAverageAppointmentTimeTake / 1000 / 60) : 15
       this.editValues.fee = clinic?.fee ?? 0;
 
-      let currentDoctorsCount = clinic?.personal?.doctorEmails?.length ?? 0;
-      let currentAssistantsCount = clinic?.personal?.assistantEmails?.length ?? 0;
-      let doctorControllersCounter = (<FormArray>this.personalForm.get('doctorEmails')).length;
-      let assistantControllersCounter = (<FormArray>this.personalForm.get('assistantEmails')).length;
-      if (currentDoctorsCount > 0 &&
-        this.personalForm.untouched &&
-        currentDoctorsCount > doctorControllersCounter
-      ) {
-        for (let i = 0; i < currentDoctorsCount; i++) {
-          this.addPersonalControls('doctorEmails');
-        }
-      }
-      if (currentAssistantsCount > 0 &&
-        this.personalForm.untouched &&
-        currentAssistantsCount > assistantControllersCounter
-      ) {
-        for (let i = 0; i < currentAssistantsCount; i++) {
-          this.addPersonalControls('assistantEmails');
-        }
-      }
     });
 
   }
@@ -198,71 +176,6 @@ export class EditClinicComponent implements OnInit, OnDestroy {
         },
         )
       ).subscribe(() => { });
-  }
-
-
-  getPersonalControls(controlName: string) {
-    return (<FormArray>this.personalForm.get(controlName))?.controls;
-  }
-
-  addPersonalControls(controlName: string) {
-    let initialValue = '';
-    const newControllerIndex = (<FormArray>this.personalForm.get(controlName)).length;
-    let currentDoctorCounter: number = this.clinic?.personal?.doctorEmails?.length ?? 0;
-    let currentAssistantCounter = this.clinic?.personal?.assistantEmails?.length ?? 0;
-    if (controlName === 'doctorEmails' && currentDoctorCounter > 0) {
-
-      initialValue = this.clinic!.personal.doctorEmails[newControllerIndex]!;
-    } else if (controlName === 'assistantEmails' && currentAssistantCounter > 0) {
-      initialValue = this.clinic!.personal.assistantEmails[newControllerIndex]!;
-    }
-
-    const control = new FormControl(initialValue, [Validators.required, Validators.email]);
-    (<FormArray>this.personalForm.get(controlName)).push(control);
-  }
-
-  removePersonalControls(controlName: string) {
-    const targetArray: FormArray = this.personalForm.get(controlName) as FormArray;
-    (<FormArray>this.personalForm.get(controlName)).removeAt(targetArray.length - 1);
-  }
-
-  trackByFunc(index: number, _obj: any): any {
-    return index;
-  }
-
-
-  onPersonalFormSubmit() {
-    if (!this.personalForm!.valid || !this.clinic || !this.clinic.firestorePath) { return; }
-    this.isSubmittingPersonalForm = true;
-    //console.log({
-    //  doctorEmails: this.personalForm.value.doctorEmails,
-    //  assistantEmails: this.personalForm.value.assistantEmails
-    //});
-    this.databaseService.updateClinicField(
-      this.clinic.firestorePath!,
-      'personal',
-      {
-        doctorEmails: this.personalForm.value.doctorEmails as string[],
-        assistantEmails: this.personalForm.value.assistantEmails as string[]
-      }
-    )
-      .pipe(
-        catchError(error => throwError(() => error)),
-        finalize(() => {
-          //this.editFlags[fieldName as keyof EditFlags] = !this.editFlags[fieldName as keyof EditFlags];
-          //this.personalForm.reset();
-          //this.personalFormDirective?.resetForm();
-          this.store.dispatch(ClinicActions.fetchClinicToEditRTDoc({ clinicID: this.clinic!.id! }));
-          this.isSubmittingPersonalForm = false;
-          this.editFlags.personal = false;
-        },
-        )
-      ).subscribe(() => { });
-
-    //     next: (_) => {
-    //       this.isSubmittingPersonalForm = false;
-    //       this.personalFormDirective?.resetForm();
-
   }
 
 }

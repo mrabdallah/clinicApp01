@@ -7,7 +7,9 @@ import { ClinicComponent } from './clinic/clinic.component';
 import { MyClinicsComponent } from './my-clinics/my-clinics.component';
 import { EditClinicComponent } from './edit-clinic/edit-clinic.component';
 import { ClinicsComponent } from './clinics/clinics.component';
+import { AccountComponent } from './account/account.component';
 //import { EditScheduleComponent } from './edit-schedule/edit-schedule.component';
+
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -16,6 +18,7 @@ export const routes: Routes = [
   { path: 'myclinics', component: MyClinicsComponent },
   { path: 'clinic/:id', component: ClinicComponent },
   { path: 'clinics', component: ClinicsComponent },
+  { path: 'account/:id', component: AccountComponent },
   { path: 'clinics/edit/:id', component: EditClinicComponent },
   //{ path: 'edit_schedule', component: EditScheduleComponent },
 ];

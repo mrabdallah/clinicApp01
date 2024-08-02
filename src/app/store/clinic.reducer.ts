@@ -7,16 +7,28 @@ export interface ClinicState {
   allClinics: Clinic[];
   selectedClinic: Clinic | null;
   myClinics: Clinic[];
+  doctorClinics: Clinic[];
+  assistantClinics: Clinic[];
   clinicToEdit: Clinic | null;
   editingClinicScheduleTemplate: boolean;
+  editingClinic: {
+    isEditingPersonnel: boolean;
+    //doctorsArr: [string, string][];  // [[id, email], [id, email], ...]
+    //assistantsArr: [string, string][];
+  };
 }
 
 export const initialClinicState: ClinicState = {
   allClinics: [],
   selectedClinic: null,
   myClinics: [],
+  doctorClinics: [],
+  assistantClinics: [],
   clinicToEdit: null,
-  editingClinicScheduleTemplate: false
+  editingClinicScheduleTemplate: false,
+  editingClinic: {
+    isEditingPersonnel: false,
+  }
 };
 
 export const clinicReducer = createReducer(
@@ -31,12 +43,28 @@ export const clinicReducer = createReducer(
     newState.myClinics = cloneDeep(clinics);
     return newState;
   }),
+  on(ClinicActions.fetchDoctorClinicsSuccess, (state, { clinics }) => {
+    const newState = cloneDeep(state);
+    newState.doctorClinics = cloneDeep(clinics);
+    return newState;
+  }),
+  on(ClinicActions.fetchAssistantClinicsSuccess, (state, { clinics }) => {
+    const newState = cloneDeep(state);
+    newState.assistantClinics = cloneDeep(clinics);
+    return newState;
+  }),
+  /**********/
+  /**********/
+  /**********/
   on(ClinicActions.fetchAllClinicsSuccess, (state, { clinics }) => {
     const newState = cloneDeep(state);
     newState.allClinics = cloneDeep(clinics);
     return newState;
 
   }),
+  /**********/
+  /**********/
+  /**********/
   on(ClinicActions.fetchCurrentClinicByIdSuccess, (state, { clinic }) => {
     const newState = cloneDeep(state);
     newState.selectedClinic = cloneDeep(clinic);

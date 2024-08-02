@@ -54,6 +54,9 @@ export const MY_FORMATS = {
   },
 };
 
+function isDigitsOnly(str: string): boolean {
+  return /^\d+$/.test(str);
+}
 
 @Component({
   selector: 'app-add-appointment',
@@ -89,11 +92,11 @@ export const MY_FORMATS = {
 export class AddAppointmentComponent implements OnDestroy {
   private databaseService = inject(DatabaseService);
   private allPatientsObservableSubscription?: Subscription;
-  //public allPatients$: Observable<Patient[]> = of([]);
+  private dateFieldChangesSubscription?: Subscription;
   public nextAvailableTime = signal<number>(0);
   //private comibinedObsSubs?: Subscription;
-  public suggestedTimes?: { value: number, viewValue: string }[] = [];
-  private suggestedAppointmentTimeSubscription?: Subscription;
+  public unbookedTimes: { value: number, viewValue: string }[] = [];
+  private appointmentTimeOptionsSubscription?: Subscription;
   private timeManagingAndPickingSerivce = inject(TimeManagingAndPickingService);
   //initialTimeSet = false; // Flag to track if initial suggestion was used
   private dayAppointments: Appointment[] = [];
@@ -119,74 +122,84 @@ export class AddAppointmentComponent implements OnDestroy {
   filterCtrl = new FormControl('');
 
   ngOnInit() {
+
+    //   *********** Initialization for the appState
+    this.store.dispatch(ScheduleActions.setNewAppointmentTargetDate({
+      // dateStr: '20_4_2009'
+      dateStr: `${new Date().getDate()}_${new Date().getMonth() + 1}_${new Date().getFullYear()}`,
+      dateObj: new Date(),
+    }));
+
+    this.store.dispatch(ScheduleActions.getNewAppointmentDayAppointments());
+
+
     // names for autocomplete
-    this.allPatientsObservableSubscription = //this.allPatients$
-      this.databaseService.fetchAllPatientsRealTimeSnapshot()
-        .subscribe((arr) => {
-          let tmpArr: any[] = [];
-          arr.forEach((p) => {
-            tmpArr.push({
-              firstName: p.firstName,
-              lastName: p.lastName,
-              id: p.id,
-              primaryContact: p.primaryContact,
-            });
+    this.allPatientsObservableSubscription = this.databaseService.fetchAllPatientsRealTimeSnapshot()
+      .subscribe((arr) => {
+        let tmpArr: any[] = [];
+        arr.forEach((p) => {
+          tmpArr.push({
+            firstName: p.firstName,
+            lastName: p.lastName,
+            id: p.id,
+            primaryContact: p.primaryContact,
           });
-          this.options = [...tmpArr];
         });
+        this.options = [...tmpArr];
+      });
 
 
+    // ******  Filter user names
     this.filteredOptions = this.options.slice(); // Initialize filtered names options
     this.fliteringPatientNamesSubscription = (this.newAppointmentForm.get('patientID') as FormControl).valueChanges
       .pipe(
         withLatestFrom(this.store.select(AppSelectors.newAppointmentDaySchedule)),
       )
-
       .subscribe(([value, appointments]) => {
         this.filteredOptions = this.options.filter(option => {
           let result: boolean = `${option.firstName} ${option.lastName}`.toLowerCase().includes(value!.toLowerCase());
-          //for (let a of this.dayAppointments) {
-          if (appointments !== undefined) {
-            for (let a of appointments) {
-              if (a.patient.id === option.id && a.state !== 'done') { result = false; }
-            }
+          if (result === false && isDigitsOnly(value)) {
+            result = `${option.primaryContact}`.includes(value);
+          }
+          if (appointments == undefined) {
+            return result;
+          }
+
+          for (let a of appointments) {
+            if (a.patient.id === option.id && a.state !== 'done') { result = false; }
           }
 
           return result;
         });
       });
 
-
-    const dateObj = moment(this.newAppointmentForm.value.date, 'dd/mm/yyyy').toDate();
-    dateObj.setHours(0, 0, 0, 0);
-
-    this.store.dispatch(ScheduleActions.setNewAppointmentTargetDate({
-      dateStr: this.momentIntoMyStrFormat().length > 0 ? this.momentIntoMyStrFormat() :
-        `${new Date().getDate()}_${new Date().getMonth() + 1}_ ${new Date().getFullYear()}`,
-      dateObj: dateObj,
-    }));
-
-    const targetDate = moment(this.newAppointmentForm?.value.date, 'dd/mm/yyyy').toDate();
+    // ************ Subscribing for changes on date field,  update AppState
+    this.newAppointmentForm.get('date')?.valueChanges.subscribe((value: moment.Moment | null) => {
+      console.log('changedddddd', value);
+      this.store.dispatch(ScheduleActions.setNewAppointmentTargetDate({
+        dateStr: this.currentDateFieldIntoStr(value),
+        dateObj: this.currentDateFieldIntoDate(value)
+      }));
+      this.store.dispatch(ScheduleActions.getNewAppointmentDayAppointments());
+    });
 
 
-    this.store.dispatch(ScheduleActions.getNewAppointmentDayAppointments());
-
-    this.suggestedAppointmentTimeSubscription = this.timeManagingAndPickingSerivce.
-      getAvailableAppointmentTimes().subscribe(suggestedTimes => {
-        this.suggestedTimes = suggestedTimes.map((ttt) => {
+    // *************        subscription for updating appointment time options
+    this.appointmentTimeOptionsSubscription = this.timeManagingAndPickingSerivce.
+      getAvailableAppointmentTimes().subscribe(availableTimes => {
+        if (availableTimes.length < 1) {
+          this.newAppointmentForm.get('time')?.disable();
+        } else {
+          this.newAppointmentForm.get('time')?.enable();
+        }
+        this.unbookedTimes = availableTimes.map((ttt) => {
           return {
             value: ttt.getTime(),
             viewValue: this.dateToTimeStr(ttt),
           };
         });
-
-        console.log(this.suggestedTimes);
-        //if (!this.newAppointmentForm.get('time')?.dirty) {
-        //  //this.newAppointmentForm.get('time')?.setValue(suggestedTimes.length > 0 ? `${suggestedTimes[0].getHours()}:${suggestedTimes[0].getMinutes()}` : `${new Date().getHours()}:${new Date().getMinutes()}`);
-        //  //this.newAppointmentForm.get('appointmentTime')?.setValue(this.timeManagingAndPickingSerivce.epochIntoTimeInputFieldFormat(suggestedTimes[0] ?? `${new Date().getHours()}:${new Date().getMinutes()}`));
-        //}
       });
-  }
+  }  // end of ngOnInit()
 
   dateToTimeStr(date: Date): string {  // 15:00
     //const now = new Date();
@@ -201,13 +214,16 @@ export class AddAppointmentComponent implements OnDestroy {
   getFullNameForDisplay(selection: any): string {
     let selectionIndex: number = this.options.findIndex(elem => elem.id === selection);
     if (selectionIndex >= 0) {
-      return `${this.options[selectionIndex]?.firstName} ${this.options[selectionIndex]?.lastName}`;
+      //return `${this.options[selectionIndex]?.firstName} ${this.options[selectionIndex]?.lastName}`;
+      return `${this.options[selectionIndex]?.firstName} ${this.options[selectionIndex]?.lastName}` +
+        `     -    ${this.options[selectionIndex]?.primaryContact}`;
+
     } else {
       return '';
     }
   }
 
-  onSelectionChange(event: any) {
+  onSelectionChange(_event: any) {
     // if (event.option.selected) {
     //   console.log(' if    event.option.value');
     //   console.log(event.option.value);
@@ -218,9 +234,10 @@ export class AddAppointmentComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.allPatientsObservableSubscription?.unsubscribe();
-    this.suggestedAppointmentTimeSubscription?.unsubscribe();
+    this.appointmentTimeOptionsSubscription?.unsubscribe();
     this.dayAppointmentsSubsciption?.unsubscribe();
     this.fliteringPatientNamesSubscription?.unsubscribe();
+    this.dayAppointmentsSubsciption?.unsubscribe();
   }
 
 
@@ -251,15 +268,29 @@ export class AddAppointmentComponent implements OnDestroy {
     //}
   }
 
-  momentIntoMyStrFormat(): string {
-    if (this.newAppointmentForm.value.date) {
-      const targetDate = moment(this.newAppointmentForm.value.date, 'DD/MM/YYYY').toDate();
-      const targetDateModified = `${targetDate.getDate()}_`
-        + `${targetDate.getMonth() + 1}_`
-        + `${targetDate.getFullYear()}`;
-      return targetDateModified;
+  currentDateFieldIntoStr(value: moment.Moment | null): string {
+    let targetDate: Date = new Date();
+
+    //if (this.newAppointmentForm.value.date) {
+    if (value !== null) {
+      //targetDate = moment(this.newAppointmentForm.value.date, 'DD/MM/YYYY').toDate();
+      targetDate = value.toDate();
     }
-    return '';
+
+    const targetDateStr: string = `${targetDate.getDate()}_`
+      + `${targetDate.getMonth() + 1}_`
+      + `${targetDate.getFullYear()}`;
+
+    return targetDateStr;
+  }
+
+  currentDateFieldIntoDate(value: moment.Moment | null): Date {
+    //if (this.newAppointmentForm.value.date) {
+    if (value !== null) {
+      return value.toDate();
+    } else {
+      return new Date();
+    }
   }
 
   onSubmit() {

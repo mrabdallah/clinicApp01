@@ -87,10 +87,8 @@ export class CreateClinicComponent implements OnInit, OnDestroy {
       clinicName: this.newClinicForm.value.clinicName!,
       clinicAddress: this.newClinicForm.value.clinicAddress!,
       ownerID: this._currentUserID!,
-      personal: {
-        doctorEmails: this.newClinicForm.value.personal!.doctorEmails! as string[],
-        assistantEmails: this.newClinicForm.value.personal!.assistantEmails! as string[]
-      },
+      doctors: this.newClinicForm.value.personal!.doctorEmails! as string[],
+      assistants: this.newClinicForm.value.personal!.assistantEmails! as string[]
     }).pipe(take(1)).subscribe({
       next: (_) => {
         this.isSubmitting = false;

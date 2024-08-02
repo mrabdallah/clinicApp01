@@ -110,24 +110,18 @@ export class EditScheduleComponent implements OnInit, OnDestroy {
   }
 
   handleWeekday(day: string, clinic: Clinic | null) {
-    console.log(`day: ${day}`);
-    console.log(clinic);
     if (!clinic) {
-      console.log('falseeeeeeee');
       return;
     }
     const dayArrLength = clinic.weekScheduleTemplate?.[day as Weekday]?.length ?? 0;
     const dayFormLength = (<FormArray>this.scheduleForm.get(day)).length;
 
     if (dayArrLength > 0 && dayFormLength === dayArrLength) {
-      console.log('first');
       this.scheduleForm.get(day)?.setValue(clinic!.weekScheduleTemplate![day as Weekday]);
     } else if (dayArrLength > 0) {  // FORM current fields are greater or smaller
-      console.log('second');
       this.matchLength(day, dayArrLength);
       (<FormArray>this.scheduleForm?.get(day)).setValue(clinic!.weekScheduleTemplate![day as Weekday]);
     } else {  // day should be cleared in the FORM
-      console.log('third');
       this.matchLength(day, 0);
     }
 

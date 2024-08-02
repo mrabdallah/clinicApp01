@@ -4,18 +4,23 @@
     <a href="/js/">JavaScript</a> |
     <a href="/jquery/">jQuery</a>
   </nav>-->
-<div class="flex">
+<nav class="flex">
   @if(router.url !== '/auth' && userSignal()) {
   <div>
     <button mat-icon-button color="primary" [matMenuTriggerFor]="menu">
       <mat-icon>account_circle</mat-icon>
     </button>
     <mat-menu #menu="matMenu">
-      <button mat-menu-item>
+      <button mat-menu-item (click)="account()" disabled>
+        Account
+        <mat-icon>manage_accounts</mat-icon>
+      </button>
+      <button mat-menu-item (click)="logout()">
         Logout
         <mat-icon>logout</mat-icon>
       </button>
     </mat-menu>
+
     <!--<button mat-icon-button color="primary" aria-label="Account Drop-down Menu" [cdkMenuTriggerFor]="menu"
       class="account-menu-trigger !bg-[#09b3ce33] hover:!bg-[#6dc4df]">
       <mat-icon>account_circle</mat-icon>
@@ -25,7 +30,7 @@
         <button class="account-menu-item" (click)="logout()" cdkMenuItem>Sign out <mat-icon>log</mat-icon></button>
         ut
       </div>
-</ng-template>-->
+    </ng-template>-->
   </div>
   } @else {
   <button mat-icon-button color="primary" aria-label="Example icon button with a home icon"
@@ -34,4 +39,4 @@
   </button>
 
   }
-</div>
+</nav>

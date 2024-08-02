@@ -1,4 +1,16 @@
-<div class="flex flex-col gap-y-2">
+<div class="flex flex-col gap-y-5 items-center">
+
+  @if (clinic$ | async; as clinic){
+  <div class="flex flex-col">
+    <h1 class="my-1 mx-6 text-center">{{clinic.clinicName}}</h1>
+    <h3 class="my-1 mx-6 text-center">{{clinic.clinicSubtitle}}</h3>
+    <h4 class="my-1 mx-6 text-center">{{clinic.clinicAddress}}</h4>
+  </div>
+  }
+
+  <mat-card class="w-8/12 md:w-96 card-background">
+    <mat-calendar [(selected)]="selectedDate" (selectedChange)="onDateChange($event)"></mat-calendar>
+  </mat-card>
 
   <!-- Add Appointment Button -->
   <div class="fixed right-4 bottom-12 z-10">
@@ -9,23 +21,108 @@
     </button>
   </div>
 
-  <!-- ----------------------------------- Entries for clinic Operators -------------------------------- -->
-  <div cdkDropList (cdkDropListDropped)="drop($event)"
-    class="rounded-2xl mx-14 md:mx-11 lg:mx-40 my-4 px-1 flex flex-col gap-2 patient-schedule-entries bg-white">
+  <div class="flex gap-2">
 
-
-    @for (appointment of scheduleFiltered; track appointment.patient.id; let idx = $index) {
-    <div class="patient-schedule-entry-container" cdkDrag>
-      <div class="patient-schedule-entry-placeholder" *cdkDragPlaceholder></div>
-
-      @if (idx > 0) {
-      <patient-schedule-entry [appointment]="appointment"></patient-schedule-entry>
-      } @else {
-      <patient-schedule-current-entry [appointment]="appointment"></patient-schedule-current-entry>
-      }
-    </div>
+    @if(isEditingAppointments) {
+    <button mat-icon-button aria-label="Done Editing Appointments"
+      class="rounded-full flex items-center justify-center p-2 cursor-pointer"
+      style="background: hsl(198.67deg 97.57% 48.43% / 40%);" (click)="doneEditingAppointments()"
+      [disabled]="!isEditingAppointments">
+      <mat-icon>close</mat-icon>
+    </button>
     }
+    <button mat-icon-button aria-label="Edit Appointments"
+      class="rounded-full flex items-center justify-center p-2 cursor-pointer"
+      style="background: hsl(198.67deg 97.57% 48.43% / 40%);" (click)="startEditingAppointments()"
+      [disabled]="isEditingAppointments">
+      <mat-icon>edit</mat-icon>
+    </button>
 
 
   </div>
+
+
+
+  <!-- ----------------------------------- Entries for clinic Operators -------------------------------- -->
+  <div class="mb-16 px-14 flex gap-1">
+
+    @if(currentScreenSize === 'XSmall') {
+    <mat-tab-group>
+      <mat-tab>
+        <ng-template mat-tab-label>Upcomming</ng-template>
+
+        <!--  **********   Upcomming appointments ************  -->
+        <div cdkDropList (cdkDropListDropped)="drop($event)"
+          class="p-2 rounded-2xl px-1 flex flex-col gap-1 patient-schedule-entries card-background">
+          <!--  **********   TODO: Drag and drop for personal and regular list for others  ************  -->
+
+          @for (appointment of scheduleFiltered; track appointment.patient.id; let idx = $index) {
+          <div class="patient-schedule-entry-container" cdkDrag>
+            <div class="patient-schedule-entry-placeholder" *cdkDragPlaceholder></div>
+
+            @if (idx > 0) {
+            <patient-schedule-entry [appointment]="appointment"></patient-schedule-entry>
+            } @else {
+            <patient-schedule-current-entry [appointment]="appointment"></patient-schedule-current-entry>
+            }
+          </div>
+          }
+        </div>
+      </mat-tab>
+
+
+      <mat-tab>
+        <ng-template mat-tab-label>Other</ng-template>
+
+        @if(urgentAndLateAppointments.length > 0) {
+        <div class="p-2 rounded flex flex-col card-background">
+          <div cdkDropList (cdkDropListDropped)="drop($event)"
+            class="p-2 rounded-2xl px-1 flex flex-col gap-1 patient-schedule-entries card-background">
+
+            @for (appointment of urgentAndLateAppointments; track appointment; let idx = $index) {
+            <patient-schedule-entry [appointment]="appointment"></patient-schedule-entry>
+            }
+          </div>
+        </div>
+        }
+
+      </mat-tab>
+
+    </mat-tab-group>
+
+    } @else {
+    <!--  **********   Upcomming appointments ************  -->
+    <div cdkDropList (cdkDropListDropped)="drop($event)"
+      class="p-2 rounded-2xl px-1 flex flex-col gap-1 patient-schedule-entries card-background">
+      <!--  **********   TODO: Drag and drop for personal and regular list for others  ************  -->
+
+      @for (appointment of scheduleFiltered; track appointment.patient.id; let idx = $index) {
+      <div class="patient-schedule-entry-container" cdkDrag>
+        <div class="patient-schedule-entry-placeholder" *cdkDragPlaceholder></div>
+
+        @if (idx > 0) {
+        <patient-schedule-entry [appointment]="appointment"></patient-schedule-entry>
+        } @else {
+        <patient-schedule-current-entry [appointment]="appointment"></patient-schedule-current-entry>
+        }
+      </div>
+      }
+    </div>
+
+    @if(urgentAndLateAppointments.length > 0) {
+    <!--  **********   Late appointments ************  -->
+    <div class="p-2 rounded flex flex-col card-background">
+      <div cdkDropList (cdkDropListDropped)="drop($event)"
+        class="p-2 rounded-2xl px-1 flex flex-col gap-1 patient-schedule-entries card-background">
+
+        @for (appointment of urgentAndLateAppointments; track appointment; let idx = $index) {
+        <patient-schedule-entry [appointment]="appointment"></patient-schedule-entry>
+        }
+      </div>
+    </div>
+    }
+    }
+
+  </div>
+
 </div>

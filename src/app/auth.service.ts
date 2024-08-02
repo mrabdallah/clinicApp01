@@ -1,10 +1,18 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, user, UserCredential } from "@angular/fire/auth";
+import {
+  Auth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile,
+  user,
+  UserCredential
+} from "@angular/fire/auth";
 import { Observable, catchError, from, map, of, switchMap, tap, throwError } from 'rxjs';
 import { AppUser, UserRole } from './auth/user.model';
 import { LoggerService } from './logger.service';
 import { FirebaseError } from '@angular/fire/app';
-import { Firestore, doc, onSnapshot } from '@angular/fire/firestore';
+import { Firestore, collection, doc, onSnapshot, setDoc } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root'
@@ -18,11 +26,17 @@ export class AuthService {
     .pipe(
       switchMap((user) => {
         if (user) {
-          this.loggerService.log(`inside authservice, switmap -> user logged in; ${user.email}`);
+          this.loggerService.log(`inside authservice -> user logged in; ${user.email}`);
           return this.getUserCustomData(user.uid).pipe(
             map(
               (customData) => {
-                return new AppUser(user.email!, user.uid, customData?.displayName, customData?.role);
+                return new AppUser(
+                  user.uid,
+                  customData?.emails,
+                  '',
+                  customData?.displayName,
+                  customData?.roles
+                );
               })
           );
         } else {
@@ -44,14 +58,15 @@ export class AuthService {
   //
   //get user$() { return this.#user$; }
 
-  getUserCustomData(userID: string): Observable<{ displayName: string, role: UserRole } | null> {
+  getUserCustomData(userID: string): Observable<{ emails: string[], displayName: string, roles: UserRole[] } | null> {
     return new Observable(observer => {
       return onSnapshot(doc(this.firestore, `/users/${userID}`), (docSnapshot) => {
         console.log(`getUserCustomData -> new call`);
         if (docSnapshot.exists()) {
           observer.next({
+            emails: docSnapshot.data()['emails'],
             displayName: docSnapshot.data()['displayName'],
-            role: docSnapshot.data()['role'],
+            roles: docSnapshot.data()['roles'],
           });
         } else {
           observer.next(null);
@@ -80,28 +95,20 @@ export class AuthService {
   }
 
   signUp(email: string, password: string): Observable<any> {
-    //this.firebaseAuth.
     const promise = createUserWithEmailAndPassword(this.firebaseAuth, email, password)
       .then((userCredential) => {
-        // Signed up
-        // const user = userCredential.user;
         this.loggerService.log(userCredential.user);
-        // updateProfile(userCredential.user, { displayName: 'username' })
-        // ...
         return userCredential
       });
-    //.catch((error) => {
-    //  const errorCode = error.code;
-    //  const errorMessage = error.message;
-    //  this.loggerService.logError(error);
-    //  // ..
-    //  return error;
-    //});
     return from(promise)
       .pipe(
-        //tap(x => console.log('signinobsran'))
         catchError(this.handleError)
       );
+  }
+
+  setUserCustomData(userId: string, customData: Partial<AppUser>) {
+    const userRef = doc(collection(this.firestore, 'users'), userId);
+    return setDoc(userRef, customData, { merge: true });
   }
 
   signIn(email: string, password: string): Observable<UserCredential> {

@@ -1,6 +1,6 @@
-<div class="flex flex-col md:flex-row items-stretch rounded-2xl shadow-xl m-2 p-2 bg-[#09b2cc]">
+<div class="flex flex-col items-stretch rounded-2xl shadow-xl p-2 bg-[#09b2cc] text-sm">
 
-  <div class="text-white font-medium flex flex-col gap-5 lg:w-1/2">
+  <div class="text-white font-medium flex flex-col gap-5">
     <div class="cont-elevation flex gap-7 items-center px-5 cursor-pointer" (click)="navigateToPatientDetails()">
       <div class="hidden lg:inline-block">
         <mat-icon class="icon-display" style="transform: scale(2);">account_circle</mat-icon>
@@ -14,9 +14,9 @@
   </div>
 
 
-  <div class="spacer grow-[2] hidden md:block"></div>
+  <div class="spacer grow-[2] hidden lg:block"></div>
 
-  <div class="actions_nd_stats flex items-start lg:w-1/2 gap-2">
+  <div class="flex items-start">
     <!-- <mat-accordion> -->
 
     <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false" class="text-white"
@@ -40,7 +40,7 @@
         <img src="assets/images/alarm.gif" alt="Emergency" class="object-containss">
         }
 
-        <div class="flex justify-center items-center gap-2">
+        <div class="flex justify-center items-center">
           @if (appointment != null && appointment.patientInClinic) {
           <mat-icon class="icon-btn">where_to_vote</mat-icon>
           }
@@ -68,12 +68,12 @@
           <mat-icon>where_to_vote</mat-icon>
         </button>
         <button mat-mini-fab aria-label="Patient paid on site" (click)="togglePaid()"
-          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"
+          class="rounded-full flex items-center justify-center p-1 shadow-md bg-[#03a9f466] hover:bg-[#35BEFD]"
           [disabled]="updatePaidIsInProgress">
           <mat-icon>paid</mat-icon>
         </button>
         <button mat-mini-fab aria-label="Patient paid on site" (click)="toggleUrgent()"
-          class="rounded-full flex items-center justify-center p-1 shadow-md  bg-[#03a9f466] hover:bg-[#35BEFD]"
+          class="rounded-full flex items-center justify-center p-1 shadow-md bg-[#03a9f466] hover:bg-[#35BEFD]"
           [disabled]="updateUrgencyInProgress">
           <!-- <mat-icon>emergency</mat-icon> -->
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
@@ -85,11 +85,11 @@
     </mat-expansion-panel>
     <!-- </mat-accordion> -->
     <div class="grow-[2] block md:hidden"></div>
-    <div class="pl-6">
+    <div>
       @switch (appointment.state.toLowerCase()) {
       @case ('waiting') {
       <button mat-fab color="primary" aria-label="Patient is waiting to enter for examinationg"
-        (click)="setStateToExamining()" class="scale-down-on-small"
+        (click)="setStateToExamining()" class="scale-75"
         [disabled]="!appointment.patientInClinic || updateAppointmentState">
         <mat-icon>login</mat-icon>
       </button>
@@ -103,6 +103,15 @@
       @default {}
       }
 
+
+      @if(isEditingAppointments) {
+      <button mat-mini-fab color="primary" aria-label="Edit Appointment" (click)="editAppointment()">
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button mat-mini-fab color="accent" aria-label="Edit Appointment" (click)="openDialogDelete('500ms', '500ms')">
+        <mat-icon>delete</mat-icon>
+      </button>
+      }
 
     </div>
 

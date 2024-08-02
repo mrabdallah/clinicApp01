@@ -1,4 +1,3 @@
-
 // Helper type to represent weekdays with 3-letter abbreviations
 export type Weekday = 'SAT' | 'SUN' | 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI';
 
@@ -26,10 +25,9 @@ export class Clinic {
     public clinicName: string,
     public clinicAddress: string,
     public ownerID: string,
-    public personal: {
-      doctorEmails: string[],  // TODO: change the name to something else than doctor (doc/operator/specialist/...)
-      assistantEmails: string[],
-    },
+    // TODO: change the name to something else than doctor (doc/operator/specialist/...)
+    public doctors: string[],  // [[id], [id], ...]
+    public assistants: string[],  // [[id], [id], ...]
     public clinicSubtitle?: string,
     public geoAddress?: string,  // maps:https://maps.app.goo.gl/uEsL4Ddt12jZuKfL8
     public weekScheduleTemplate?: { [key in Weekday]: string[] }, // Use a mapped type for weekdays
@@ -82,4 +80,5 @@ export interface DaySchedule {
   firestorePath: string;
   id: string;
   appointments: Appointment[];
+  altered: boolean;
 }

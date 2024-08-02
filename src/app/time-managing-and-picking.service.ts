@@ -161,6 +161,7 @@ export class TimeManagingAndPickingService {
       this.store.select(AppSelectors.selectedClinic),
     ]).pipe(
       map(([newAppointment, selectedClinic]) => {
+
         if (
           selectedClinic === null ||
           selectedClinic === undefined ||
@@ -179,7 +180,7 @@ export class TimeManagingAndPickingService {
         //const targetDateObj: Date = this.getDateObjFromTargetDayDateStr(newAppointment.targetDayDateStr);
         const targetWeekDay: Weekday = dayNamesArr[newAppointment.targetDate.getDay()] as Weekday;
         const targetDayIntervals: string[] = selectedClinic.weekScheduleTemplate[targetWeekDay] ?? [];
-        const clinicAverageTime = selectedClinic.mainAverageAppointmentTimeTake ?? 1200000;  // default to 20 minutes
+        const clinicAverageTime = selectedClinic.mainAverageAppointmentTimeTake ?? 720000;  // default to 12 minutes
         // no schedule for the target day || the target date is passed
         if (targetDayIntervals.length < 2 || nowDate12Am.getTime() > newAppointment.targetDate.getTime()) {
           return [];  // TODO: maybe return error
@@ -192,7 +193,7 @@ export class TimeManagingAndPickingService {
           && now.getMinutes() > this.strToMinutes(targetDayIntervals[targetDayIntervals.length - 1])
         ) {
           return [];
-        } else {  // if target date is today or an upcomming day.
+        } else {  // if target date is start of today or an upcomming day.
           let cursorTime: Date = cloneDeep(newAppointment.targetDate);
           let suggestions: Date[] = [];
 
@@ -211,7 +212,8 @@ export class TimeManagingAndPickingService {
               const indexOfConflictingAppointment: number = newAppointment.targetDayAppointments
                 .findIndex(a => {
                   let tt = a.dateTime.getTime();
-                  if (tt <= cursorTime.getTime() && (tt + clinicAverageTime) >= cursorTime.getTime()) {
+                  //if (tt <= cursorTime.getTime() && (tt + clinicAverageTime) >= cursorTime.getTime()) {
+                  if (Math.abs(tt - cursorTime.getTime()) < clinicAverageTime) {
                     return true;
                   }
                   return false;
@@ -250,7 +252,7 @@ export class TimeManagingAndPickingService {
           return suggestions;
         }
       }),
-      takeUntil(of(undefined).pipe(delay(1000))), // Emits immediately and completes
+      //takeUntil(of(undefined).pipe(delay(1000))), // Emits immediately and completes
       //take(1),
     );
   }

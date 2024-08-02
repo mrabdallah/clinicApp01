@@ -10,7 +10,11 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { TemporaryDataSrvService } from './temporary-data-srv.service'; // Import the data service
 import { MatButtonModule } from '@angular/material/button';
 import {
-
+  MatBottomSheet,
+  MatBottomSheetModule,
+  MatBottomSheetRef,
+} from '@angular/material/bottom-sheet';
+import {
   CdkDrag,
   DragDropModule,
   CdkDragDrop,
@@ -19,8 +23,9 @@ import {
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
 
+
 import { AddAppointmentComponent } from './add-appointment/add-appointment.component';
-import { SideBarComponent } from './side-bar/side-bar.component';
+// import { SideBarComponent } from './side-bar/side-bar.component';
 import { ClockComponent } from './clock/clock.component';
 import { PatientScheduleEntryComponent } from './patient-schedule-entry/patient-schedule-entry.component';
 import { PatientScheduleCurrentEntryComponent } from './patient-schedule-current-entry/patient-schedule-current-entry.component';
@@ -32,6 +37,8 @@ import { TopBarComponent } from './top-bar/top-bar.component';
 import { Store } from '@ngrx/store';
 import { AppState } from './store/app.reducer';
 import { loginSuccess, logout } from './auth/store/auth.actions';
+import { BottomSheetComponent } from './bottom-sheet/bottom-sheet.component';
+
 
 @Component({
   selector: 'app-root',
@@ -41,68 +48,23 @@ import { loginSuccess, logout } from './auth/store/auth.actions';
     CdkDropList,
     CdkDrag,
     CdkDragPlaceholder,
+    MatButtonModule,
+    MatBottomSheetModule,
     RouterOutlet,
     CommonModule,
     MatButtonModule,
     MatIconModule,
     MatProgressBarModule,
+    BottomSheetComponent,
     DragDropModule,
-    SideBarComponent,
+    //SideBarComponent,
     TopBarComponent,
     ClockComponent,
     PatientScheduleEntryComponent,
     PatientScheduleCurrentEntryComponent,
   ],
   templateUrl: './app.component.html',
-  styles: `
-  :host{
-    height: 100dvh;
-    width: 100dvw;
-  }
-  main {
-    transition: 0.5s;
-  }
-
-  /*.sidebar-opend{
-    margin-left: 250px;
-  }*/
-
-  .side-bar-container {
-    transform: translate(0px, 15mm);
-    transform: translateY(0mm);
-    height: 100%;
-    width: 0;
-    position: fixed;
-    z-index: 19;
-    top: 0;
-    left: 0;
-    background-color: #C1E3FF;
-    overflow-x: hidden;
-    transition: 0.5s;
-  }
-  .open {
-    width: 250px;
-  }
-  .side-bar-toggle-btn{
-    z-index: 19;
-    transition: 0.5s;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translateX(-49.5vw);
-  }
-  .toggled{
-    transform: translateX(calc(-50vw + 263px));
-  }
-  .layered-backgrounds{
-    background: radial-gradient(circle at 10% 20%, rgb(137, 210, 253) 0%, rgb(255, 241, 188) 90%);
-    height: 100dvh;
-    width: 100%;
-    position: absolute;
-    z-index: -4;
-  }
-  `,
-  // styleUrl: './app.component.css'
+  styleUrl: './app.component.css',
 })
 export class AppComponent implements OnDestroy, OnInit {
   router = inject(Router);
@@ -112,7 +74,7 @@ export class AppComponent implements OnDestroy, OnInit {
   title = 'clinic-manager';
   isOpen = false;
 
-  constructor(private store: Store<AppState>) { }
+  constructor(private store: Store<AppState>, private _bottomSheet: MatBottomSheet) { }
 
   ngOnInit(): void {
     this.#userSubscription = this.authService.user$.subscribe(user => {
@@ -133,7 +95,11 @@ export class AppComponent implements OnDestroy, OnInit {
     this.authService.logout();
   }
 
-  toggleSidebar() {
+  /*toggleSidebar() {
     this.isOpen = !this.isOpen;
+  }*/
+  openBottomSheet() {
+    this._bottomSheet.open(BottomSheetComponent);
+    //this.isOpen = !this.isOpen;
   }
 }

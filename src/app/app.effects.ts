@@ -21,12 +21,35 @@ export class AppEffects {
     ofType(ClinicActions.fetchMyClinicsStart),  // you can listen for multiple actions 'action1, action2,'
     concatLatestFrom(_action => this.store.select(AppSelectors.user).pipe(take(1))),
     switchMap(([_action, user]) => {
-      return this.databaseService.getMyOwnedClinics(user?.id)
+      return this.databaseService.fetchMyOwnedClinics(user?.id)
         .pipe(
           map(clinics => ClinicActions.fetchMyClinicsSuccess({ clinics })));
     }),
   ));//, { dispatch: false });
 
+  fetchDoctorClinics = createEffect(() => this.actions$.pipe(
+    ofType(ClinicActions.fetchDoctorClinicsStart),
+    concatLatestFrom(_action => this.store.select(AppSelectors.user).pipe(take(1))),
+    switchMap(([_action, user]) => {
+      return this.databaseService.fetchDoctorClinics(user?.id)
+        .pipe(
+          map(clinics => ClinicActions.fetchDoctorClinicsSuccess({ clinics })));
+    }),
+  ));
+
+  fetchAssistantClinics = createEffect(() => this.actions$.pipe(
+    ofType(ClinicActions.fetchAssistantClinicsStart),
+    concatLatestFrom(_action => this.store.select(AppSelectors.user).pipe(take(1))),
+    switchMap(([_action, user]) => {
+      return this.databaseService.fetchAssistantClinics(user?.id)
+        .pipe(
+          map(clinics => ClinicActions.fetchAssistantClinicsSuccess({ clinics })));
+    }),
+  ));
+
+  /*****/
+  /*****/
+  /*****/
   fetchAllClinics = createEffect(() => this.actions$.pipe(
     ofType(ClinicActions.fetchAllClinicsStart),  // you can listen for multiple actions 'action1, action2,'
     exhaustMap(() => this.databaseService.fetchAllCLinics()
@@ -35,6 +58,10 @@ export class AppEffects {
         catchError(() => EMPTY)
       ))
   ));
+  /*****/
+  /*****/
+  /*****/
+
 
   fetchClinicByIdStart = createEffect(() => this.actions$.pipe(
     ofType(ClinicActions.fetchCurrentClinicByIdStart),
@@ -61,16 +88,25 @@ export class AppEffects {
     }),
   ));
 
+  deleteAppointment = createEffect(() => this.actions$.pipe(
+    ofType(ScheduleActions.deleteAppointment),
+    switchMap((action) => {
+      const selectedDate = action.date;
+      selectedDate.setHours(0, 0, 0, 0);  // set time to 12 AM
+      const dateStr: string = `${selectedDate.getDate()}_${selectedDate.getMonth() + 1}_${selectedDate.getFullYear()}`;
+
+      return this.databaseService.deleteAppointment(action.clinicID, dateStr, action.patientID)
+        .pipe(map(() => ScheduleActions.getNewScheduleRealTimeSubscription({ dateStr: dateStr })));
+    }),
+  ));
+
   getNewScheduleRealTimeSubscription = createEffect(() => this.actions$.pipe(
     ofType(ScheduleActions.getNewScheduleRealTimeSubscription),
     concatLatestFrom(_action => this.store.select(AppSelectors.selectedClinic)),
     tap(([_action, selectedClinic]) => {
       const path: string = selectedClinic?.firestorePath ?? '';
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);  // set time to 12 AM
-      const dateStr: string = `${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
       this.databaseService.unsubscribeFromScheduleRealTimeDoc();
-      this.databaseService.subscribeToScheduleRealTimeDoc(path, dateStr);
+      this.databaseService.subscribeToScheduleRealTimeDoc(path, _action.dateStr);
     }),
   ), { dispatch: false });
 
@@ -95,7 +131,9 @@ export class AppEffects {
       console.log(`${clinic?.firestorePath}/schedule/${action.targetDateStr}`);
       this.databaseService.updateUpstreamScheduleVersion(
         action.appointments,
-        `${clinic?.firestorePath}/schedule/${action.targetDateStr}`
+        `${clinic?.firestorePath}/schedule/${action.targetDateStr}`,
+        action.previousIndex,
+        action.currentIndex
       );
     }),
   ), { dispatch: false });

@@ -10,6 +10,24 @@ export const fetchMyClinicsSuccess = createAction(
   props<{ clinics: Clinic[] }>()
 );
 
+export const fetchDoctorClinicsStart = createAction(
+  '[MyClinics page] fetchDoctorClinicsStart',
+);
+
+export const fetchDoctorClinicsSuccess = createAction(
+  '[MyClinics page] fetchDoctorClinicsSuccess',
+  props<{ clinics: Clinic[] }>()
+);
+
+export const fetchAssistantClinicsStart = createAction(
+  '[MyClinics page] fetchAssistantClinicsStart',
+);
+
+export const fetchAssistantClinicsSuccess = createAction(
+  '[MyClinics page] fetchAssistantClinicsSuccess',
+  props<{ clinics: Clinic[] }>()
+);
+
 export const fetchAllClinicsStart = createAction(
   '[Home Page] fetchAllClinicsStart',
 );
@@ -18,7 +36,6 @@ export const fetchAllClinicsSuccess = createAction(
   '[Effects] fetchAllClinicsSuccess',
   props<{ clinics: Clinic[] }>(),
 );
-
 
 export const selectClinic = createAction(
   '[MyClinics page] selectClinic',
@@ -70,7 +87,6 @@ export const startEditingClinicScheduleTemplate = createAction(
 export const doneEditingClinicScheduleTemplate = createAction(
   '[EditSchedule Component] doneEditingClinicScheduleTemaple'
 );
-
 
 /*export const fetchClinicToEditSuccess = createAction(
   '[Effects] fetchClinicToEditSuccess',

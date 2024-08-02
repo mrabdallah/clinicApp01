@@ -1,0 +1,87 @@
+@if(isEditing$ | async; as isEditing){
+@if(isEditing.isEditingPersonnel){
+<div class="flex flex-col content-center my-14">
+
+  <div class="flex justify-center mr-2">
+    <button mat-icon-button aria-label="Edit" (click)="onPersonnelFormSubmit()" disabled>
+      <mat-icon>save</mat-icon>
+    </button>
+    <button mat-icon-button aria-label="Edit" (click)="toggleEdit()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+
+  <form [formGroup]="personnelForm" (ngSubmit)="onPersonnelFormSubmit()" class="p-0" #personnelFormDirective="ngForm">
+    <div formArrayName="doctorEmails" class="p-2 rounded custom-border">
+      <p class="text-left my-2">Doctors</p>
+      <div class="flex flex-wrap gap-3">
+        @for (controlItem of getPersonnelControls('doctorEmails'); track trackByFunc; let i = $index) {
+        <mat-form-field appearance="outline">
+          <mat-label>Enter doctor's email</mat-label>
+          <input matInput id="doctor-{{i}}" type="text" [formControlName]="i" class="m-2 p-2">
+        </mat-form-field>
+        }
+      </div>
+      <div class="flex justify-evenly content-center">
+        @if(getPersonnelControls('doctorEmails').length >= 1){
+        <button mat-raised-button type="button" (click)="removePersonnelControls('doctorEmails')"
+          style="font-size:11px;">Remove a doctor
+          email</button>
+        }
+        <button mat-raised-button type="button" (click)="addPersonnelControls('doctorEmails')" style="font-size:11px;">
+          Add doctor?
+        </button>
+      </div>
+    </div>
+
+    <div formArrayName="assistantEmails" class="p-6 rounded custom-border mb-1">
+      <p class="text-left my-2">Assistants</p>
+      <div class="flex flex-wrap gap-3">
+        @for (controlItem of getPersonnelControls('assistantEmails'); track trackByFunc; let i = $index) {
+        <mat-form-field appearance="outline">
+          <mat-label>Enter assistant's email</mat-label>
+          <input matInput id="assistant-{{i}}" type="text" [formControlName]="i" class="m-2 p-2">
+        </mat-form-field>
+        }
+      </div>
+      <div class="flex justify-evenly content-center">
+        @if(getPersonnelControls('assistantEmails').length >= 1){
+        <button mat-raised-button type="button" (click)="removePersonnelControls('assistantEmails')"
+          style="font-size:11px;">Remove an
+          assistant
+          email</button>
+        }
+        <button mat-raised-button type="button" (click)="addPersonnelControls('assistantEmails')"
+          style="font-size:11px;">Add more assistant
+          emails?</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+} @else{
+<div class="flex flex-col justify-center mt-11 mb-11">
+  <div class="flex content-center justify-center">
+    <button mat-icon-button aria-label="Edit" (click)="toggleEdit()">
+      <mat-icon>edit</mat-icon>
+    </button>
+  </div>
+  <div>
+    <h4>Doctors: </h4>
+    @for (doctorEmail of clinic?.doctors; track doctorEmail; let i =$index) {
+
+    <p class="ml-4 grow text-sm">{{doctorEmail[1]}}</p>
+    }
+  </div>
+  <div>
+    <h4>Assistants: </h4>
+    @for (assistantEmail of clinic?.assistants; track assistantEmail; let i =$index) {
+
+    <p class="ml-4 grow text-sm">{{assistantEmail[1]}}</p>
+    }
+  </div>
+
+</div>
+}
+}

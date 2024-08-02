@@ -63,7 +63,18 @@ export class MyClinicsComponent implements OnInit, OnDestroy {
     this._currentUserSubscription = this.store.select(AppSelectors.user)
       .subscribe(
         (user) => {
-          this.store.dispatch(ClinicActions.fetchMyClinicsStart());
+          if (!user) {
+            return
+          }
+          if (user.roles?.includes('doctor')) {
+            this.store.dispatch(ClinicActions.fetchDoctorClinicsStart());
+          }
+          if (user.roles?.includes('owner')) {
+            this.store.dispatch(ClinicActions.fetchMyClinicsStart());
+          }
+          if (user.roles?.includes('assistant')) {
+            this.store.dispatch(ClinicActions.fetchAssistantClinicsStart());
+          }
         });
   }
 

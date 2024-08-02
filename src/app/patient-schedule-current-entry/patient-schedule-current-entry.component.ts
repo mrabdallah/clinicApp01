@@ -1,11 +1,23 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
+  OnDestroy,
+  OnInit,
   Output,
   inject,
 } from '@angular/core';
+import {
+  MatDialog,
+  MatDialogActions,
+  MatDialogClose,
+  MatDialogContent,
+  MatDialogRef,
+  MatDialogTitle,
+  MAT_DIALOG_DATA
+} from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -18,12 +30,23 @@ import { Subscription, takeLast, timer, Subject, interval, takeUntil, take, catc
 import { Appointment } from '../types';
 import { DatabaseService } from '../database.service';
 import { LoggerService } from '../logger.service';
+import { Store } from '@ngrx/store';
+import { AppState } from '../store/app.reducer';
+import * as AppSelectors from '../store/app.selectors';
+import * as ScheduleActions from '../store/schedule.actions';
 
+
+interface DeleteDialogData {
+  clinicID: string;
+  date: Date,
+  patientID: string,
+}
 
 @Component({
   selector: 'patient-schedule-current-entry',
   standalone: true,
-  imports: [MatIconModule,
+  imports: [
+    MatIconModule,
     MatButtonModule,
     MatExpansionModule
   ],
@@ -31,9 +54,12 @@ import { LoggerService } from '../logger.service';
   styleUrl: './patient-schedule-current-entry.component.css',
 })
 //export class PatientScheduleCurrentEntryComponent implements AfterViewInit {
-export class PatientScheduleCurrentEntryComponent {
+export class PatientScheduleCurrentEntryComponent implements OnInit, OnDestroy {
   @Output() appointmentDone = new EventEmitter<void>();
   @Input({ required: true }) appointment!: Appointment;
+  readonly dialog = inject(MatDialog);
+  public isEditingAppointments: boolean = false;
+  private isEditingAppointmentsSubscription?: Subscription;
   private databaseService = inject(DatabaseService);
   private loggerService = inject(LoggerService);
   private router = inject(Router);
@@ -48,25 +74,14 @@ export class PatientScheduleCurrentEntryComponent {
   startTime: number = 0;
   totalMiliSeconds: number = 0;
 
-  //emitPatientNotHereEvent() {
-  //  let today = new Date();
-  //  this.databaseService.handleLatePatient(
-  //    this.appointment.patient.id,
-  //    `/clinics/E8WUcagWkeNQXKXGP6Uq/schedule/${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`,
-  //  );
-  //  this.tmpSub!.unsubscribe();
-  //}
+  constructor(private store: Store<AppState>) { }
 
-  //ngAfterViewInit() {
-  //  if (!this.appointment.patientInClinic) {
-
-  //    const oneSecondDelay = timer(1000);
-  //    this.tmpSub = oneSecondDelay.pipe(takeLast(1)).subscribe(() => {
-  //      console.log('fired');
-  //      this.emitPatientNotHereEvent();
-  //    });
-  //  }
-  //}
+  ngOnInit(): void {
+    this.isEditingAppointmentsSubscription = this.store.select(AppSelectors.editingAppointments)
+      .subscribe(state => {
+        this.isEditingAppointments = state;
+      });
+  }
 
   setStateToExamining() {
     this.startTime = performance.now();  // Record start time
@@ -89,6 +104,19 @@ export class PatientScheduleCurrentEntryComponent {
       ).subscribe(() => {
         console.log('Setting State to \'examining\'');
       });
+  }
+
+  openDialogDelete(enterAnimationDuration: string, exitAnimationDuration: string): void {
+    this.dialog.open(DeleteAppointmentConfirmationDialog, {
+      data: {
+        clinicID: this.appointment.clinicID,
+        date: this.appointment.dateTime,
+        patientID: this.appointment.patient.id,
+      },
+      width: '250px',
+      enterAnimationDuration,
+      exitAnimationDuration,
+    });
   }
 
   setStateToDone() {
@@ -188,6 +216,43 @@ export class PatientScheduleCurrentEntryComponent {
     // console.log('navigated');
   }
 
+  editAppointment() {
+    console.log('editing');
+  }
+
   ngOnDestroy() {
+    this.isEditingAppointmentsSubscription?.unsubscribe();
+  }
+}
+
+@Component({
+  selector: 'appointment-delete-confirmation-dialog',
+  template: `
+  <h2 mat-dialog-title>Delete appointment</h2>
+  <mat-dialog-content>
+    Are you sure you want to delete this appointment?
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <button mat-button mat-dialog-close cdkFocusInitial>No</button>
+    <button mat-button mat-dialog-close (click)="onClick()">Yes</button>
+  </mat-dialog-actions>
+  `,
+  standalone: true,
+  imports: [MatButtonModule, MatDialogActions, MatDialogClose, MatDialogTitle, MatDialogContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class DeleteAppointmentConfirmationDialog {
+  readonly dialogRef = inject(MatDialogRef<DeleteAppointmentConfirmationDialog>);
+  readonly data = inject<DeleteDialogData>(MAT_DIALOG_DATA);
+
+  constructor(private _store: Store<AppState>) { }
+
+  onClick() {
+    this._store.dispatch(ScheduleActions.deleteAppointment({
+      clinicID: this.data.clinicID,
+      date: this.data.date,
+      patientID: this.data.patientID
+    })
+    );
   }
 }

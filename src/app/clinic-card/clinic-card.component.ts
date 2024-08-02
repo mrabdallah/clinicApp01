@@ -44,8 +44,4 @@ export class ClinicCardComponent implements OnInit {
   navigateToClinic() {
     this.router.navigateByUrl(`/clinic/${this.clinic.id}`);
   }
-
-  onLike() {
-    console.log('lllll');
-  }
 }
